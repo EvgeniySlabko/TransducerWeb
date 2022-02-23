@@ -1,5 +1,5 @@
 
-importScripts('./serial.js');
+import {GetBytes} from './serial.js'
 
 var chartColors = {
 	red: 'rgb(255, 99, 132)',
@@ -16,14 +16,15 @@ function randomScalingFactor() {
 }
 
 function onRefresh(chart) {
-    var value = GetValue()
-    if (value)
+    var result = GetBytes(1);
+	
+    if (result.count > 0)
     {
         var now = Date.now();
         chart.data.datasets.forEach(function(dataset) {
             dataset.data.push({
                 x: now,
-                y: randomScalingFactor()
+                y: result.bytes[0]
             });
         });
     }
@@ -34,14 +35,6 @@ var config = {
 	type: 'line',
 	data: {
 		datasets: [{
-			label: 'Dataset 1 (linear interpolation)',
-			backgroundColor: color(chartColors.red).alpha(0.5).rgbString(),
-			borderColor: chartColors.red,
-			fill: false,
-			lineTension: 0,
-			borderDash: [8, 4],
-			data: []
-		}, {
 			label: 'Dataset 2 (cubic interpolation)',
 			backgroundColor: color(chartColors.blue).alpha(0.5).rgbString(),
 			borderColor: chartColors.blue,
@@ -60,7 +53,7 @@ var config = {
 				type: 'realtime',
 				realtime: {
 					duration: 20000,
-					refresh: 1000,
+					refresh: 1,
 					delay: 2000,
 					onRefresh: onRefresh
 				}
