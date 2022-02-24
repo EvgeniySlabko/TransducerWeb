@@ -1,14 +1,13 @@
 
 import {InitDevice} from './sensor.js' 
+import {RingBuffer} from './Buffer.js';
 
 var selectPort = document.querySelector('.select');
 var button = document.querySelector('.button');
 
-const MaxBufferLength = 10;
-
 var reader;
 var writer;
-var buffer = [];
+var buffer = new RingBuffer(100);
 
 function connectListener(e)
 {
@@ -32,17 +31,22 @@ document.getElementById('button').addEventListener('click', () => {
 
   function GetBytes(count)
   {
-      if (buffer.length < count)
+      var bytes = [];
+      var actualBytes = 0;
+
+      for (var i = 0; i < count; i++)
       {
-        var length = buffer.length - 1;
-        var deleted = buffer.splice(0, length);
-        return {bytes : deleted, count : length};
+        var value = buffer.pop();
+        if (value){
+            actualBytes++;
+            bytes.push(value);
+        }
+        else {
+          break;
+        }
       }
-      else
-      {
-        var deleted = buffer.splice(0, count);
-        return {bytes : deleted, count : count};
-      }
+
+      return {bytes : bytes, count : actualBytes}
   }
 
   export 
@@ -74,9 +78,9 @@ document.getElementById('button').addEventListener('click', () => {
       reader = port.readable.getReader();
       writer = port.writable.getWriter();
 
-      InitDevice(GetBytes, WriteBytes);
-
       serialReader();
+      await InitDevice(GetBytes, WriteBytes);
+
     }
     catch(error)
     {
@@ -92,8 +96,11 @@ document.getElementById('button').addEventListener('click', () => {
         const { value, done } = await reader.read()
 
         if (value) {
-          buffer.push(value);
-          console.log(value);
+          value.forEach(byte => 
+            {
+              buffer.push(byte);
+              //console.log(byte);
+            });
         }
         if (done) {
           console.log('[readLoop] DONE', done);
@@ -117,12 +124,3 @@ document.getElementById('button').addEventListener('click', () => {
   }
 
 
-  function PushValueToBuffer(value)
-  {
-    if(values.length > MaxBufferLength)
-    {
-      values.shift();
-    }
-
-    values.push(value);
-  }

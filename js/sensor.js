@@ -11,10 +11,15 @@ const START_STREAMING = 1
 
 const COIL_ON_VALUE = 0x00FF;
 const COIL_OFF_VALUE = 0x0000;
-export function InitDevice(getBytes, writeBytes)
+export async function InitDevice(getBytes, writeBytes)
 {
     SendMessage(writeBytes, FORCE_SINGLE_COIL, START_MEASURING, COIL_ON_VALUE);
+    await timeout(1000);
+    var response = getBytes(99);
+    console.log(response);
     SendMessage(writeBytes, FORCE_SINGLE_COIL, START_STREAMING, COIL_ON_VALUE);
+    await timeout(1000);
+    var response = getBytes(100);
 }
 
 export function SendMessage(writeBytes, command, addres, value)
@@ -29,6 +34,10 @@ export function SendMessage(writeBytes, command, addres, value)
     writeBytes(reqest);
 }
 
+function timeout(ms)
+{
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 
 

@@ -18,6 +18,7 @@ function randomScalingFactor() {
 function onRefresh(chart) {
     var result = GetBytes(1);
 	
+	
     if (result.count > 0)
     {
         var now = Date.now();
@@ -53,7 +54,7 @@ var config = {
 				type: 'realtime',
 				realtime: {
 					duration: 20000,
-					refresh: 1,
+					refresh: 10,
 					delay: 2000,
 					onRefresh: onRefresh
 				}

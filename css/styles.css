@@ -25,6 +25,13 @@
 	box-sizing: border-box;
 }
 
+.chart {
+	min-width: 100px;
+    margin-left: 0;
+    margin-right: 20px;
+	margin-bottom: 30px;
+}
+
 html,
 body,
 p {
@@ -197,9 +204,9 @@ header {
 }
 
 .app__content {
-	width: 320px;
+	width: 100%;
 	height: 100%;
-	margin: 0 auto;
+	margin: 10px ;
 	margin-top: 56px;
 	padding-top: 10px;
 }

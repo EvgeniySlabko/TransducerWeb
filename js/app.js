@@ -47,8 +47,6 @@
       });
   }
 
-  fetchGitUserInfo(localStorage.getItem('request')); //Fetch github users data
-
   //Listen postMessage when `background sync` is triggered
   navigator.serviceWorker.addEventListener('message', function (event) {
     console.info('From background sync: ', event.data);
