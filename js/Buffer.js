@@ -29,7 +29,7 @@ export class RingBuffer{
 
     pop()
     {
-        if (this.pushIndex === this.popIndex)
+        if (this.pushIndex == this.popIndex)
         {
             return null;
         }

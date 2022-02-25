@@ -1,5 +1,5 @@
 
-import {GetBytes} from './serial.js'
+import {torqueBuff} from './sensor.js';
 
 var chartColors = {
 	red: 'rgb(255, 99, 132)',
@@ -16,19 +16,20 @@ function randomScalingFactor() {
 }
 
 function onRefresh(chart) {
-    var result = GetBytes(1);
+    //var result = GetBytes(1);
 	
-	
-    if (result.count > 0)
-    {
-        var now = Date.now();
-        chart.data.datasets.forEach(function(dataset) {
-            dataset.data.push({
-                x: now,
-                y: result.bytes[0]
-            });
-        });
-    }
+	var value = torqueBuff.pop();
+
+	if (value != null)
+	{
+		var now = Date.now();
+		chart.data.datasets.forEach(function(dataset) {
+			dataset.data.push({
+				x: now,
+				y: value
+			});
+		});
+	}
 }
 
 var color = Chart.helpers.color;
@@ -117,3 +118,7 @@ document.getElementById('addData').addEventListener('click', function() {
 	onRefresh(window.myChart);
 	window.myChart.update();
 });
+
+document.addEventListener("sensor", function(event) { 
+    alert(event.detail.color); 
+  });

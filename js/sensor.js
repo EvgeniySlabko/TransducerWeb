@@ -1,3 +1,4 @@
+import { RingBuffer } from "./Buffer.js";
 
 const READ_HOLDING_REGISTERS = 3 // чтение значений из нескольких регистров хранения;
 const  READ_INPUT_REGISTERS = 4 // чтение значений из нескольких регистров ввода;
@@ -11,15 +12,42 @@ const START_STREAMING = 1
 
 const COIL_ON_VALUE = 0x00FF;
 const COIL_OFF_VALUE = 0x0000;
+
+export var torqueBuff = new RingBuffer(100);
 export async function InitDevice(getBytes, writeBytes)
 {
     SendMessage(writeBytes, FORCE_SINGLE_COIL, START_MEASURING, COIL_ON_VALUE);
-    await timeout(1000);
-    var response = getBytes(99);
-    console.log(response);
+    await timeout(1);
+    var response = getBytes(5);
+    
+
+    //console.log("response: ", response);
     SendMessage(writeBytes, FORCE_SINGLE_COIL, START_STREAMING, COIL_ON_VALUE);
-    await timeout(1000);
-    var response = getBytes(100);
+    await timeout(1);
+    var response = getBytes(5);
+    await processbytes();
+    //console.log("response: ", response);
+}
+
+async function  processbytes()
+{
+    try
+    {
+        while(true)
+        {
+            const event = new CustomEvent('sensor', {
+                detail: {
+                  color: 'white'
+                }
+              });
+
+            document.dispatchEvent(event);
+        }
+    }
+    catch(err)
+    {
+        console.log(err);
+    }
 }
 
 export function SendMessage(writeBytes, command, addres, value)
@@ -32,12 +60,32 @@ export function SendMessage(writeBytes, command, addres, value)
     reqest[4] = (value >> 8) & 0xFF;
 
     writeBytes(reqest);
+    console.log("reqest: ", reqest);
+}
+
+function isValidResponse(req, res)
+{
+    if (req.length != res.length)
+    {
+        return false;
+    }
+
+    for (var i = 0; i < res.length; i++)
+    {
+        if (req[i] != res[i])
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 function timeout(ms)
 {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
 
 
 

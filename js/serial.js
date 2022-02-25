@@ -9,6 +9,8 @@ var reader;
 var writer;
 var buffer = new RingBuffer(100);
 
+const event = new Event('data');
+
 function connectListener(e)
 {
   console.log(`${e} подключился!`);
@@ -37,7 +39,7 @@ document.getElementById('button').addEventListener('click', () => {
       for (var i = 0; i < count; i++)
       {
         var value = buffer.pop();
-        if (value){
+        if (value != null){
             actualBytes++;
             bytes.push(value);
         }
@@ -95,13 +97,13 @@ document.getElementById('button').addEventListener('click', () => {
       while (true) {
         const { value, done } = await reader.read()
 
-        if (value) {
+        //if (value) {
           value.forEach(byte => 
             {
               buffer.push(byte);
               //console.log(byte);
             });
-        }
+        //}
         if (done) {
           console.log('[readLoop] DONE', done);
           reader.releaseLock();
