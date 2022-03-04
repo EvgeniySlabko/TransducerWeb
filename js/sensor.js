@@ -14,11 +14,15 @@ const COIL_ON_VALUE = 0x00FF;
 const COIL_OFF_VALUE = 0x0000;
 
 export var torqueBuff = new RingBuffer(100);
+
+const packageType = { wait: 'torque', GREEN: 'temperature', BLUE: 'speed' };
+
+
 export async function InitDevice(getBytes, writeBytes)
 {
     SendMessage(writeBytes, FORCE_SINGLE_COIL, START_MEASURING, COIL_ON_VALUE);
     await timeout(1);
-    var response = getBytes(5);
+    var response = await getBytes(5);
     
 
     //console.log("response: ", response);
@@ -41,7 +45,7 @@ async function  processbytes()
                 }
               });
 
-            document.dispatchEvent(event);
+            //document.dispatchEvent(event);
         }
     }
     catch(err)
@@ -81,11 +85,26 @@ function isValidResponse(req, res)
     return true;
 }
 
+
 function timeout(ms)
 {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 
+const state = { torque: 100, speed: 101, temperature: 102, message: 103, none: -1};
+
+
+document.addEventListener('serialData', (event)=>
+{
+    for (let index = 0; index < event.target.bytes.length; index++) {
+
+        switch(state)
+        {
+            
+        }
+    }
+
+});
 
 

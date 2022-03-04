@@ -112,24 +112,7 @@ self.addEventListener('activate', (event) => {
   // }
 
   //Remove old and unwanted caches
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== cacheName) {
-            return caches.delete(cache); //Deleting the old cache (cache v1)
-          }
-        })
-      );
-    })
-    .then(function () {
-      console.info("Old caches are cleared!");
-      // To tell the service worker to activate current one 
-      // instead of waiting for the old one to finish.
-      return self.clients.claim(); 
-    }) 
-  );
-});
+  
 
 /*
   PUSH EVENT: triggered everytime, when a push notification is received.

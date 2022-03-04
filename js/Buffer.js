@@ -54,4 +54,8 @@ export class RingBuffer{
         this.pushIndex = 0;
     }
     
+    dataCount()
+    {
+        return Math.abs(this.pushIndex - this.popIndex);
+    }
 }

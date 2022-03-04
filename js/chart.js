@@ -119,6 +119,3 @@ document.getElementById('addData').addEventListener('click', function() {
 	window.myChart.update();
 });
 
-document.addEventListener("sensor", function(event) { 
-    alert(event.detail.color); 
-  });
