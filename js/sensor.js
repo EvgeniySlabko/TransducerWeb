@@ -15,42 +15,86 @@ const COIL_OFF_VALUE = 0x0000;
 
 export var torqueBuff = new RingBuffer(100);
 
-const packageType = { wait: 'torque', GREEN: 'temperature', BLUE: 'speed' };
 
+var getter
+const packageType = { torque: 100, speed: 101, temperatue: 102, msg: 103 };
+
+var intervalId;
 
 export async function InitDevice(getBytes, writeBytes)
 {
     SendMessage(writeBytes, FORCE_SINGLE_COIL, START_MEASURING, COIL_ON_VALUE);
-    await timeout(1);
-    var response = await getBytes(5);
-    
-
-    //console.log("response: ", response);
+    var response1 = await getBytes(5);
     SendMessage(writeBytes, FORCE_SINGLE_COIL, START_STREAMING, COIL_ON_VALUE);
-    await timeout(1);
-    var response = getBytes(5);
+    var response2 = await getBytes(5);
+
+    //intervalId = setInterval(() => processbytes(getBytes), 10);
+    getter = getBytes;
     await processbytes();
-    //console.log("response: ", response);
 }
 
 async function  processbytes()
 {
     try
     {
-        while(true)
-        {
-            const event = new CustomEvent('sensor', {
-                detail: {
-                  color: 'white'
+        var size, dataType, timeL, timeH;
+        var commonData = await getter(7);
+            const view = new DataView(commonData.buffer);
+            dataType = view.getUint8(0);
+            size = view.getUint16(1, true);
+            timeL = view.getUint16(3, true);
+            timeH = view.getUint16(5, true);
+            console.log("Process: ",commonData);
+        
+        switch (dataType) {
+            case packageType.torque:
+                var datatorque = await getter(size - 4);
+                console.log("Process: ", datatorque);
+                const torqView = new DataView(datatorque.buffer);
+                var bufferCount = torqView.getUint8(0, true);
+                var dataCount = torqView.getUint8(1, true);
+                for (let i = 0; i < dataCount; i++) {
+                    var value = torqView.getFloat32((2 + (i  * 4)), true);
+                    torqueBuff.push(value);
                 }
-              });
-
-            //document.dispatchEvent(event);
+                
+            break;
+    
+            case packageType.speed:
+                var dataSpeed = await getter(size - 4);
+                console.log("Process: ", dataSpeed);
+                const speedView = new DataView(dataSpeed.buffer);
+                var speed = speedView.getFloat32(0, true);
+                //console.log(dataSpeed);
+            break;
+    
+            case packageType.temperatue:
+                var dataTemperature = await getter(size - 4);
+                const temperatureView = new DataView(dataTemperature.buffer);
+                var temperature = temperatureView.getFloat32(0, true);
+                console.log("Process: ",dataTemperature);
+            break;
+    
+            case packageType.msg:
+                var dataMsg = await getter(size - 4);
+                const msgView = new DataView(dataMsg.buffer);
+                var msgCount = msgView.getUint16(0, true);
+                console.log("Process: ",dataMsg);
+                for (let i = 0; i < msgCount; i++) {
+                    var msg = msgView.getUint16(2 + (i * 2));
+                }
+            break;
+        
+            default:
+                //console.log(1);
+                break;
         }
+        
+        processbytes();
     }
-    catch(err)
+    catch(error)
     {
-        console.log(err);
+        console.log(error);
     }
 }
 
@@ -64,7 +108,7 @@ export function SendMessage(writeBytes, command, addres, value)
     reqest[4] = (value >> 8) & 0xFF;
 
     writeBytes(reqest);
-    console.log("reqest: ", reqest);
+    //console.log("reqest: ", reqest);
 }
 
 function isValidResponse(req, res)
@@ -85,26 +129,8 @@ function isValidResponse(req, res)
     return true;
 }
 
-
-function timeout(ms)
-{
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+//const state = { torque: 100, speed: 101, temperature: 102, message: 103, none: -1};
 
 
-const state = { torque: 100, speed: 101, temperature: 102, message: 103, none: -1};
-
-
-document.addEventListener('serialData', (event)=>
-{
-    for (let index = 0; index < event.target.bytes.length; index++) {
-
-        switch(state)
-        {
-            
-        }
-    }
-
-});
 
 

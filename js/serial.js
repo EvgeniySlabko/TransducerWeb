@@ -1,22 +1,20 @@
 
-import {InitDevice} from './sensor.js' 
+import {InitDevice} from './sensor.js';
 import {RingBuffer} from './Buffer.js';
-
-var selectPort = document.querySelector('.select');
-var button = document.querySelector('.button');
 
 var reader;
 var writer;
-var buffer = new RingBuffer(100);
+var buffer = new RingBuffer(512);
+var intervalId;
 
 function connectListener(e)
 {
-  console.log(`${e} подключился!`);
+  //console.log(`${e} подключился!`);
 }
 
 function disconnectListener(e)
 {
-  console.log(`${e} отключился!`);
+  //console.log(`${e} отключился!`);
 }
   
 
@@ -29,25 +27,57 @@ document.getElementById('button').addEventListener('click', () => {
 });
   
 
-  function GetBytes(count)
+  async function GetBytes(count)
   {
-      var bytes = [];
-      var actualBytes = 0;
 
-      for (var i = 0; i < count; i++)
+    for (let i = 0; i < 10; i++) {
+      var result = await tryGetBytesRecursive(count, 0);
+      if (result === null)
       {
-        var value = buffer.pop();
-        if (value != null){
-            actualBytes++;
-            bytes.push(value);
-        }
-        else {
-          break;
-        }
+        throw("No Data!");
       }
 
-      return {bytes : bytes, count : actualBytes}
+      return result;
+    }
+    /*
+    return await new Promise((resolve, reject) =>
+    {
+      for (let i = 0; i < 10; i++) {
+        var result = tryGetBytes(count);
+        if (result === null)
+        {
+          setTimeout(10);
+          continue;
+        }
+
+        resolve(result);
+      }
+
+      reject();
+    });
+    */
   }
+
+async function tryGetBytesRecursive(count, tries)
+{
+  if (tries > 10)
+  {
+    return null;
+  }
+
+  if (buffer.dataBytes >= count)
+  {
+    var data = new  Uint8Array(count);
+      for (let i = 0; i < count; i++) {
+        data[i] = buffer.pop();
+      }
+
+      return data
+  }
+
+  await timeout(1);
+  return tryGetBytesRecursive(count, tries + 1);
+}
 
   export 
   {
@@ -78,7 +108,7 @@ document.getElementById('button').addEventListener('click', () => {
       reader = port.readable.getReader();
       writer = port.writable.getWriter();
 
-      serialReader();
+      intervalId = setInterval(serialRead, 1);
       await InitDevice(GetBytes, WriteBytes);
 
     }
@@ -88,39 +118,25 @@ document.getElementById('button').addEventListener('click', () => {
     }
   }
 
-  async function  serialReader()
+  function serialRead()
   {
-    try
+    reader.read().then((value, done) =>
     {
-      while (true) {
-        const { value, done } = await reader.read()
-
-        if (value.length != 0) {
-          //value.forEach(byte => 
-            //{
-              //buffer.push(byte);
-              //console.log(byte);
-              const event = new CustomEvent('serialData', {
-                detail: {
-                  data: value,
-                }
-              });
-
-            document.dispatchEvent(event);
-              
-            //});
-        }
-        if (done) {
-          console.log('[readLoop] DONE', done);
-          reader.releaseLock();
-          break;
+      var len = value.value.length;
+      //console.log(len);
+      if (len != 0) {
+        console.log("Read:", value);
+        for (let i = 0; i < len; i++) {
+          buffer.push(value.value[i]);
         }
       }
-    } 
-    catch (error) {
-    console.log(error);
-    }
-    finally {}
+      if (done) {
+        console.log('[readLoop] DONE', done);
+        reader.releaseLock();
+      }
+    }).catch((error) =>{
+      console.log(error);
+    });
   }
 
   function WriteBytes(bytes)
@@ -131,4 +147,6 @@ document.getElementById('button').addEventListener('click', () => {
     }
   }
 
-
+  function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }

@@ -173,7 +173,7 @@ self.addEventListener('notificationclick', (event) => {
 
   //Listen to custom action buttons in push notification
   if (event.action === 'yes') {
-    console.log('I ♥ this app!');
+    //console.log('I ♥ this app!');
   }
   else if (event.action === 'no') {
     console.warn('I don\'t like this app');
