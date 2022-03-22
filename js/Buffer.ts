@@ -1,52 +1,69 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.RingBuffer = void 0;
-class RingBuffer {
-    constructor(size) {
-        this.pushIndex = 0;
-        this.popIndex = 0;
-        this.dataBytes = 0;
-        if (size < 1) {
+export class RingBuffer{
+    
+    pushIndex: number = 0;
+    popIndex: number = 0;
+    buff: number[];
+    size: number;
+    dataBytes: number = 0;
+
+    constructor(size: number)
+    {
+        if (size < 1)
+        {
             throw "Неверный размер очереди";
         }
+
         this.size = size;
         this.buff = new Array(size);
         this.popIndex = 0;
         this.pushIndex = 0;
         this.dataBytes = 0;
     }
-    push(value) {
+
+    public push(value: number)
+    {
         var newIndex = this.incrementIndex(this.pushIndex);
         this.buff[this.pushIndex] = value;
         this.pushIndex = newIndex;
         this.dataBytes++;
-        if (newIndex == this.popIndex) {
+
+        if (newIndex == this.popIndex)
+        {
             console.log("Buffer owerflow!!!!!!!!");
             this.dataBytes = 0;
         }
     }
-    pop() {
-        if (this.pushIndex == this.popIndex) {
+
+    public pop() : number | null
+    {
+        if (this.pushIndex == this.popIndex)
+        {
             return 0;
         }
-        else {
+        else
+        {
             var value = this.buff[this.popIndex];
             this.popIndex = this.incrementIndex(this.popIndex);
             this.dataBytes--;
             return value;
         }
     }
-    incrementIndex(index) {
+
+    public incrementIndex(index: number)
+    {
         if (index == this.size - 1)
             return 0;
         return ++index;
     }
-    clear() {
+
+    public clear()
+    {
         this.popIndex = 0;
         this.pushIndex = 0;
     }
-    dataCount() {
+    
+    dataCount() : number
+    {
         return this.dataBytes;
     }
 }
-exports.RingBuffer = RingBuffer;

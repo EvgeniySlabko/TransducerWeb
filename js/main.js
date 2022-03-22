@@ -34,3 +34,12 @@
     });
   }
 })();
+
+document.getElementById('button').addEventListener('click', () => {
+  if (navigator.serial) {
+    var connect = exports.connectSerial().then(p => {console.log(1);})
+  } else {
+    alert('Web Serial API not supported.');
+  }
+});
+
