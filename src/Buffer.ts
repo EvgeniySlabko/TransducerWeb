@@ -1,4 +1,4 @@
-export class RingBuffer{
+class RingBuffer{
     
     pushIndex: number = 0;
     popIndex: number = 0;
@@ -67,3 +67,5 @@ export class RingBuffer{
         return this.dataBytes;
     }
 }
+
+export default RingBuffer;

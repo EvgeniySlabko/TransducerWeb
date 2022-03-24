@@ -1,6 +1,4 @@
 
-import {torqueBuff} from './sensor.js';
-
 var chartColors = {
 	red: 'rgb(255, 99, 132)',
 	orange: 'rgb(255, 159, 64)',
@@ -17,9 +15,9 @@ function randomScalingFactor() {
 
 function onRefresh(chart) {
     //var result = GetBytes(1);
-	
-	var value = torqueBuff.pop();
-
+	//var b = new Buffer(1);
+	//var value = torqueBuff.pop();
+	var value = null;
 	if (value != null)
 	{
 		var now = Date.now();

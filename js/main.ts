@@ -1,15 +1,5 @@
-"use strict";
 //import {RingBuffer} from './Buffer'
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var _a;
+
 //import {Sensor} from './sensor'
 /*
 (function () {
@@ -27,7 +17,7 @@ var _a;
 
   // To content update on service worker state change
   function checkForPageUpdate(registration) {
-    // onupdatefound will fire on first time install and when serviceWorker.js file changes
+    // onupdatefound will fire on first time install and when serviceWorker.js file changes      
     registration.addEventListener("updatefound", function() {
       // To check if service worker is already installed and controlling the page or not
       if (navigator.serviceWorker.controller) {
@@ -49,24 +39,29 @@ var _a;
   }
 })();
 */
-(_a = document.getElementById('button')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
+
+
+document.getElementById('button')?.addEventListener('click', async () => {
     if (navigator.serial) {
-        //var b = new RingBuffer(5);
-        /*
-        console.log();
-        var serialWorker = connectSerial();
+
+      //var b = new RingBuffer(5);
+      /*
+      console.log();
+      var serialWorker = connectSerial();
+      if (serialWorker != null)
+      {
         if (serialWorker != null)
         {
-          if (serialWorker != null)
-          {
-            console.log(Sensor);
-                //var sensor = new Sensor(serialWorker);
-                //await sensor.StartMeasuring();
-          }
+          console.log(Sensor);
+              //var sensor = new Sensor(serialWorker);
+              //await sensor.StartMeasuring();
         }
-        else {
-        alert('Web Serial API not supported.');
-        }
-        */
+      } 
+      else {
+      alert('Web Serial API not supported.');
+      }
+      */
     }
-}));
+  }
+  );
+  

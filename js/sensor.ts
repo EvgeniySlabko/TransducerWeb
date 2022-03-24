@@ -1,5 +1,4 @@
-import {SerialWorker} from './serial.js'
-//import { RingBuffer } from "./Buffer.js";
+import { SerialWorker } from "./serial";
 //var a = exports.RingBuffer;
 const READ_HOLDING_REGISTERS = 3 // чтение значений из нескольких регистров хранения;
 const  READ_INPUT_REGISTERS = 4 // чтение значений из нескольких регистров ввода;
@@ -134,6 +133,7 @@ export class Sensor {
     }
 }
 
+export default Sensor;
 /*
 
 export var torqueBuff = new exports.RingBuffer(100);

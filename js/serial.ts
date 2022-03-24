@@ -1,107 +1,88 @@
-//import { RingBuffer } from "./Buffer";
-//import {InitDevice} from './sensor.js';
-//import {RingBuffer} from './Buffer.js';
-
-//var reader : function(): number;
-//var writer : function(number): void;
-
-
-
-//var buffer = new RingBuffer(512);
-//var intervalId;
-
-//function connectListener(e)
-//{
-  //console.log(`${e} подключился!`);
-//}
-
-//function disconnectListener(e)
-//{
-  //console.log(`${e} отключился!`);
-//}
-  
-
-
-  
-/*
-async function GetBytes(count)
-{
-
-for (let i = 0; i < 10; i++) {
-    var result = await tryGetBytesRecursive(count, 0);
-    if (result === null)
-    {
-    throw("No Data!");
-    }
-
-    return result;
-}
-
-return await new Promise((resolve, reject) =>
-{
-    for (let i = 0; i < 10; i++) {
-    var result = tryGetBytes(count);
-    if (result === null)
-    {
-        setTimeout(10);
-        continue;
-    }
-
-    resolve(result);
-    }
-
-    reject();
-});
-*/
-//}
-
-/*
-async function tryGetBytesRecursive(count, tries)
-{
-  if (tries > 10)
-  {
-    return null;
-  }
-
-  if (buffer.dataBytes >= count)
-  {
-    var data = new  Uint8Array(count);
-      for (let i = 0; i < count; i++) {
-        data[i] = buffer.pop();
-      }
-
-      return data
-  }
-
-  await timeout(1);
-  return tryGetBytesRecursive(count, tries + 1);
-}
-*/
-/*
-  export 
-  {
-    GetBytes as GetBytes,
-    WriteBytes as WriteBytes,
-  }
-*/
 export class SerialWorker
 {
     constructor(reader: ReadableStreamDefaultReader<Uint8Array>, writer: WritableStreamDefaultWriter<Uint8Array>) {
       this.reader = reader;
       this.writer = writer;
     }
+    
     private readonly reader: ReadableStreamDefaultReader<Uint8Array>;
     private readonly writer: WritableStreamDefaultWriter<Uint8Array>;   
 
-    public async read() : Promise<any> {
+
+    private chunk: Uint8Array = new Uint8Array(0);
+    private readIndex: number = 0;
+     
+
+    public async Read(count: number) : Promise<Uint8Array> {
       
-      var value = await this.reader.read();
-      return value.done ? value.value : null;
+      let result = new Uint8Array(count);
+      let bytesRemains = this.chunk.length - this.readIndex - 1;
+
+      while(true)
+      {
+        if (bytesRemains < count)
+        {
+          let writeIndex = 0;
+          // дочитываем 
+          for (let i = 0; i < bytesRemains; i++) {
+            result[writeIndex + i] = this.chunk[this.readIndex + i];
+          }
+
+          //берем новый чанк
+          this.chunk = await this.GetChunk();
+          this.readIndex = 0;
+        }
+        else
+        {
+          for (let i = 0; i < count; i++) {
+            result[i] = this.chunk[this.readIndex + i];
+          }
+
+          this.readIndex += count;
+          break;
+        }
     }
 
-    public write(bytes: Uint8Array) : void  {
-      this.writer.write(bytes);
+      var value = await this.GetChunk();
+      return value;
     }
+
+    private async GetChunk() : Promise<Uint8Array>
+    {
+      let result = await this.GetChunkRecursive(10, 0);
+      if (result == null)
+      {
+        throw new Error('ReadingError');
+      }
+
+      return result;
+    }
+
+    private async GetChunkRecursive(totalAttempts: number, currentAttempt: number) : Promise<Uint8Array | null>
+    {
+      if (totalAttempts == currentAttempt)
+        return null;
+
+      var result = await this.reader.read();
+      if (!result.done)
+      {
+        return result.value;
+      }
+      else
+      {
+        await this.timeout(10);
+        return await this.GetChunkRecursive(totalAttempts, currentAttempt + 1);
+      }
+    }
+    
+
+  private timeout(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+    
+  public write(bytes: Uint8Array) : void  {
+    this.writer.write(bytes);
+  }
 }
 
 export async function connectSerial() : Promise<SerialWorker | null> {    

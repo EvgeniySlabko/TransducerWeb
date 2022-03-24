@@ -1,7 +1,4 @@
 "use strict";
-//import { RingBuffer } from "./Buffer";
-//import {InitDevice} from './sensor.js';
-//import {RingBuffer} from './Buffer.js';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -13,88 +10,65 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.connectSerial = exports.SerialWorker = void 0;
-//var reader : function(): number;
-//var writer : function(number): void;
-//var buffer = new RingBuffer(512);
-//var intervalId;
-//function connectListener(e)
-//{
-//console.log(`${e} подключился!`);
-//}
-//function disconnectListener(e)
-//{
-//console.log(`${e} отключился!`);
-//}
-/*
-async function GetBytes(count)
-{
-
-for (let i = 0; i < 10; i++) {
-    var result = await tryGetBytesRecursive(count, 0);
-    if (result === null)
-    {
-    throw("No Data!");
-    }
-
-    return result;
-}
-
-return await new Promise((resolve, reject) =>
-{
-    for (let i = 0; i < 10; i++) {
-    var result = tryGetBytes(count);
-    if (result === null)
-    {
-        setTimeout(10);
-        continue;
-    }
-
-    resolve(result);
-    }
-
-    reject();
-});
-*/
-//}
-/*
-async function tryGetBytesRecursive(count, tries)
-{
-  if (tries > 10)
-  {
-    return null;
-  }
-
-  if (buffer.dataBytes >= count)
-  {
-    var data = new  Uint8Array(count);
-      for (let i = 0; i < count; i++) {
-        data[i] = buffer.pop();
-      }
-
-      return data
-  }
-
-  await timeout(1);
-  return tryGetBytesRecursive(count, tries + 1);
-}
-*/
-/*
-  export
-  {
-    GetBytes as GetBytes,
-    WriteBytes as WriteBytes,
-  }
-*/
 class SerialWorker {
     constructor(reader, writer) {
+        this.chunk = new Uint8Array(0);
+        this.readIndex = 0;
         this.reader = reader;
         this.writer = writer;
     }
-    read() {
+    Read(count) {
         return __awaiter(this, void 0, void 0, function* () {
-            var value = yield this.reader.read();
-            return value.done ? value.value : null;
+            let result = new Uint8Array(count);
+            let bytesRemains = this.chunk.length - this.readIndex - 1;
+            while (true) {
+                if (bytesRemains < count) {
+                    let writeIndex = 0;
+                    // дочитываем 
+                    for (let i = 0; i < bytesRemains; i++) {
+                        result[writeIndex + i] = this.chunk[this.readIndex + i];
+                    }
+                    //берем новый чанк
+                    this.chunk = yield this.GetChunk();
+                    this.readIndex = 0;
+                }
+                else {
+                    for (let i = 0; i < count; i++) {
+                        result[i] = this.chunk[this.readIndex + i];
+                    }
+                    this.readIndex += count;
+                    break;
+                }
+            }
+            var value = yield this.GetChunk();
+            return value;
         });
+    }
+    GetChunk() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let result = yield this.GetChunkRecursive(10, 0);
+            if (result == null) {
+                throw new Error('ReadingError');
+            }
+            return result;
+        });
+    }
+    GetChunkRecursive(totalAttempts, currentAttempt) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (totalAttempts == currentAttempt)
+                return null;
+            var result = yield this.reader.read();
+            if (!result.done) {
+                return result.value;
+            }
+            else {
+                yield this.timeout(10);
+                return yield this.GetChunkRecursive(totalAttempts, currentAttempt + 1);
+            }
+        });
+    }
+    timeout(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
     write(bytes) {
         this.writer.write(bytes);

@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Sensor = void 0;
-//import { RingBuffer } from "./Buffer.js";
 //var a = exports.RingBuffer;
 const READ_HOLDING_REGISTERS = 3; // чтение значений из нескольких регистров хранения;
 const READ_INPUT_REGISTERS = 4; // чтение значений из нескольких регистров ввода;
@@ -119,6 +118,7 @@ class Sensor {
     }
 }
 exports.Sensor = Sensor;
+exports.default = Sensor;
 /*
 
 export var torqueBuff = new exports.RingBuffer(100);
