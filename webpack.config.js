@@ -1,10 +1,10 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-require('webpack');
+const webpack = require('webpack');
 const path = require('path');
 
 module.exports = {
   devtool: 'source-map',      //создает map файл для отладки
-  entry: './src/test.ts',
+  entry: './src/main.ts',
   mode: 'development',
   //mode: 'production',
   
@@ -35,10 +35,17 @@ module.exports = {
       },
     ],
   },
-  plugins: [new HtmlWebpackPlugin({ template: './index.html' })],
+  plugins: 
+  [
+    new HtmlWebpackPlugin({ template: './index.html' }),
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+    }),
+],
   
   resolve: {
-    extensions: [ ".tsx", ".ts", ".js" ]
+    extensions: [ ".tsx", ".ts", ".js" ],
+    
   },
   
 };

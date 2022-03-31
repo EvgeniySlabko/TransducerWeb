@@ -17,16 +17,17 @@
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 		<meta name="apple-mobile-web-app-title" content="Progressive Web Application" />
 		<meta name="application-name" content="Progressive Web Application" />
+		<script src="https://cdn.plot.ly/plotly-2.11.1.min.js"></script>
 		<link rel="apple-touch-icon" href="./images/icons/apple-touch-icon.png" />
-		<link rel="icon" type="image/png" href="./images/icons/favicon-32x32.png" sizes="32x32" />
-		<link rel="icon" type="image/png" href="./images/icons/favicon-16x16.png" sizes="16x16" />
+		
 
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:200,300,400,500,700" />
-		<link rel="stylesheet" href="./src/css/styles.css" />
+		
 	</head>
 
 	<body>
-		<div class="app app__layout">
+		
+		
 			<header>
 				<span class="header__icon">
 					<svg class="menu__icon no--select" width="24px" height="24px" viewBox="0 0 48 48" fill="#fff">
@@ -36,54 +37,33 @@
 				
 				<span class="header__title no--select">Progressive Web Application</span>
 			</header>
+	
+			
+			<div id="gd" class="resizable"></div>
+			
 
-			<div class="menu">
-				<div class="menu__header"></div>
-				<ul class="menu__list">
-					<li><a target="_blank" rel="noopener" href="https://github.com/gokulkrishh">Author</a></li>
-					<li><a target="_blank" rel="noopener" href="https://github.com/gokulkrishh/demo-progressive-web-app">Source</a></li>
-				</ul>
+		
+			
+			<div class="btn-group">
+				
+				<button id="Stop">Stop</button>
+				<button id="Start">Start</button>
+				<button id="removeDataset">Remove Dataset</button>
+				<button id="addData">Add Data</button>
+				<button class="button" id="button">Тык!</button>
+				
 			</div>
 			
-			<div class="menu__overlay"></div>
 
-			<div class="app__content">
-				<h3>Github Profile Card:</h3>
 
-				<select class="select">
-
-				</select>
-					
-
-				<div class="chart" width="200" height="100">
-					<canvas id="myChart"></canvas>
-				</div>
-
-				<div class="buttons" ></div>
-					<p>
-						<button id="randomizeData">Randomize Data</button>
-						<button id="addDataset">Add Dataset</button>
-						<button id="removeDataset">Remove Dataset</button>
-						<button id="addData">Add Data</button>
-					</p>
-				</div>
-					
-
-				<div class="card__spinner"></div>
-
-				<div class="share__container">
-					<button class="button" id="button">Тык!</button>
-				</div>
-			</div>
-		</div>
 
 		<!-- JS Files  -->
 		<script>var exports = {};</script>
 
-		<script type="module" src="./js/chart.js"></script>
+
 		<script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/min/moment.min.js"></script>
-		<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
-		<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-streaming@1.9.0"></script>
+
+		<script src="https://cdn.plot.ly/plotly-2.11.1.min.js"></script>
 		
 		
 	</body>
