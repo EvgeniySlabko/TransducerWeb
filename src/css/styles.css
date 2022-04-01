@@ -28,7 +28,7 @@
 .btn-group button {
 	margin-top: 50px;
 	background-color: #04AA6D; /* Green background */
-	border: 1px solid green; /* Green border */
+	border: 1px solid rgb(19, 163, 19); /* Green border */
 	color: white; /* White text */
 	padding: 10px 24px; /* Some padding */
 	cursor: pointer; /* Pointer/hand icon */
@@ -69,7 +69,8 @@
 	height: 100%;
 	align-self: center;
 	text-align:left; 
-	display:table;
+	display: table;
+	
 	
 }
 

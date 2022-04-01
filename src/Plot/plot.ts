@@ -1,6 +1,9 @@
 
 import * as Plotly from 'plotly.js/lib/core';
-import { PlotLayout, PlotTrace } from './Components';
+import { Data } from 'plotly.js/lib/core';
+import { createConfig, createLayout, PlotTrace } from './Components';
+import { createTrace } from './PlotComponentFactory';
+
 
 export class Plot{
 
@@ -17,64 +20,10 @@ export class Plot{
 
     public async DrawPlot()
     {
-        var trace1 = {
-            x: [],
-            y: [],
-            yaxis: 'y',
-            name: 'yaxis1 data',
-            type: 'scatter',
-            publicname: "Trace1",
-            zeroline: true,
 
-          };
-          
-          var trace2 = {
-            x: [],
-            y: [],
-            name: 'yaxis2 data',
-            yaxis: 'y2',
-            type: 'scatter',
-            publicname: "Trace2",
-            zeroline: false,
-          };
+          var data : Data[] = [createTrace(0), createTrace(1), createTrace(2)];
 
-          var trace3 = {
-            x: [],
-            y: [],
-            name: 'yaxis3 data',
-            yaxis: 'y3',
-            type: 'scatter',
-            publicname: "Trace3",
-            zeroline: false,
-          };
-          
-          
-          var data : any = [trace1, trace2, trace3];
-
-        var plot = await Plotly.newPlot(this.element, <any>data, new PlotLayout(), {
-            /*
-            toImageButtonOptions: {
-                format: 'svg', // one of png, svg, jpeg, webp
-                filename: 'custom_image',
-                height: 500,
-                width: 700,
-                scale: 1 // Multiply title/legend/axis/canvas sizes by this factor
-              },
-              */
-            //modeBarButtonsToRemove: ['pan2d','select2d','lasso2d','resetScale2d','zoomOut2d'],
-            responsive: true,
-            scrollZoom: true,
-            //mode: 'lines+markers',
-            autosizable: true,
-            displayModeBar: true,
-            //showLink: true,
-            plotlyServerURL: "https://chart-studio.plotly.com",
-            linkText: 'Редактор графика',
-            showEditInChartStudio: true,
-            displaylogo: false,
-            
-            //doubleClickDelay: 1000,
-        });
+        var plot = await Plotly.newPlot(this.element, data, createLayout(), createConfig());
     }
 
     public async AddData(data: any, traceId: number) : Promise<void>

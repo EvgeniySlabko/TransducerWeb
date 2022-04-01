@@ -1,11 +1,11 @@
 require('./css/styles.css');
 require('./plot');
 import {connectSerial, SerialWorker} from "./serial"
-import {Sensor} from "./sensor"
+import {dataEventArgs, Sensor} from "./Sensor/sensor"
 import SerialBufferedWorker from "./serialBuffer";
 
 import {Plot} from "./Plot/plot";
-import {PlotTrace} from "./Plot/Components";
+
 //import * as Plotly from 'plotly.js';
 
 var plot: Plot;
@@ -77,13 +77,13 @@ document.getElementById('button')?.addEventListener('click', async () => {
 
 function SubscribeSensor(sensor: Sensor)
 {
-  sensor.onTmp.sub(async (value: number)  => 
+  sensor.onTmp.sub(async (args: dataEventArgs)  => 
   {
     var time = new Date();
 
     var update = {
-    x:  [[time]],
-    y: [[value]]
+    x:  [[args.time]],
+    y: [[args.data]]
     }
 
     plot.AddData(update, 0);
@@ -92,13 +92,13 @@ function SubscribeSensor(sensor: Sensor)
   });
   
 
-  sensor.onSpeed.sub(async (value: number)  => 
+  sensor.onSpeed.sub(async (args: dataEventArgs)  => 
   {
     var time = new Date();
 
     var update = {
-    x:  [[time]],
-    y: [[value]]
+    x:  [[args.time]],
+    y: [[args.data]]
     }
 
     plot.AddData(update, 1);
@@ -109,31 +109,40 @@ function SubscribeSensor(sensor: Sensor)
 
   sensor.onError.sub(async () =>{
     var time = new Date();
+    /*
     var update = {
-      x:  [[time]],
+      x:  [[]],
       y: [[undefined]]
       }
-
+*/
      // await plot.AddData(update, 2);
   });
 
-  sensor.onData.sub(async (value: number)  => 
-        {
-          var time = new Date();
+  sensor.onData.sub(async (args: dataEventArgs)  => 
+  {
+    var time = new Date();
 
-					var update = {
-					x:  [[time]],
-					y: [[value]]
-					}
+    var update = {
+    x:  [[args.time]],
+    y: [[args.data]]
+    }
 
-          plot.AddData(update, 2);
-         
-          //plot.AddData(update, traceId2);
-					//Plotly.extendTraces('gd', update, [0])
+    plot.AddData(update, 2);
     
-        });
+    //plot.AddData(update, traceId2);
+    //Plotly.extendTraces('gd', update, [0])
+
+  });
 }
 
+
+
+document.getElementById('Sync')?.addEventListener('click', async () => {
+  if (sensor != null)
+  {
+    sensor.SynchronizeCurrentTime();
+  }
+});
 
     document.getElementById('Stop')?.addEventListener('click', async () => {
       if (sensor != null)

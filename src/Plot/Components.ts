@@ -1,4 +1,5 @@
-import { AxisName, DataTitle, Font, Layout, LayoutAxis, Color, Padding, PlotData, TypedArray, Datum } from "plotly.js/index";
+import { AxisName, DataTitle, Font, Layout, LayoutAxis, Color, Padding, PlotData, TypedArray, Datum, Config } from "plotly.js/index";
+import * as Factory from "./PlotComponentFactory";
 export class PlotTrace implements Partial<PlotData>
 {
     public constructor(yAxis: string, xAxis: string)
@@ -29,103 +30,46 @@ export class PlotTrace implements Partial<PlotData>
         | 'gauge+number+delta'
         | 'gauge+delta' = 'lines';
 
-    //type = 'scatter';
+
     yaxis: string;
     xaxies: string;
     public type: any = 'scatter';
-    //marker: any =
-    //{
-     //    size: 12
-   // };
 }
 
-export class PlotLayout //implements Partial<Layout> 
+export function createLayout() : Partial<Layout> 
 {
-    title:  | string | Partial<{
-          text: string;
-          font: Partial<Font>;
-          xref: 'container' | 'paper';
-          yref: 'container' | 'paper';
-          x: number;
-          y: number;
-          xanchor: 'auto' | 'left' | 'center' | 'right';
-          yanchor: 'auto' | 'top' | 'middle' | 'bottom';
-            pad: Partial<Padding>}> = 'Transducer';
-
-    //font: Partial<Font> = new  axisFont();
-    autosize: boolean = true;
-    
-    showlegend: boolean = true;
-    xaxis : Partial<LayoutAxis> = new XAxis();
-    //xaxis2 : Partial<LayoutAxis> = new XAxis();
-    yaxis = new yAxis("free");
-    yaxis2 : any = {
-      title: 'yaxi title',
-      titlefont: {color: 'rgb(148, 103, 189)'},
-      tickfont: {color: 'rgb(148, 103, 189)'},
-      anchor: 'x',
-      overlaying: 'y',
-      side: 'left',
-  
-      };
-    yaxis3: any = {
-      title: 'yaxi tfdsfitle',
-      titlefont: {color: 'rgb(3, 103, 189)'},
-      tickfont: {color: 'rgb(3, 103, 189)'},
-      anchor: 'x',
-      overlaying: 'y',
-      side: 'left',
-  
-      };
-      /*
-    yaxis3: any = {
-        title: 'yaxis2 title',
-        titlefont: {color: 'rgb(12, 103, 189)'},
-        tickfont: {color: 'rgb(244, 103, 189)'},
-        overlaying: 'y3',
-        side: 'left'
-      }; 
-    yaxis4: Partial<yAxis> = new yAxis(); 
-    yaxis5: Partial<yAxis> = new yAxis(); 
-    yaxis6: Partial<yAxis> = new yAxis(); 
-    yaxis7: Partial<yAxis> = new yAxis(); 
-    yaxis8: Partial<yAxis> = new yAxis(); 
-    yaxis9: Partial<yAxis> = new yAxis(); 
-*/
+  return {
+      title: 'Transducer',
+      autosize: true,
+      showlegend: true,
+      xaxis: Factory.createXAxes(),
+      yaxis: Factory.createFirstYAxes(),
+      yaxis2: Factory.createYAxes(),
+      yaxis3: Factory.createYAxes(),
+      yaxis4:  Factory.createYAxes(),
+      yaxis5:  Factory.createYAxes(),
+      yaxis6:  Factory.createYAxes(),
+      yaxis7: Factory.createYAxes(),
+      yaxis8: Factory.createYAxes(),
+      yaxis9:  Factory.createYAxes(),
+      
+  } as Partial<Layout> ;
 }
 
-export class yAxis implements Partial<LayoutAxis>
-{
-    public constructor(overlaying: 'free' | AxisName = 'y')
-    {
-      this.overlaying = overlaying;
-    }
-    //static axisIndex: number = 0;
-    anchor: 'free' | AxisName = 'x';
-    side: 'top' | 'bottom' | 'left' | 'right' | 'clockwise' | 'counterclockwise' = 'left';
-    title: string | Partial<DataTitle> = 'yaxis title';
-    titlefont: Partial<Font> = {color: '#d62728'};
-    tickfont: Partial<Font> = {color: '#d62728'};
-    overlaying: 'free' | AxisName;
-    //constraintoward: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom' = "left";
+export function createConfig(): Partial<Config> {
+return {
+      responsive: true,
+      //scrollZoom: true,
+      //mode: 'lines+markers',
+      //autosizable: true,
+      displayModeBar: true,
+      plotlyServerURL: "https://chart-studio.plotly.com",
+      linkText: 'Редактор графика',
+      showEditInChartStudio: true,
+      displaylogo: false,
+      //editable: true,
+                      
+      } as Partial<Config>;
 }
 
-export class XAxis implements Partial<LayoutAxis>
-{
 
-    autorange: boolean = false;
-    zeroline: boolean = true
-    showline: boolean = true;
-    layer: 'above traces' | 'below traces' = 'below traces';
-        
-    //fixedrange : boolean = false;
-}
-/*
-
-export class axisFont implements Partial<Font>
-{
-    family: string = "Arial, sans-serif";
-
-    size: number = 13;
-    color: Color = Math.floor(Math.random());
-}*/
