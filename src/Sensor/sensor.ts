@@ -1,49 +1,16 @@
-import { SignalDispatcher, SimpleEventDispatcher } from "strongly-typed-events";
+import * as Defs from './SensorDefinitions'; 
+import { SimpleEventDispatcher } from "strongly-typed-events";
 import SerialBufferedWorker from "../serialBuffer";
-
-const READ_HOLDING_REGISTERS = 3 // чтение значений из нескольких регистров хранения;
-const READ_INPUT_REGISTERS = 4 // чтение значений из нескольких регистров ввода;
-const FORCE_SINGLE_COIL = 5; // запись значения одного флага;
-const PRESET_SINGLE_REGISTER = 6// запись значения в один регистр хранения;
-const PRESET_MULTIPLE_REGISTERS = 16 // запись значений в несколько регистров хранения;
-const REPORT_SLAVE_ID = 17 // чтение служебной информации об устройстве.
-
-
-//Адресв
-const START_MEASURING = 0
-const START_STREAMING = 1
-const TIME_LOW = 3
-const TIME_HIGH = 4
-
-const COIL_ON_VALUE = 0x00FF;
-const COIL_OFF_VALUE = 0x0000;
-
-
-enum packageType {
-    torque = 100,
-    speed = 101,
-    temperatue = 102,
-    msg = 103,
-};
-
-export type dataEventArgs =
-{
-    data: number,
-    time: number
-}
-
-//declare function handler(data: Uint8Array): void;
-
-//const packageType = { torque: 100, speed: 101, temperatue: 102, msg: 103 };
-
+import { SensorSK } from './SensorInfoParser/sensorInfoParser';
+import { sorterDes } from '../../dist/bundle';
 
 export class Sensor {
 
     public serialWorker: SerialBufferedWorker;
 
-    private _onTorqueData = new SimpleEventDispatcher<dataEventArgs>();
-    private _onSpeedData = new SimpleEventDispatcher<dataEventArgs>();
-    private _onTmpData = new SimpleEventDispatcher<dataEventArgs>();
+    private _onTorqueData = new SimpleEventDispatcher<Defs.dataEventArgs>();
+    private _onSpeedData = new SimpleEventDispatcher<Defs.dataEventArgs>();
+    private _onTmpData = new SimpleEventDispatcher<Defs.dataEventArgs>();
     private _onReadingError = new SimpleEventDispatcher();
 
     private baseTime: number | undefined = undefined;
@@ -67,26 +34,42 @@ export class Sensor {
 
     public async SynchronizeCurrentTime()
     {
-        this.commandHandlers.set(READ_HOLDING_REGISTERS, (data: number[]) => 
+        this.commandHandlers.set(Defs.READ_HOLDING_REGISTERS, (data: number[]) => 
         {
             this.baseTime = this.CalculateTime(data[0], data[1]);
         });
 
-        this.SendMessage(READ_HOLDING_REGISTERS, TIME_LOW, 2);
+        this.SendMessage(Defs.READ_HOLDING_REGISTERS, Defs.TIME_LOW, 2);
     }
 
-    
+    public async GetSkInfo(handler: (message: SensorSK) => void) : Promise<void>
+    {
+        await this.SendMessage(Defs.REPORT_SLAVE_ID, 0, 0);
+        this.commandHandlers.set(Defs.REPORT_SLAVE_ID, (data: Uint8Array) => {
+            var idView = new DataView(data.buffer);
+            var sk = new SensorSK()
+            Object.assign(sk.ID, data.slice(0, 3));
+            sk.Temperature = idView.getUint8(3);
+            sk.Korrect = idView.getUint8(4);
+            sk.NumberOfTeeth = idView.getInt16(5, true);
+            sk.MaxSpeed = idView.getUint8(7);
+            Object.assign(sk.DateOfVerification, data.slice(8, 3));
+            Object.assign(sk.SKInfo, data.slice(11));
+            handler(sk);
+        });
+    }
+
     public async StartReading() {
         if (!this.serialWorker.baseWorker.IsConnected)
             await this.serialWorker.baseWorker.OpenPort();
 
-        this.SendMessage(FORCE_SINGLE_COIL, START_MEASURING, COIL_ON_VALUE);
-
-        //var response1 = await this.serialWorker.Read(5);
+        this.SendMessage(Defs.FORCE_SINGLE_COIL, Defs.START_MEASURING, Defs.COIL_ON_VALUE);
+        
+        
     }
 
     public async StartStreaming() {
-        await this.SendMessage(FORCE_SINGLE_COIL, START_STREAMING, COIL_ON_VALUE);
+        await this.SendMessage(Defs.FORCE_SINGLE_COIL, Defs.START_STREAMING, Defs.COIL_ON_VALUE);
         this.processbytes();
     }
 
@@ -112,25 +95,30 @@ export class Sensor {
 
     private async ProcessDecoderCommands(command: number): Promise<boolean> {
         switch (command) {
-            case 5:
+            case Defs.FORCE_SINGLE_COIL:
                 {
                     var data = await this.serialWorker.Read(4);
                     //console.log("Process (5): ", data);
                     return true;
                 }
-            case READ_HOLDING_REGISTERS:
-                var bytes = (await this.serialWorker.Read(1))[0];
-                var data = await this.serialWorker.Read(bytes);
-                var view = new DataView(data.buffer);
-                var registers : number[] = [];
-                for (let i = 0; i < data.length/2; i++) {
-                    registers.push(view.getUint16(i * 2, true));
+            case Defs.READ_HOLDING_REGISTERS:
+                {
+                    var bytes = (await this.serialWorker.Read(1))[0];
+                    var data = await this.serialWorker.Read(bytes);
+                    var view = new DataView(data.buffer);
+                    var registers : number[] = [];
+                    for (let i = 0; i < data.length/2; i++) {
+                        registers.push(view.getUint16(i * 2, true));
+                    }
+                    
+                    this.DispatchCommandListener(Defs.READ_HOLDING_REGISTERS, registers);
+                    return true;
                 }
-                
-                this.DispatchCommandListener(READ_HOLDING_REGISTERS, registers);
-
-                return true;
-
+                case Defs.REPORT_SLAVE_ID:
+                {
+                    var idBytes = await this.serialWorker.Read(60);
+                    this.DispatchCommandListener(Defs.REPORT_SLAVE_ID, idBytes);
+                }
             default:
                 return false;
         }
@@ -160,7 +148,7 @@ export class Sensor {
         timeH = view.getUint16(4, true);
         var calculatedTime = this.CalculateTime(timeL, timeH);
         switch (command) {
-            case packageType.torque:
+            case Defs.packageType.torque:
                 var datatorque = await this.serialWorker.Read(size - 4);
                 //console.log("seize", size);
                 //console.log("Process T: ", datatorque);
@@ -169,7 +157,7 @@ export class Sensor {
                 var dataCount = torqView.getUint8(1);
                 for (let i = 0; i < dataCount; i++) {
                     var value = torqView.getFloat32((2 + (i * 4)), true);
-                    var dataArgs: dataEventArgs = {
+                    var dataArgs: Defs.dataEventArgs = {
                         data: value,
                         time: calculatedTime + (i * 0.16),
                     }
@@ -178,12 +166,12 @@ export class Sensor {
 
                 break;
 
-            case packageType.speed:
+            case Defs.packageType.speed:
                 var dataSpeed = await this.serialWorker.Read(size - 4);
                 //console.log("Process S: ", dataSpeed);
                 const speedView = new DataView(dataSpeed.buffer);
                 var speed = speedView.getFloat32(0, true);
-                var dataArgs: dataEventArgs = {
+                var dataArgs: Defs.dataEventArgs = {
                     data: speed,
                     time: calculatedTime,
                 }
@@ -191,18 +179,18 @@ export class Sensor {
                 //console.log(dataSpeed);
                 break;
 
-            case packageType.temperatue:
+            case Defs.packageType.temperatue:
                 var dataTemperature = await this.serialWorker.Read(size - 4);
                 const temperatureView = new DataView(dataTemperature.buffer);
                 var temperature = temperatureView.getFloat32(0, true);
-                var tmpArgs: dataEventArgs = {
+                var tmpArgs: Defs.dataEventArgs = {
                     data: temperature,
                     time: calculatedTime,
                 }
                 if (this.baseTime != undefined) this._onTmpData.dispatch(tmpArgs);
                 break;
 
-            case packageType.msg:
+            case Defs.packageType.msg:
                 var dataMsg = await this.serialWorker.Read(size - 4);
                 const msgView = new DataView(dataMsg.buffer);
                 var msgCount = msgView.getUint16(0, true);
@@ -226,8 +214,7 @@ export class Sensor {
     }
 
     public async StopStreaming() {
-        await this.SendMessage(FORCE_SINGLE_COIL, START_STREAMING, COIL_OFF_VALUE);
-        //var response2 = await this.serialWorker.Read(5);
+        await this.SendMessage(Defs.FORCE_SINGLE_COIL, Defs.START_STREAMING, Defs.COIL_OFF_VALUE);
     }
 
     private async SendMessage(command: number, addres: number, value: number) {
@@ -245,56 +232,3 @@ export class Sensor {
 
 export default Sensor;
 
-/*
-
-export var torqueBuff = new exports.RingBuffer(100);
-
-var intervalId;
-
-export async function InitDevice(getBytes, writeBytes)
-{
-    SendMessage(writeBytes, FORCE_SINGLE_COIL, START_MEASURING, COIL_ON_VALUE);
-    var response1 = await getBytes(5);
-    SendMessage(writeBytes, FORCE_SINGLE_COIL, START_STREAMING, COIL_ON_VALUE);
-    var response2 = await getBytes(5);
-
-    intervalId =  setInterval(() => processbytes(processbytes), 10);
-    getter = getBytes;
-    await processbytes();
-}
-
-
-
-export function SendMessage(command, addres, value)
-{
-    var reqest = new Uint8Array(5);
-    reqest[0] = command;
-    reqest[1] = addres & 0xFF;
-    reqest[2] = (addres >> 8) & 0xFF;
-    reqest[3] = value & 0xFF;
-    reqest[4] = (value >> 8) & 0xFF;
-
-    writeBytes(reqest);
-    //console.log("reqest: ", reqest);
-}
-
-function isValidResponse(req, res)
-{
-    if (req.length != res.length)
-    {
-        return false;
-    }
-
-    for (var i = 0; i < res.length; i++)
-    {
-        if (req[i] != res[i])
-        {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-//const state = { torque: 100, speed: 101, temperature: 102, message: 103, none: -1};
-*/

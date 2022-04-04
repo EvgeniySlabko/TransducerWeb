@@ -1,4 +1,4 @@
-class SensorManager
+export class SensorManager
 {
     
 }
