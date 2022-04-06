@@ -1,8 +1,15 @@
 import * as Defs from './SensorDefinitions'; 
 import { SimpleEventDispatcher } from "strongly-typed-events";
-import SerialBufferedWorker from "../serialBuffer";
-import { SensorSK } from './SensorInfoParser/sensorInfoParser';
-import { sorterDes } from '../../dist/bundle';
+import SerialBufferedWorker from "../IO/serialBuffer";
+import { SensorSK } from './SensorDefinitions';
+
+
+class Command
+{
+    public command: number = 0;
+    public address: number | undefined = 0;
+    public value: number | undefined = 0;
+}
 
 export class Sensor {
 
@@ -11,12 +18,13 @@ export class Sensor {
     private _onTorqueData = new SimpleEventDispatcher<Defs.dataEventArgs>();
     private _onSpeedData = new SimpleEventDispatcher<Defs.dataEventArgs>();
     private _onTmpData = new SimpleEventDispatcher<Defs.dataEventArgs>();
-    private _onReadingError = new SimpleEventDispatcher();
+    private _onReadingError = new SimpleEventDispatcher<string>();
 
     private baseTime: number | undefined = undefined;
 
     private commandHandlers : Map<number, any> = new Map();
 
+    private timeout: number = 10000; // Максимальное время ожидание ответа на командуж
     constructor(worker: SerialBufferedWorker) {
         if (worker == null) throw "Worker is null";
         this.serialWorker = worker;
@@ -34,46 +42,78 @@ export class Sensor {
 
     public async SynchronizeCurrentTime()
     {
-        this.commandHandlers.set(Defs.READ_HOLDING_REGISTERS, (data: number[]) => 
+        var command = new Command();
+        command.command = Defs.READ_HOLDING_REGISTERS;
+        command.address = Defs.TIME_LOW;
+        command.value = 2;
+        var regs = await this.SendRequesAndWaitResponse<number[]>(command);
+        if (regs.length != 2)
         {
-            this.baseTime = this.CalculateTime(data[0], data[1]);
-        });
-
-        this.SendMessage(Defs.READ_HOLDING_REGISTERS, Defs.TIME_LOW, 2);
+            throw "Invalid time synchronize";
+        }
+        
+        this.baseTime = this.CalculateTime(regs[0], regs[1]);
     }
 
-    public async GetSkInfo(handler: (message: SensorSK) => void) : Promise<void>
+    public async GetHoldingRegisters() : Promise<Defs.HoldingRegisters>
     {
-        await this.SendMessage(Defs.REPORT_SLAVE_ID, 0, 0);
-        this.commandHandlers.set(Defs.REPORT_SLAVE_ID, (data: Uint8Array) => {
-            var idView = new DataView(data.buffer);
-            var sk = new SensorSK()
-            Object.assign(sk.ID, data.slice(0, 3));
-            sk.Temperature = idView.getUint8(3);
-            sk.Korrect = idView.getUint8(4);
-            sk.NumberOfTeeth = idView.getInt16(5, true);
-            sk.MaxSpeed = idView.getUint8(7);
-            Object.assign(sk.DateOfVerification, data.slice(8, 3));
-            Object.assign(sk.SKInfo, data.slice(11));
-            handler(sk);
-        });
+        //await this.SendMessage(Defs.READ_HOLDING_REGISTERS, 0, 5);
+        var command = new Command();
+        command.command = Defs.READ_HOLDING_REGISTERS;
+        command.address = 0;
+        command.value = 5;
+        var registers = await this.SendRequesAndWaitResponse<number[]>(command);
+        var holdingRegisters = new Defs.HoldingRegisters(registers);
+        return holdingRegisters;
     }
 
-    public async StartReading() {
+    public async GetSkInfo() : Promise<SensorSK>
+    {
+        var command = new Command();
+        command.command = Defs.REPORT_SLAVE_ID;
+        command.address = undefined;
+        command.value = undefined;
+
+        var data = await this.SendRequesAndWaitResponse<Uint8Array>(command);
+
+        var idView = new DataView(data.buffer);
+        var sk = new SensorSK()
+        Object.assign(sk.ID, data.slice(0, 3));
+        sk.Temperature = idView.getUint8(3);
+        sk.Korrect = idView.getUint8(4);
+        sk.NumberOfTeeth = idView.getInt16(5, true);
+        sk.MaxSpeed = idView.getUint8(7);
+        Object.assign(sk.DateOfVerification, data.slice(8, 3));
+        Object.assign(sk.SKInfo, data.slice(11));
+
+        return sk;
+    }
+
+    public async Initialize() {
         if (!this.serialWorker.baseWorker.IsConnected)
             await this.serialWorker.baseWorker.OpenPort();
 
-        this.SendMessage(Defs.FORCE_SINGLE_COIL, Defs.START_MEASURING, Defs.COIL_ON_VALUE);
-        
-        
+        this.processbytes();
+
+        var command = new Command();
+        command.command = Defs.FORCE_SINGLE_COIL;
+        command.address = Defs.START_MEASURING;
+        command.value = Defs.COIL_ON_VALUE;
+        await this.SendRequesAndWaitResponse<void>(command);
     }
 
     public async StartStreaming() {
-        await this.SendMessage(Defs.FORCE_SINGLE_COIL, Defs.START_STREAMING, Defs.COIL_ON_VALUE);
-        this.processbytes();
+        var command = new Command();
+        command.command = Defs.FORCE_SINGLE_COIL;
+        command.address = Defs.START_STREAMING;
+        command.value = Defs.COIL_ON_VALUE;
+
+        await this.SendRequesAndWaitResponse<void>(command);
     }
 
     private async processbytes() {
+        try
+        {
         var nextIteration = async () => await this.processbytes();
         let dataType: number | undefined = (await this.serialWorker.Read(1))[0];
 
@@ -91,14 +131,45 @@ export class Sensor {
         }
 
         nextIteration();
+        }
+        catch{
+            console.log("re11d");
+        }
     }
 
+    // Регистрируем обработчи. Задаем время ожидания команды. Если ответ пришел в течении этого времени - resolve
+    private async SendRequesAndWaitResponse<T>(command: Command) : Promise<T>
+    {
+        return new Promise<T>(async (resolve, reject) => {
+    
+            this.commandHandlers.set(command.command, (data: T) =>
+            {
+                clearInterval(interval);
+                resolve(data);
+            });
+
+            var interval = setTimeout(function() {
+                reject("Timeout Error. There is no data from sensor!");
+                }, this.timeout);
+
+            try
+            {
+                await this.SendMessage(command);
+            }
+            catch(ex)
+            {
+                clearInterval(interval);
+                reject(ex);
+            }
+        });
+    }
+    
     private async ProcessDecoderCommands(command: number): Promise<boolean> {
         switch (command) {
             case Defs.FORCE_SINGLE_COIL:
                 {
                     var data = await this.serialWorker.Read(4);
-                    //console.log("Process (5): ", data);
+                    this.DispatchCommandListener(Defs.FORCE_SINGLE_COIL, data);
                     return true;
                 }
             case Defs.READ_HOLDING_REGISTERS:
@@ -118,6 +189,7 @@ export class Sensor {
                 {
                     var idBytes = await this.serialWorker.Read(60);
                     this.DispatchCommandListener(Defs.REPORT_SLAVE_ID, idBytes);
+                    return true;
                 }
             default:
                 return false;
@@ -214,18 +286,34 @@ export class Sensor {
     }
 
     public async StopStreaming() {
-        await this.SendMessage(Defs.FORCE_SINGLE_COIL, Defs.START_STREAMING, Defs.COIL_OFF_VALUE);
+        var command = new Command();
+        command.command = Defs.FORCE_SINGLE_COIL;
+        command.address = Defs.START_STREAMING;
+        command.value = Defs.COIL_OFF_VALUE;
+
+        await this.SendRequesAndWaitResponse<void>(command);
     }
 
-    private async SendMessage(command: number, addres: number, value: number) {
-        var reqest = new Uint8Array(5);
-        reqest[0] = command;
-        reqest[1] = addres & 0xFF;
-        reqest[2] = (addres >> 8) & 0xFF;
-        reqest[3] = value & 0xFF;
-        reqest[4] = (value >> 8) & 0xFF;
+    private async SendMessage(command: Command) {
 
-        await this.serialWorker.Write(reqest);
+        //var length : number = 1 + ((command.address == undefined && command.value == undefined) ? 0 : 4);
+
+        if (command.address != undefined && command.value != undefined)
+        {
+            let reqest: Uint8Array = new Uint8Array(5);
+            reqest[0] = command.command;
+            reqest[1] = (command.address & 0xFF);
+            reqest[2] = ((command.address >> 8) & 0xFF);
+            reqest[3] = (command.value & 0xFF);
+            reqest[4] = ((command.value >> 8) & 0xFF);
+            await this.serialWorker.Write(reqest);
+        }
+        else
+        {
+            let reqest: Uint8Array = new Uint8Array(1);
+            reqest[0] = command.command;
+            await this.serialWorker.Write(reqest);
+        }
         //console.log("reqest: ", reqest);
     }
 }

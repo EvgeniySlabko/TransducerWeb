@@ -3,36 +3,31 @@ import { Plot } from "../Plot/plot";
 import { ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
 import { dataEventArgs } from "../Sensor/SensorDefinitions";
 import { ChannelStyle } from "./ChannelStyle";
-
+import { ISensorDataProvider } from "./SensorDataProveder/ISensorDataProvider";
+import { CreateDefaultStyle } from "./ChannelStyleFactory";
 
 // Содержит информацию для отображения на графике. подает данные на график
 export class Channel
 {
-    private source: ISimpleEvent<dataEventArgs>;
+    private dataSourse: ISensorDataProvider;
     private style: ChannelStyle;
     private traceId: number | undefined;
     private isAttached: boolean = false;
     // Фабричный метод создание каналов из Sensor
 
-    public constructor (dataSourse: ISimpleEvent<dataEventArgs>, style: ChannelStyle)
+    public constructor (dataSourse: ISensorDataProvider, style: ChannelStyle = CreateDefaultStyle())
     {
         this.style = style;
-        this.source = dataSourse;
+        this.dataSourse = dataSourse;
+    }
+    public get Style()
+    {
+        return this.style;
     }
 
-    public async AttachToPlot(plot: Plot)
-    {
-        if (plot == null) throw "plot is null";
-        this.traceId = await plot.AddTrace();
-        await plot.SetTraceStyle(this.traceId, this.style);
-        this.source.sub((data: dataEventArgs) =>{
-            var update = {
-                x:  [[data.time]],
-                y: [[data.data]]
-                }
-            
-        plot.AddData(update, <number>this.traceId);
-        this.isAttached = true;
-        })
-    }
+    public get onData() {return this.dataSourse.onData.asEvent();}
+
+    public get onMessage() {return this.dataSourse.onMessage.asEvent();}
+
+    public get onError() {return this.dataSourse.onClose.asEvent();}
 }

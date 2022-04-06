@@ -1,10 +1,11 @@
 
 import * as Plotly from 'plotly.js/lib/core';
 import { Data, LayoutAxis, PlotData, YAxisName } from 'plotly.js/lib/core';
+import { Channel } from '../Channel/Channel';
 import { ChannelStyle } from '../Channel/ChannelStyle';
 import { createConfig, createLayout } from './Components';
 import { createTrace } from './PlotComponentFactory';
-
+import $ = require("jquery");
 
 export class Plot{
 
@@ -12,9 +13,9 @@ export class Plot{
     private currentTraceId: number = 0;
     // id трека, индекс массива данных, (индекс трека, имя оси y)
     private id_index_map : Map<number, [number, string]> = new Map();
-    private yAxies: YAxisName[] =['y4' , 'y5' , 'y6' , 'y7' , 'y8' , 'y9', 'y' ,'y2' , 'y3'] //доступные оси;
+    private yAxies: YAxisName[] = ['y4' , 'y5' , 'y6' , 'y7' , 'y8' , 'y9' , 'y3', 'y2', 'y'] //доступные оси;
 
-
+    
     private loyout: Partial<Plotly.Layout>;
     private config: Partial<Plotly.Config>;
     
@@ -31,28 +32,20 @@ export class Plot{
         await Plotly.newPlot(this.element, [], this.loyout, this.config);
     }
 
-    public async AddData(data: any, traceId: number) : Promise<void>
+    public async AddData(data: Partial<PlotData>, traceId: number) : Promise<void>
     {
         let index = this.id_index_map.get(traceId);
         if (index == undefined)
             throw "invalid id";
 
-        await Plotly.extendTraces(this.element, data, [traceId]);
-    }
-
-    public async AddTrace() : Promise<number>
-    {
-        var axename= this.yAxies.pop();
-        if (axename == undefined) throw "Нелязя больше добавить";
-
-        var index = this.id_index_map.size;
-        var id =  this.currentTraceId++;
-
-        var trace = createTrace(axename);
-        
-        await Plotly.addTraces(this.element, trace);
-        this.id_index_map.set(id, [index, axename]);
-        return id;
+        try
+        {
+            await Plotly.extendTraces(this.element, data, [index[0]]);
+        }
+        catch(ex)
+        {
+            console.log(ex);
+        }
     }
 
     //задает параметры отображения для трека.
@@ -76,7 +69,40 @@ export class Plot{
         }
     }
 
-    private getAxwById(name: YAxisName) : Partial<Plotly.LayoutAxis>
+    public async AttachChannel(channel: Channel) : Promise<number>
+    {
+        var axename= this.yAxies.pop();
+        if (axename == undefined) throw "Нелязя больше добавить";
+
+        var style = channel.Style;
+        var index = this.id_index_map.size;
+        var id =  this.currentTraceId++;
+
+        var axe = this.getAxeById(axename);
+        this.Copy(style.yAxeStyle, axe);
+        //axe = style.yAxeStyle;
+
+        var trace = createTrace(axename);
+        this.Copy(style.traceStyle, trace);
+
+        await Plotly.addTraces(this.element, trace);
+        this.id_index_map.set(id, [index, axename]);
+
+        //$(this.element).
+        //<>this.loyout.xaxis?.domain
+
+        var newId = id;
+        channel.onData.sub(async (data) => 
+        {
+            await this.AddData({
+                x: [[data.time]],
+                y: [[data.data]]
+            } as Partial<PlotData>, newId)
+        });
+        return id;
+    }
+
+    private getAxeById(name: YAxisName) : Partial<Plotly.LayoutAxis>
     {
         switch(name)
         {
@@ -91,7 +117,26 @@ export class Plot{
             case "y9": return <Plotly.LayoutAxis>this.loyout.yaxis9;
             default: throw "invalid yaxie name";
         }
-        
     }
+
+    private Copy(from: any, to: any)
+    {
+        //var names = Object.getOwnPropertyNames(to);
+
+        for (var key in to) {
+            if (from.hasOwnProperty(key))
+            {
+                if (typeof from[key] === 'object')
+                {
+                    this.Copy(from, to);
+                }
+                else{
+                    to[key] = from[key]
+                }
+            }
+        }
+    }
+
+    
 }
 

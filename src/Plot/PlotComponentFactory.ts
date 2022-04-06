@@ -1,4 +1,5 @@
-import { LayoutAxis, PlotData, RangeSelector, YAxisName } from "plotly.js/lib/core";
+import { LayoutAxis, OhclData, PlotData, PlotMarker, RangeSelector, YAxisName } from "plotly.js/lib/core";
+import { getFromId } from "../../dist/bundle";
 import { ColorsDefs } from '../Common/Colors';
 
 export function createFirstYAxes(): Partial<LayoutAxis> {
@@ -13,24 +14,33 @@ export function createYAxes(): Partial<LayoutAxis> {
         //title: Math.random().toString(),
         
         ticks: 'outside',
-        
-        
+        visible: true,
         tickwidth: 2,
-        tickcolor: ColorsDefs.blue,
-        linewidth: 3,
-        domain: [1, 2],
-        anchor: 'x',
+        tickcolor: ColorsDefs.black,
+        linewidth: 2,
+        color: ColorsDefs.black,
+        
+        //anchor: 'free',
         overlaying: 'y',
         side: 'left',
         //fixedrange: true,
-        autorange: true,
+        //autorange: true,
         //automargin: true,
-        color: ColorsDefs.red,
         zeroline: false,
         //rangeselector: createYAutoSelector(),
         //position: 200 * Math.random(),
-        position: (pos++) / 4,
-        rotation: 100,
+        position:  (pos++) * 0.02 ,
+        
+        //gridcolor: ColorsDefs.black,
+        //gridwidth: 1,
+        rangeslider: 
+        {
+          bgcolor: ColorsDefs.black,
+          bordercolor: ColorsDefs.black,
+          borderwidth: 2,
+        }
+
+        //rotation: 100,
         } as Partial<LayoutAxis>;
   }
 
@@ -38,45 +48,48 @@ export function createYAxes(): Partial<LayoutAxis> {
     return {
       title: title,
       autorange: true,
-      zeroline:  true,
+      automargin: false,
+      zeroline:  false,
       showline:  true,
       layer:  'below traces',
       visible: true,
       anchor: 'x',
       rangemode: 'nonnegative',
       color: ColorsDefs.green,
-
-      //domain: [1, 2],
-      linewidth: 3,
+      constrain: "domain",
+      domain: [0.06, 1],
+      linecolor: ColorsDefs.black,
+      linewidth: 2,
       ticks: 'outside',
       tickwidth: 2,
-      tickcolor: ColorsDefs.blue,
+      tickcolor: ColorsDefs.black,
             //tickcolor: colors.blue
         } as Partial<LayoutAxis>;
   }
 
-  export function createTrace(axeName: YAxisName): Partial<PlotData> {
+  export function createTrace(axeName: YAxisName): Partial<OhclData> {
     return {
       x: [],
       y: [],
       yaxis: axeName,
       name: 'yaxis' + axeName,
-      type: 'scatter',
+      //type: 'scatter',
       publicname: "Trace1",
       side: 'left',
-      line:
+      marker:
       {
-        color: ColorsDefs.red,
-        shape: "hvh",
-        dash: "dot",
-        smoothing: 4,
-        width: 5
-      },
+        //color: ColorsDefs.black,
+        size: 0,
+      } as Partial<PlotMarker>,
+      line: {
+        width: 3,
+        dash: 'solid',
+        },
       
       zeroline: false,  
-      automargin: true,
+      automargin: false,
                     
-    } as Partial<PlotData>;
+    } as Partial<OhclData>;
   }
 
 

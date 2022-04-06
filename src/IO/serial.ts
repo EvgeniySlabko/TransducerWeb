@@ -88,7 +88,7 @@ export class SerialWorker
     await this.writer.write(bytes);
   }
 
-  public async Close(): Promise<void>{
+  public async Close() : Promise<void>{
     this.reader?.releaseLock();
     this.writer?.releaseLock();
     //await this.port.writable?.cancel();
@@ -96,7 +96,3 @@ export class SerialWorker
   }
 }
 
-export async function connectSerial() : Promise<SerialWorker> {    
-    let port = await navigator.serial.requestPort();
-    return new SerialWorker(port);
-}
