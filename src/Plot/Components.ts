@@ -46,6 +46,7 @@ export function createLayout() : Partial<Layout>
           size: 25,
 
       },
+      
       title: 'Transducer',
       autosize: true,
       showlegend: true,

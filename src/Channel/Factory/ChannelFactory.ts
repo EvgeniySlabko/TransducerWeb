@@ -1,19 +1,19 @@
 import Sensor from "../../Sensor/sensor";
 import { FullSensorInfo } from "../../Sensor/SensorDefinitions";
 import { Channel } from "../Channel";
-import { CreateDefaultStyle, CreateSpeedStyle, CreatetemperatureStyle } from "../ChannelStyleFactory";
+import { CreateDefaultStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "../ChannelStyleFactory";
 import { CreateMainValueDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "./DataSourceFactory";
 
 function CreateMainValueChannel(sensor: Sensor, fullSensorInfo: FullSensorInfo) : Channel
 {
     var dataSource = CreateMainValueDataSource(sensor);
-    return new Channel(dataSource, CreateDefaultStyle());
+    return new Channel(dataSource, CreateTorqueStyle(fullSensorInfo));
 }
 
 function CreateSpeedChannel(sensor: Sensor, fullSensorInfo: FullSensorInfo) : Channel
 {
     var dataSource = CreateSpeedValueDataSource(sensor);
-    return new Channel(dataSource, CreateSpeedStyle());
+    return new Channel(dataSource, CreateSpeedStyle(fullSensorInfo));
 }
 
 function CreateTemperatureChannel(sensor: Sensor, fullSensorInfo: FullSensorInfo) : Channel

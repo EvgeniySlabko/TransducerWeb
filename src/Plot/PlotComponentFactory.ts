@@ -1,4 +1,4 @@
-import { LayoutAxis, OhclData, PlotData, PlotMarker, RangeSelector, YAxisName } from "plotly.js/lib/core";
+import { LayoutAxis, OhclData, PlotData, PlotMarker, RangeSelector, ScatterData, YAxisName } from "plotly.js/lib/core";
 import { getFromId } from "../../dist/bundle";
 import { ColorsDefs } from '../Common/Colors';
 
@@ -13,13 +13,20 @@ export function createYAxes(): Partial<LayoutAxis> {
     return {
         //title: Math.random().toString(),
         
-        ticks: 'outside',
+        //ticks: 'outside',
         visible: true,
-        tickwidth: 2,
+        //tickwidth: 2,
+        //linewidth: 2,
+        //dtick: 10,
+
         tickcolor: ColorsDefs.black,
-        linewidth: 2,
         color: ColorsDefs.black,
-        
+        autorange: true,
+
+        //tickmode: 'auto',
+        tickangle: 90,
+        //autorange: true,
+
         //anchor: 'free',
         overlaying: 'y',
         side: 'left',
@@ -33,6 +40,8 @@ export function createYAxes(): Partial<LayoutAxis> {
         
         //gridcolor: ColorsDefs.black,
         //gridwidth: 1,
+        //nticks: 20,
+        //scaleratio: 0.1,
         rangeslider: 
         {
           bgcolor: ColorsDefs.black,
@@ -46,8 +55,15 @@ export function createYAxes(): Partial<LayoutAxis> {
 
   export function createXAxes(title: string = "X_Axe"): Partial<LayoutAxis> {
     return {
+      //rangeselector: {},
+      //rangeslider: 
+      //{
+        //visible: true, 
+      //},
+      type: "linear",
       title: title,
       autorange: true,
+      range: [0, 100],
       automargin: false,
       zeroline:  false,
       showline:  true,
@@ -67,7 +83,7 @@ export function createYAxes(): Partial<LayoutAxis> {
         } as Partial<LayoutAxis>;
   }
 
-  export function createTrace(axeName: YAxisName): Partial<OhclData> {
+  export function createTrace(axeName: YAxisName): Partial<ScatterData> {
     return {
       x: [],
       y: [],
@@ -76,20 +92,29 @@ export function createYAxes(): Partial<LayoutAxis> {
       //type: 'scatter',
       publicname: "Trace1",
       side: 'left',
+      mode: 'lines',
+      type: 'scattergl',
       marker:
       {
         //color: ColorsDefs.black,
         size: 0,
       } as Partial<PlotMarker>,
       line: {
+        range: [0, 0],
+        tickmode: 'auto',
         width: 3,
         dash: 'solid',
+        color: ColorsDefs.black,
+        //shape: "spline",
+        simplify: false,
+        smoothing: 1,
         },
+        
       
       zeroline: false,  
       automargin: false,
                     
-    } as Partial<OhclData>;
+    } as Partial<ScatterData>;
   }
 
 

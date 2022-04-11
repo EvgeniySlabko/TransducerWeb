@@ -7,7 +7,7 @@ class SerialBufferedWorker
     private size: number;
     
     public baseWorker: SerialWorker;
-    constructor(worker: SerialWorker, size : number = 1024)
+    constructor(worker: SerialWorker, size : number = 10000)
     {
         if (worker == null) throw "Worker is null!";
         if (size <= 0) throw "Buffer size les thean 0!";

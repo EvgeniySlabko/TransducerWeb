@@ -33,7 +33,7 @@ export class SerialWorker
     await this.port.open(
     {
         baudRate: 115200,
-        bufferSize : 2048,
+        bufferSize : 50000,
         dataBits : 8,
         flowControl :"none",
         parity : "none",

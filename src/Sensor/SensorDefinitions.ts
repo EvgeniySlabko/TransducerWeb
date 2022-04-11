@@ -1,3 +1,5 @@
+import { type } from "jquery";
+
 export const READ_HOLDING_REGISTERS = 3 // чтение значений из нескольких регистров хранения;
 export const READ_INPUT_REGISTERS = 4 // чтение значений из нескольких регистров ввода;
 export const FORCE_SINGLE_COIL = 5; // запись значения одного флага;
@@ -25,8 +27,8 @@ export enum packageType {
 
 export type dataEventArgs =
 {
-    data: number,
-    time: number
+    data: number[],
+    time: number[]
 }
 
 export class HoldingRegisters

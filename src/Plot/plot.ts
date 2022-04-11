@@ -30,6 +30,7 @@ export class Plot{
     {
         //var data : Data[] = [createTrace(0), createTrace(1), createTrace(2)];
         await Plotly.newPlot(this.element, [], this.loyout, this.config);
+        //await Plotly.react(this.element, [], this.loyout, this.config);
     }
 
     public async AddData(data: Partial<PlotData>, traceId: number) : Promise<void>
@@ -40,6 +41,9 @@ export class Plot{
 
         try
         {
+            //(<any>this.element).data[0].x.push(data.x![0]);
+            //(<any>this.element).data[0].y.push(data.y![0]);
+            //Plotly.restyle(this.element, data, [0]);
             await Plotly.extendTraces(this.element, data, [index[0]]);
         }
         catch(ex)
@@ -95,8 +99,8 @@ export class Plot{
         channel.onData.sub(async (data) => 
         {
             await this.AddData({
-                x: [[data.time]],
-                y: [[data.data]]
+                x: [data.time],
+                y: [data.data]
             } as Partial<PlotData>, newId)
         });
         return id;
@@ -128,7 +132,7 @@ export class Plot{
             {
                 if (typeof from[key] === 'object')
                 {
-                    this.Copy(from, to);
+                    this.Copy(from[key], to[key]);
                 }
                 else{
                     to[key] = from[key]

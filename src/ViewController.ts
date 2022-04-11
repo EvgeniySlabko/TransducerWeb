@@ -25,7 +25,7 @@ export class ViewController
         var channels = CreateAllSensorChannels(sensor, fullSensorInfo);
         await sensor.SynchronizeCurrentTime();
         await sensor.StartStreaming();
-        for (let i = 0; i < channels.length; i++) {
+        for (let i = 0; i < 1; i++) {
             const id = await this.plot.AttachChannel(channels[i]);   
         }
     }

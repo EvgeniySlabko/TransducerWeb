@@ -3,7 +3,6 @@ import { SimpleEventDispatcher } from "strongly-typed-events";
 import SerialBufferedWorker from "../IO/serialBuffer";
 import { SensorSK } from './SensorDefinitions';
 
-
 class Command
 {
     public command: number = 0;
@@ -29,6 +28,11 @@ export class Sensor {
         if (worker == null) throw "Worker is null";
         this.serialWorker = worker;
     }
+
+    values: number[] =  new Array(5100);
+    times: number[] = new Array(5100);
+    count: number = 0;
+    
 
     //Events 
     public get onData() {return this._onTorqueData.asEvent();}
@@ -132,8 +136,8 @@ export class Sensor {
 
         nextIteration();
         }
-        catch{
-            console.log("re11d");
+        catch (ex){
+            console.log(ex);
         }
     }
 
@@ -227,14 +231,34 @@ export class Sensor {
                 const torqView = new DataView(datatorque.buffer);
                 var bufferCount = torqView.getUint8(0);
                 var dataCount = torqView.getUint8(1);
+                
                 for (let i = 0; i < dataCount; i++) {
                     var value = torqView.getFloat32((2 + (i * 4)), true);
-                    var dataArgs: Defs.dataEventArgs = {
-                        data: value,
-                        time: calculatedTime + (i * 0.16),
-                    }
-                    if (this.baseTime != undefined) this._onTorqueData.dispatch(dataArgs);
+
+                    this.values[this.count] = value;
+                    this.times[this.count] = calculatedTime + (i * 0.0002);
+                    this.count++
                 }
+                
+                if (this.count >= 5000)
+                {
+                    
+                    if (this.baseTime != undefined)
+                    {
+                        var valuesCopy = this.values.slice(0, this.count);
+                        var timesCopy = this.times.slice(0, this.count)
+                        
+                        var dataArgs: Defs.dataEventArgs = {
+                            data: this.values,
+                            time: this.times
+                        }
+                        
+                        this._onTorqueData.dispatch(dataArgs);
+                    }
+
+                    this.count = 0;
+                }
+                
 
                 break;
 
@@ -244,8 +268,8 @@ export class Sensor {
                 const speedView = new DataView(dataSpeed.buffer);
                 var speed = speedView.getFloat32(0, true);
                 var dataArgs: Defs.dataEventArgs = {
-                    data: speed,
-                    time: calculatedTime,
+                    data: [speed],
+                    time: [calculatedTime],
                 }
                 if (this.baseTime != undefined) this._onSpeedData.dispatch(dataArgs);
                 //console.log(dataSpeed);
@@ -256,8 +280,8 @@ export class Sensor {
                 const temperatureView = new DataView(dataTemperature.buffer);
                 var temperature = temperatureView.getFloat32(0, true);
                 var tmpArgs: Defs.dataEventArgs = {
-                    data: temperature,
-                    time: calculatedTime,
+                    data: [temperature],
+                    time: [calculatedTime],
                 }
                 if (this.baseTime != undefined) this._onTmpData.dispatch(tmpArgs);
                 break;

@@ -9,7 +9,7 @@ export async function CreateSerialSensor(port: SerialPort)
     
     if (serialWorker != null)
     {
-        let bufferedWorker = new SerialBufferedWorker(serialWorker, 100);
+        let bufferedWorker = new SerialBufferedWorker(serialWorker, 10000);
         var sensor = new Sensor(bufferedWorker);
         return sensor;
     }
