@@ -1,10 +1,7 @@
-import { Color } from "plotly.js/lib/core";
-import { Plot } from "../Plot/plot";
-import { ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
-import { dataEventArgs } from "../Sensor/SensorDefinitions";
-import { ChannelStyle } from "./ChannelStyle";
-import { ISensorDataProvider } from "./SensorDataProveder/ISensorDataProvider";
-import { CreateDefaultStyle } from "./ChannelStyleFactory";
+import { ChannelStyle } from "../ChannelStyle/ChannelStyle";
+import { ISensorDataProvider } from "../SensorDataProveder/ISensorDataProvider";
+import { CreateDefaultStyle } from "../ChannelStyle/ChannelStyleFactory";
+//import { CreateDefaultStyle } from "./ChannelStyleFactory";
 
 // Содержит информацию для отображения на графике. подает данные на график
 export class Channel

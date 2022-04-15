@@ -10,7 +10,6 @@ document.getElementById('open')?.addEventListener('click', async () => {
         let port = await navigator.serial.requestPort();    //запрашиваем выбор порта у пользователя
         var sensor = await CreateSerialSensor(port);
         await viewController.AddSensor(sensor);
-        await viewController.SyncTime();
     }
     catch(error)
     {
@@ -22,12 +21,14 @@ document.getElementById('open')?.addEventListener('click', async () => {
     }
   });
  
-  
+
   document.getElementById('Sync')?.addEventListener('click', async () => {
       viewController?.StartStreaming();
   });
 
   
-  
+  document.getElementById('removeDataset')?.addEventListener('click', async () => {
+    viewController.hide();
+});
     
   

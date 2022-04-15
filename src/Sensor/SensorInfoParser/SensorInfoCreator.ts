@@ -6,11 +6,13 @@ import * as SDefs from "../SensorDefinitions";
 export async function GetFullSensorInfo(sensor: Sensor) : Promise<SDefs.FullSensorInfo>
 {
     if (sensor == null) throw "Sensor is null.";
-    var holdingRegisters = await sensor.GetHoldingRegisters();
     var sk = await sensor.GetSkInfo();
-    //var sk = await sensor.GetSkInfo();
+    await sensor.GetHoldingRegisters();
+    await sensor.GetHoldingRegisters();
+    await sensor.GetHoldingRegisters();
+    await sensor.GetHoldingRegisters();
+    var holdingRegisters = await sensor.GetHoldingRegisters();
     var fullSensorInfo = await CreateFullSensorInfo(sk, holdingRegisters);
-
     return fullSensorInfo;
 }
 

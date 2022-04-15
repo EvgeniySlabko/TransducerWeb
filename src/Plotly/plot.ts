@@ -1,11 +1,11 @@
 
 import * as Plotly from 'plotly.js/lib/core';
 import { Data, LayoutAxis, PlotData, YAxisName } from 'plotly.js/lib/core';
-import { Channel } from '../Channel/Channel';
-import { ChannelStyle } from '../Channel/ChannelStyle';
+import { ChannelStyle } from '../Channel/ChannelStyle/ChannelStyle';
 import { createConfig, createLayout } from './Components';
 import { createTrace } from './PlotComponentFactory';
 import $ = require("jquery");
+import { Channel } from '../Channel/Channel/Channel';
 
 export class Plot{
 
@@ -29,8 +29,9 @@ export class Plot{
     public async DrawPlot()
     {
         //var data : Data[] = [createTrace(0), createTrace(1), createTrace(2)];
-        await Plotly.newPlot(this.element, [], this.loyout, this.config);
+        //await Plotly.newPlot(this.element, [], this.loyout, this.config);
         //await Plotly.react(this.element, [], this.loyout, this.config);
+        Plotly.react(this.element, [], this.loyout, this.config);
     }
 
     public async AddData(data: Partial<PlotData>, traceId: number) : Promise<void>
@@ -41,10 +42,13 @@ export class Plot{
 
         try
         {
-            //(<any>this.element).data[0].x.push(data.x![0]);
-            //(<any>this.element).data[0].y.push(data.y![0]);
-            //Plotly.restyle(this.element, data, [0]);
+            
+            var x1 = (<any>data.x)[0][0];
+            this.loyout.xaxis!.range = [x1 - 1, x1 + 1];
+            
+            //await Plotly.relayout(this.element, this.loyout);
             await Plotly.extendTraces(this.element, data, [index[0]]);
+
         }
         catch(ex)
         {
@@ -83,11 +87,11 @@ export class Plot{
         var id =  this.currentTraceId++;
 
         var axe = this.getAxeById(axename);
-        this.Copy(style.yAxeStyle, axe);
+        //this.Copy(style.yAxeStyle, axe);
         //axe = style.yAxeStyle;
 
         var trace = createTrace(axename);
-        this.Copy(style.traceStyle, trace);
+        //this.Copy(style.traceStyle, trace);
 
         await Plotly.addTraces(this.element, trace);
         this.id_index_map.set(id, [index, axename]);

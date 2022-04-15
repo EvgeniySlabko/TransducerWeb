@@ -8,11 +8,22 @@ export const PRESET_MULTIPLE_REGISTERS = 16 // запись значений в 
 export const REPORT_SLAVE_ID = 17 // чтение служебной информации об устройстве.
 
 
-//Адресв
+//Адреса флагов
 export const START_MEASURING = 0
 export const START_STREAMING = 1
+export const EXTERNAL_SPEED_SENSOR = 2;
+export const IS_FLOAT_USING = 3;
+export const RESERVED = 4;
+export const COMPUTER_CONNECTION = 5;
+
+
+//Адреса хранения
+export const FLAGS = 0
+export const AVG_RATIO = 1
+export const SPEED_PERIOD = 2
 export const TIME_LOW = 3
 export const TIME_HIGH = 4
+
 
 export const COIL_ON_VALUE = 0x00FF;
 export const COIL_OFF_VALUE = 0x0000;

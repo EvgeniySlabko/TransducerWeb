@@ -1,4 +1,3 @@
-
 import { ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
 import { dataEventArgs } from "../../Sensor/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";

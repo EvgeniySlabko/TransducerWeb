@@ -1,11 +1,11 @@
 import Sensor from "../../Sensor/sensor";
-import { Channel } from "../Channel";
-import { CreateDefaultStyle } from "../ChannelStyleFactory";
-import { ISensorDataProvider } from "../SensorDataProveder/ISensorDataProvider";
-import { SensorDataProvider } from "../SensorDataProveder/SensorDataProvider";
+import { BufferedSensorDataProvider } from "./BufferedDataProvider";
+import { ISensorDataProvider } from "./ISensorDataProvider";
+import { SensorDataProvider } from "./SensorDataProvider";
+
 export function CreateMainValueDataSource(sensor: Sensor) : ISensorDataProvider
 {
-    return new SensorDataProvider(sensor.onData, null, sensor.onError);
+    return new BufferedSensorDataProvider(sensor.onData, null, sensor.onError, 100);
 }
 
 export function CreateSpeedValueDataSource(sensor: Sensor) : SensorDataProvider

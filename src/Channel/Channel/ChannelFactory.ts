@@ -1,8 +1,8 @@
 import Sensor from "../../Sensor/sensor";
 import { FullSensorInfo } from "../../Sensor/SensorDefinitions";
-import { Channel } from "../Channel";
-import { CreateDefaultStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "../ChannelStyleFactory";
-import { CreateMainValueDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "./DataSourceFactory";
+import { Channel } from "./Channel";
+import { CreateDefaultStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "../ChannelStyle/ChannelStyleFactory";
+import { CreateMainValueDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "../SensorDataProveder/DataSourceFactory";
 
 function CreateMainValueChannel(sensor: Sensor, fullSensorInfo: FullSensorInfo) : Channel
 {
@@ -25,7 +25,8 @@ function CreateTemperatureChannel(sensor: Sensor, fullSensorInfo: FullSensorInfo
 export function CreateAllSensorChannels(sensor: Sensor, fullSensorInfo: FullSensorInfo) : Channel[]
 {
     var channels: Channel[] = []; 
-    channels.push(CreateMainValueChannel(sensor, fullSensorInfo));
+    var ch = CreateMainValueChannel(sensor, fullSensorInfo);
+    channels.push(ch);
     channels.push(CreateTemperatureChannel(sensor, fullSensorInfo));
     if (fullSensorInfo.isRotative != 0)
     {
