@@ -1,5 +1,5 @@
 import { LayoutAxis, OhclData, PlotData, PlotMarker, RangeSelector, YAxisName } from "plotly.js/lib/core";
-import { getFromId } from "../../dist/bundle";
+//import { getFromId } from "../../dist/bundle";
 import { ColorsDefs } from '../Common/Colors';
 
 export function createFirstYAxes(): Partial<LayoutAxis> {

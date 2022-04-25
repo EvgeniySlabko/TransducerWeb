@@ -1,4 +1,5 @@
-import { viewController } from "./main";
+
+import { myUplot, viewController } from "./main";
 import { CreateSerialSensor } from "./SensorFactory";
 
 
@@ -13,7 +14,7 @@ document.getElementById('open')?.addEventListener('click', async () => {
     }
     catch(error)
     {
-      console.log(error)
+      console.log(error)  
     }
     finally
     {
@@ -21,14 +22,22 @@ document.getElementById('open')?.addEventListener('click', async () => {
     }
   });
  
-
   document.getElementById('Sync')?.addEventListener('click', async () => {
-      viewController?.StartStreaming();
+    viewController?.rrr();
   });
 
+  document.getElementById('Start')?.addEventListener('click', async () => {
+    viewController?.StartAll();
+  });
   
+  document.getElementById('Stop')?.addEventListener('click', async () => {
+    viewController?.StopAll();
+  });
+
   document.getElementById('removeDataset')?.addEventListener('click', async () => {
     viewController.hide();
 });
-    
+document.getElementById('Center')?.addEventListener('click', async () => {
+  myUplot.SetDefault();
+});
   

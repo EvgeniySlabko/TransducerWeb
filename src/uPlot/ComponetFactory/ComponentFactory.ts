@@ -8,6 +8,9 @@ export function GetSeries(scale: string)
         label: "Undefined",
         stroke: "red",
         scale: scale,
+        //points: {show: false},
+        show: true,
+        //spanGaps :true,
     } as uPlot.Series
 }
 
@@ -48,7 +51,7 @@ const opts = {
     pxAlign: true,
     scales: {
         x: {
-            auto: true,
+            auto: false,
             time: false,
             //range: [0, 30],
         },
@@ -67,7 +70,9 @@ const opts = {
         GetAxe("y3", 3),
     ],
     series: [
-        {}, // x series
+        {
+            auto: false,
+        }, // x series
     ],
     } as uPlot.Options;
 

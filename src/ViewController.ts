@@ -7,7 +7,7 @@ import { SensorWorker } from "./Sensor/SensorWorker";
 // принимает датчики. Отвечает за их подачу на форму
 export class ViewController
 {
-    private sensors: Sensor[] = [];
+    private sensors: [Sensor, SensorWorker][] = [];
     private pannel = document.getElementsByClassName('sensorPannel'); // заменить на pannel controller
     
     private plot: MyUPlot;
@@ -19,7 +19,7 @@ export class ViewController
 
     public hide()
     {
-        this.plot.hide();   
+        
     }
 
     public async AddSensor(sensor: Sensor)
@@ -27,13 +27,15 @@ export class ViewController
         if (sensor == null) throw "Sensor null";
 
         var sensorWOrker = new SensorWorker(sensor);
+        this.sensors.push([sensor, sensorWOrker]);
+
         await sensorWOrker.Initialize();
         await sensorWOrker.SetT0();
         
         var fullSensorInfo = await GetFullSensorInfo(sensor);
         var channels = CreateAllSensorChannels(sensor, fullSensorInfo);
-
-        for (let i = 0; i < 1; i++) {
+        //this.plot.xAxisMapper = (val: number) => val * 62500;
+        for (let i = 0; i < 3; i++) {
             const id = await this.plot.AttachChannel(channels[i]);   
         }
 
@@ -41,11 +43,19 @@ export class ViewController
         await sensorWOrker.StartStreaming();
     }
 
-    public async StartStreaming()
+    public StartAll()
     {
-        for (let i = 0; i < this.sensors.length; i++) {
-            this.sensors[i].StartStreaming();
-        }
+        this.sensors.forEach(e => e[1].StartStreaming());
+    }
+
+    public StopAll()
+    {
+        this.sensors.forEach(e => e[1].StopStreaming());
+    }
+
+    public rrr()
+    {
+        //this.plot.rrr();
     }
 
     public async CloseAll()

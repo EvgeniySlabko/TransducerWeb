@@ -3321,7 +3321,7 @@ var uPlot = (function () {
 
 				self.data = data.slice();
 				data0 = data[0];
-				dataLen = data0.length;
+				dataLen = 2000;
 
 				if (xScaleDistr == 2)
 					data[0] = data0.map((v, i) => i);

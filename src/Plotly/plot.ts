@@ -14,7 +14,6 @@ export class Plot{
     // id трека, индекс массива данных, (индекс трека, имя оси y)
     private id_index_map : Map<number, [number, string]> = new Map();
     private yAxies: YAxisName[] = ['y4' , 'y5' , 'y6' , 'y7' , 'y8' , 'y9' , 'y3', 'y2', 'y'] //доступные оси;
-
     
     private loyout: Partial<Plotly.Layout>;
     private config: Partial<Plotly.Config>;
@@ -143,8 +142,6 @@ export class Plot{
                 }
             }
         }
-    }
-
-    
+    }   
 }
 

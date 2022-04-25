@@ -26,7 +26,7 @@ export class Sensor {
     }
 
     private currentAvgFactor: number | undefined;
-    private dt: number | undefined; // тиков часов декодера между 2 соседними измерениями осню изм вел.
+    private dt: number | undefined = 12.5 // тиков часов декодера между 2 соседними измерениями осню изм вел.
 
     //Events 
     public get onData() {return this._onTorqueData.asEvent();}
@@ -36,6 +36,12 @@ export class Sensor {
     public get onSpeed() {return this._onSpeedData.asEvent();}
 
     public get onError() {return this._onReadingError.asEvent();}
+
+    public async Initialize() {
+        if (!this.serialWorker.baseWorker.IsConnected)
+            await this.serialWorker.baseWorker.OpenPort();
+            this.processbytes();       
+    }
 
     public async GetHoldingRegisters() : Promise<Defs.HoldingRegisters>
     {
@@ -63,14 +69,14 @@ export class Sensor {
 
         return sk;
     }
-
-    public async Initialize() {
-        if (!this.serialWorker.baseWorker.IsConnected)
-            await this.serialWorker.baseWorker.OpenPort();
-            this.processbytes();
-            
-    }
-
+    
+    public  StartStreaming = async () => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL, Defs.START_STREAMING, Defs.COIL_ON_VALUE));
+    public SetAvgRatio = async (avgRatio: number) => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.PRESET_SINGLE_REGISTER, Defs.AVG_RATIO, 1));  
+    public SetComputerConnection = async () => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_ON_VALUE));
+    public UnsetComputerConnection = async () => this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_OFF_VALUE));
+    public  SetT0 = async () => await this.SendRequesAndWaitResponse<void>(new MultipleCommand(Defs.PRESET_MULTIPLE_REGISTERS, 3, new Uint8Array([0, 0])));
+    public CloseConnection = async () => await this.serialWorker.Close(); 
+    
     public async StopMeasuring(waitAnswer: boolean = true)
     {
         var command = new DefaultCommand(Defs.FORCE_SINGLE_COIL, Defs.START_MEASURING, Defs.COIL_OFF_VALUE);
@@ -78,7 +84,6 @@ export class Sensor {
             await this.SendRequesAndWaitResponse<void>(command);
         else
             await this.SendMessage(command);
-        
     }
 
     public async StartMeasuring(waitAnswer: boolean = true)
@@ -90,70 +95,14 @@ export class Sensor {
             await this.SendMessage(command);
     }
 
-    public async StartStreaming() {
-
-        //await this.SetAvgRatio(1); //
-        var holdingRegisters = await this.GetHoldingRegisters();
-        this.currentAvgFactor = holdingRegisters.AverageRatio;
-        this.dt = this.decoderClock / this.baseFrequency;
-        var command = new DefaultCommand(Defs.FORCE_SINGLE_COIL, Defs.START_STREAMING, Defs.COIL_ON_VALUE);
-        await this.SendRequesAndWaitResponse<void>(command);
+    public async StopStreaming(waitAnswer: boolean = true) {
+        var command = new DefaultCommand(Defs.FORCE_SINGLE_COIL, Defs.START_STREAMING, Defs.COIL_OFF_VALUE);
+        if (waitAnswer)
+            await this.SendRequesAndWaitResponse<void>(command);
+        else
+            this.SendMessage(command);
     }
 
-    private async processbytes() {
-        var dataType: number ;
-    try
-    {
-        var nextIteration = async () => await this.processbytes();
-        dataType = (await this.serialWorker.Read(1))[0];
-
-        //console.log("Type : ", dataType);
-        var handeled = await this.ProcessDecoderCommands(dataType);
-        if (handeled) {
-            nextIteration();
-            return;
-        }
-
-        handeled = await this.ProcessStreamingData(dataType);
-        if (!handeled) {
-            await this.ReadingErrorHandler();
-            return;
-        }
-
-        nextIteration();
-        }
-        catch (ex){
-            console.log(ex);
-        }
-    }
-
-    // Регистрируем обработчи. Задаем время ожидания команды. Если ответ пришел в течении этого времени - resolve
-    private async SendRequesAndWaitResponse<T>(command: ISensorCommand) : Promise<T>
-    {
-        return new Promise<T>(async (resolve, reject) => {
-    
-            this.commandHandlers.set(command.Command, (data: T) =>
-            {
-                clearInterval(interval);
-                resolve(data);
-            });
-
-            var interval = setTimeout(function() {
-                reject("Timeout Error. There is no data from sensor!");
-                }, this.timeout);
-
-            try
-            {
-                await this.SendMessage(command);
-            }
-            catch(ex)
-            {
-                clearInterval(interval);
-                reject(ex);
-            }
-        });
-    }
-    
     private async ProcessDecoderCommands(command: number): Promise<boolean> {
         switch (command) {
             case Defs.FORCE_SINGLE_COIL:
@@ -208,62 +157,33 @@ export class Sensor {
         }
     }
 
-    private DispatchCommandListener(command: number, data: any) : void
+    private async SendRequesAndWaitResponse<T>(command: ISensorCommand) : Promise<T>
     {
-        if (this.commandHandlers.has(command))
-        {
-            this.commandHandlers.get(command)(data);
-            this.commandHandlers.delete(command);
-        }
-    }
-
-    private CalculateTime(timeL: number, timeH: number):  number
-    {
-        return (timeL + (timeH << 16));
-    }
-
-    private async SetAvgRatio(avgRatio: number)
-    {
-        var command = new DefaultCommand(Defs.PRESET_SINGLE_REGISTER, Defs.AVG_RATIO, 1);
-        await this.SendRequesAndWaitResponse<void>(command);
-    }
-
-    public async SetComputerConnection()
-    {
-        var command = new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_ON_VALUE);
-        await this.SendRequesAndWaitResponse<void>(command);
-    }
-
-    public async UnsetComputerConnection()
-    {
-        var command = new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_OFF_VALUE);
-        await this.SendRequesAndWaitResponse<void>(command);
-    }
+        return new Promise<T>(async (resolve, reject) => {
     
-    public async ReadingErrorHandler() {
-        console.log('Sensor reading error');
-        await this.serialWorker.Close();
-        this._onReadingError.dispatch("Reading error");
-    }
-    
-    public async SetT0()
-    {
-        var command = new MultipleCommand(Defs.PRESET_MULTIPLE_REGISTERS, 3, new Uint8Array([0, 0]));
-        await this.SendRequesAndWaitResponse<void>(command);
+            this.commandHandlers.set(command.Command, (data: T) =>
+            {
+                clearInterval(interval);
+                resolve(data);
+            });
+
+            var interval = setTimeout(function() {
+                reject("Timeout Error. There is no data from sensor!");
+                }, this.timeout);
+
+                try
+                {
+                    await this.SendMessage(command);
+                }
+                catch(ex)
+                {
+                clearInterval(interval);
+                reject(ex);
+            }
+        });
     }
 
-    public async CloseConnection()
-    {
-        await this.serialWorker.Close();
-    }
-
-    public async StopStreaming(waitAnswer: boolean = true) {
-        var command = new DefaultCommand(Defs.FORCE_SINGLE_COIL, Defs.START_STREAMING, Defs.COIL_OFF_VALUE);
-        if (waitAnswer)
-            await this.SendRequesAndWaitResponse<void>(command);
-        else
-            this.SendMessage(command);
-    }
+    private CalculateTime = (timeL: number, timeH: number):  number => (timeL + (timeH << 16));
 
     private async ProcessStreamingData(command: number): Promise<boolean> {
     
@@ -274,7 +194,7 @@ export class Sensor {
             size = view.getUint16(0, true);
             timeL = view.getUint16(2, true);
             timeH = view.getUint16(4, true);
-            var calculatedTime = this.CalculateTime(timeL, timeH);
+            var calculatedTime = this.CalculateTime(timeL, timeH) / 62500;
             switch (command) {
                 case Defs.packageType.torque:
                     var datatorque = await this.serialWorker.Read(size - 4);
@@ -293,36 +213,11 @@ export class Sensor {
                         var value = torqView.getFloat32((2 + (i * 4)), true);
                         
                         torqArgs.data[i] = value;
-                        torqArgs.time[i] = calculatedTime + (i * 12.5);
+                        torqArgs.time[i] = calculatedTime + (i * 0.0002);
                     }
 
                     this._onTorqueData.dispatch(torqArgs);
 
-                    /*
-                    for (let i = 0; i < dataCount; i++) {
-                        var value = torqView.getFloat32((2 + (i * 4)), true);
-                        if (this.baseTime == undefined) continue;
-                        
-                        this.values[this.count] = value;
-                        this.times[this.count] = (calculatedTime - this.baseTime) + (i * 12.5);
-                        this.count++
-                    }
-                    
-                    if (this.count >= 500)
-                    {
-                        var valuesCopy = this.values.slice(0, this.count);
-                        var timesCopy = this.times.slice(0, this.count)
-                        
-                        var dataArgs: Defs.dataEventArgs = {
-                            data: valuesCopy,
-                            time: timesCopy
-                        }
-                        
-                        
-                        this.count = 0;
-                    }
-                    */
-                   
                     break;
     
                 case Defs.packageType.speed:
@@ -330,10 +225,9 @@ export class Sensor {
                     //console.log("Process S: ", dataSpeed);
                     const speedView = new DataView(dataSpeed.buffer);
                     var speed = speedView.getFloat32(0, true);
-                    if (this.baseTime == undefined) break;
                     var dataArgs: Defs.dataEventArgs = {
                         data: [speed],
-                        time: [(calculatedTime - this.baseTime)],
+                        time: [calculatedTime],
                     }
     
                     this._onSpeedData.dispatch(dataArgs);
@@ -344,10 +238,9 @@ export class Sensor {
                     var dataTemperature = await this.serialWorker.Read(size - 4);
                     const temperatureView = new DataView(dataTemperature.buffer);
                     var temperature = temperatureView.getFloat32(0, true);
-                    if (this.baseTime == undefined) break;
                     var tmpArgs: Defs.dataEventArgs = {
                         data: [temperature],
-                        time: [calculatedTime - this.baseTime],
+                        time: [calculatedTime],
                     }
     
                     this._onTmpData.dispatch(tmpArgs);
@@ -370,10 +263,52 @@ export class Sensor {
             return true;
     }
         
+    private async processbytes() {
+        var dataType: number ;
+    try
+    {
+        var nextIteration = async () => await this.processbytes();
+        dataType = (await this.serialWorker.Read(1))[0];
+
+        //console.log("Type : ", dataType);
+        var handeled = await this.ProcessDecoderCommands(dataType);
+        if (handeled) {
+            nextIteration();
+            return;
+        }
+
+        handeled = await this.ProcessStreamingData(dataType);
+        if (!handeled) {
+            await this.ReadingErrorHandler();
+            return;
+        }
+
+        nextIteration();
+        }
+        catch (ex){
+            console.log(ex);
+        }
+    }
+
+    private async ReadingErrorHandler() {
+        console.log('Sensor reading error');
+        await this.serialWorker.Close();
+        this._onReadingError.dispatch("Reading error");
+    }
+
     private async SendMessage(command: ISensorCommand) {
         var reqest = command.GetBytes();
         //console.log("reqest: ", reqest);
         await this.serialWorker.Write(reqest);     
+    }
+
+    private DispatchCommandListener(command: number, data: any) : void
+    {
+        if (this.commandHandlers.has(command))
+        {
+            this.commandHandlers.get(command)(data);
+            this.commandHandlers.delete(command);
+        }
     }
 }
 
