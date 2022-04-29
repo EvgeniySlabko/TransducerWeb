@@ -1,5 +1,5 @@
 import uPlot, { AlignedData, Axis, Scale } from "uplot";
-import { Channel } from "../Channel/Channel/Channel";
+import { Channel, ChannelDataArgs } from "../Channel/Channel/Channel";
 import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
 import { GetAxe, GetOptions, GetScale, GetSeries } from "./ComponetFactory/ComponentFactory";
 export class MyUPlot
@@ -15,13 +15,16 @@ export class MyUPlot
     new Array(250000),
   ];
   
-  private id_index_map : Map<number, [uPlot.Series]> = new Map();
+  private id_index_map : Map<Channel, number> = new Map();
   private element: HTMLElement;
   private options: uPlot.Options;
+  
+  private listening: boolean = false;
+  private isInit: boolean = false;
 
   
   private params =  {
-    gridTicks: 5000,     //делений графика в секунду.
+    gridTicks: 50,     //делений графика в секунду.
     gridDx: 0,          //
     screenSize: 5,              //
     streaming: true,
@@ -35,12 +38,12 @@ export class MyUPlot
     th: 0,
     t0: 0,
   }
-
+  
   constructor(element: HTMLElement)
   {
     this.Init();
-    this.options = this.getOptions();    
     this.element = element;
+    this.options = this.getOptions();    
     this.RebuidPlot();
     //this.plot = new uPlot(this.options, <AlignedData>this.datBuf, element);
     //this.SetScale(0, 3);
@@ -48,7 +51,7 @@ export class MyUPlot
     //this.plot.setData(<AlignedData>this.datBuf);
 
     window.addEventListener("resize", e => {
-      this.plot?.setSize(getSize());
+      this.plot?.setSize(this.getSize());
     });
 
     //var setCommonView = () => {
@@ -56,8 +59,85 @@ export class MyUPlot
     //  this.SetScale(0, this.params.sh + this.params.rightGap);
     //}
     //this.plot.root.querySelector(".over")?.addEventListener('dblclick', setCommonView);
-    this.SetScale(0, 3);
+    
     //this.plot.redraw()
+  }
+
+  public StartListening() 
+  {
+    this.Init();
+    this.RebuidPlot();
+    this.listening = true;
+  }
+
+  public StopListening()
+  {
+    this.listening = false;
+  }
+
+  public Reset()
+  {
+    this.isInit = false;
+    this.index = 1;
+    this.id_index_map.forEach((a, v) => {
+      v.onData.unsub(this.HandleData);
+    });
+
+    this.id_index_map.clear();
+    this.isInit = false;
+  }
+
+  public Clear()
+  {
+    this.Init();
+    this.SetScale(0, this.params.screenRollingGap);
+  }
+
+  public SetChannels(channels: Channel[])
+  {
+    if (this.isInit) throw "Already Init";
+    if (channels.length == 0) "There are no channels";
+
+    channels.forEach(c => {
+      c.onData.sub(this.HandleData);
+      var curIndex: number = this.index++; 
+      this.id_index_map.set(c, curIndex);
+
+      this.SetStyleFor(curIndex, c.Style);
+    })
+
+    this.isInit = true;
+  }
+
+  private HandleData = (channel: Channel, args: ChannelDataArgs) => 
+  {
+
+    if (this.listening) 
+    {
+      if (!this.id_index_map.has(channel))
+        throw "index not found";
+
+      var curIndex = <number>this.id_index_map.get(channel);
+
+      var lastTicksValue = args.data.time[args.data.time.length - 1];
+      var xIndex = this.tickToGridIndex(lastTicksValue);        //вычисляем индекс последнего значения данных
+
+      if (this.params.th < xIndex) {this.params.th = xIndex; this.params.sh = lastTicksValue;}
+
+      for (let k = 0; k < args.data.time.length; k++) //проставляем данные
+      {
+        var currentIndex = this.tickToGridIndex(args.data.time[k]);
+
+        this.datBuf[curIndex][currentIndex] = args.data.data[k];
+      }
+
+      //this.SetScale(0, 1000);
+      this.plot?.redraw();
+      this.ScaleHandler();
+    }
+    else{
+      console.log();
+    }
   }
 
   private wheelZoomPlugin(opts: any) {
@@ -122,7 +202,7 @@ export class MyUPlot
                 e.preventDefault();
 
                 let left1 = e.clientX;
-              //	let top1 = e.clientY;
+              	//let top1 = e.clientY;
 
                 let dx = xUnitsPerPx * (left1 - left0);
 
@@ -147,6 +227,16 @@ export class MyUPlot
             e.preventDefault();
             this.params.streaming = false;
 
+            xMin = u.scales.x.min;
+            xMax = this.params.sh + this.params.rightGap//u.scales.x.max;
+            yMin = u.scales.y1.min;
+            yMax = u.scales.y1.max;
+            xRange = xMax - xMin;
+            yRange = yMax - yMin;
+            if (xRange < 0.001) 
+              return; 
+            rect = over.getBoundingClientRect();
+
             let {left, top} = u.cursor;
 
             let leftPct = left/rect.width;
@@ -154,7 +244,8 @@ export class MyUPlot
             let xVal = u.posToVal(left, "x");
             let yVal = u.posToVal(top, "y1");
             let oxRange = u.scales.x.max - u.scales.x.min;
-            let oyRange = u.scales.y.max - u.scales.y.min;
+            let oyRange = u.scales.y.max - 
+            u.scales.y.min;
 
             let nxRange = e.deltaY < 0 ? oxRange * factor : oxRange / factor;
             let nxMin = xVal - leftPct * nxRange;
@@ -167,64 +258,10 @@ export class MyUPlot
             [nyMin, nyMax] = clamp(nyRange, nyMin, nyMax, yRange, yMin, yMax);
 
             this.SetScale(nxMin, nxMax);
-            /*
-            u.batch(() => {
-              u.setScale("x", {
-                min: nxMin,
-                max: nxMax,
-              });
-
-              u.setScale("y1", {
-                min: nyMin,
-                max: nyMax,
-              });
-
-            });
-            */
           });
         }
       }
     };
-  }
-
-  private SetScale(min: number, max: number){
-    this.plot?.setScale('x', {
-      min: min,
-      max: max,
-    });
-  }
-
-  public SetT0(t0: number) {this.params.t0 = t0}
-  public SetDefault()
-  {
-    this.SetScale(0, this.params.sh + 3);
-  }
-
-  public async AttachChannel(channel: Channel) : Promise<number>
-  {
-      var curIndex: number = this.index++; 
-      this.SetStyleFor(curIndex, channel.Style);
-
-      channel.onData.sub(async (data) => 
-      {
-         var lastTicksValue = data.time[data.time.length - 1];
-         var xIndex = this.tickToGridIndex(lastTicksValue);        //вычисляем индекс последнего значения данных
-
-         if (this.params.th < xIndex) {this.params.th = xIndex; this.params.sh = lastTicksValue;}
-
-         for (let k = 0; k < data.time.length; k++) //проставляем данные
-         {
-           var currentIndex = this.tickToGridIndex(data.time[k]);
-
-           this.datBuf[curIndex][currentIndex] = data.data[k];
-         }
-
-         //this.SetScale(0, 1000);
-         this.plot?.redraw();
-         this.ScaleHandler();
-      });
-
-      return curIndex;
   }
   
   private ScaleHandler()
@@ -238,6 +275,13 @@ export class MyUPlot
 
       this.SetScale(0, this.params.sh + this.params.rightGap);
     }
+  }
+  
+  private SetScale(min: number, max: number){
+    this.plot?.setScale('x', {
+      min: min,
+      max: max,
+    });
   }
 
   private SetStyleFor(index: number, style: ChannelStyle)
@@ -258,12 +302,12 @@ export class MyUPlot
     axis.stroke = style.color;
     axis.label = style.legendTitle;
     series.label = style.legendTitle;
-    //axis.grid!.show = style.grid;
+    axis.grid!.show = style.grid;
     //axis.grid!.stroke = style.color;
 
     axis.side = style.yAxeSide == "left" ? 1 : 3;
-    //axis.stroke = style.color;
-    //axis.show = true;
+    axis.stroke = style.color;
+    axis.show = true;
     this.RebuidPlot();
   }
   
@@ -271,13 +315,9 @@ export class MyUPlot
   {
     if (this.plot != null)
       this.plot.destroy();
-    //(<any>(this.options)).plugins[0] = this.wheelZoomPlugin({factor: 0.75});
     this.plot = new uPlot(this.options, <AlignedData>this.datBuf, this.element);
-    //(<any>(this.options)).plugins[0] = this.wheelZoomPlugin({factor: 0.75});
-    this.plot.setData(<AlignedData>this.datBuf);
+    this.plot.setSize(this.getSize());
     this.SetScale(0, this.params.screenSize);
-    this.plot.redraw();
-    this.plot.setSize(getSize());
   } 
 
   private Init()
@@ -358,11 +398,12 @@ export class MyUPlot
   private tickToGridIndex (sensorTimeValue: number) {
     return Math.floor(sensorTimeValue / this.params.gridDx ); // получаем индекс на графике по оси x (пододвигаем в меньшую сторону)
   };
-}
 
-export function getSize() {
-  return {
-    width: window.innerWidth - 100,
-    height: window.innerHeight - 200,
+  private getSize() {
+    return {
+      width: this.element.clientWidth,
+      height: this.element.clientHeight,
+    }
   }
 }
+

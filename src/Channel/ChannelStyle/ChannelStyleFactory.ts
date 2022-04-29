@@ -20,7 +20,7 @@ export function CreateTorqueStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
         color: "green",
         legendTitle: "Torque",
         line: "solid",
-        range: [sensorInfo.MaxValue + 0.2 * sensorInfo.MaxValue, sensorInfo.MinValue - 0.2 * sensorInfo.MaxValue],
+        range: [sensorInfo.MinValue - 0.2 * sensorInfo.MaxValue, sensorInfo.MaxValue + 0.2 * sensorInfo.MaxValue],
         yTitle: "Torque",
         unitName: sensorInfo.Unitname,
         valueType: "torque",

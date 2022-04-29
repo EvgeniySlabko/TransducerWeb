@@ -1,67 +1,91 @@
-import { CreateAllSensorChannels } from "./Channel/Channel/ChannelFactory";
+import { CreateAllSensorChannels as CreateAllSensorPlotChannels } from "./Channel/Channel/ChannelFactory";
 import { MyUPlot } from "./uPlot/uPlot";
-import { Plot} from "./Plotly/plot";
 import { Sensor } from "./Sensor/sensor";
 import { GetFullSensorInfo } from "./Sensor/SensorInfoParser/SensorInfoCreator";
 import { SensorWorker } from "./Sensor/SensorWorker";
+import { CellContainerController } from "./CellContainerController";
+import { CreateAllSensorCellChannels } from "./Channel/Channel/CellChannelFactory";
+import { SensorController, SensorControllerArgs } from "./SensorController";
+import { Channel } from "./Channel/Channel/Channel";
+import { sleep } from "./Common/Common";
+import { Snapshot } from "./ReportListener/Snapshot";
 // принимает датчики. Отвечает за их подачу на форму
+
 export class ViewController
 {
     private sensors: [Sensor, SensorWorker][] = [];
     private pannel = document.getElementsByClassName('sensorPannel'); // заменить на pannel controller
     
     private plot: MyUPlot;
-
-    constructor(plot: MyUPlot)
+    private cellsController: CellContainerController;
+    private channels: Channel[] = [];
+    constructor(plot: MyUPlot, sensorService: SensorController)
     {
         this.plot = plot;
-    }
-
-    public hide()
-    {
+        var container = <HTMLElement>document.getElementById("cell-container");
+        this.cellsController = new CellContainerController(container);
         
+        sensorService.onDispatch.addListener("Add", async (args : any) => {
+            await this.AddSensorHandler(args.sensor);
+        });
+        
+        // TODO remove handler
     }
-
-    public async AddSensor(sensor: Sensor)
+    
+    private async AddSensorHandler(sensor: Sensor)
     {
         if (sensor == null) throw "Sensor null";
-
-        var sensorWOrker = new SensorWorker(sensor);
-        this.sensors.push([sensor, sensorWOrker]);
-
-        await sensorWOrker.Initialize();
-        await sensorWOrker.SetT0();
         
+        var sensorWOrker = new SensorWorker(sensor);
+        this.sensors.push([sensor, sensorWOrker]);    
+        
+        await sensorWOrker.Initialize();
+        //await sensorWOrker.SetT0();
+        await sensorWOrker.SetT0();
         var fullSensorInfo = await GetFullSensorInfo(sensor);
-        var channels = CreateAllSensorChannels(sensor, fullSensorInfo);
-        //this.plot.xAxisMapper = (val: number) => val * 62500;
-        for (let i = 0; i < 3; i++) {
-            const id = await this.plot.AttachChannel(channels[i]);   
-        }
+        var chartChannels = CreateAllSensorPlotChannels(sensor, fullSensorInfo);
+        var cellChannels = CreateAllSensorCellChannels(sensor, fullSensorInfo);
+        
+        cellChannels.forEach(ch => this.cellsController.pushChannel(ch));
 
-        await sensorWOrker.StartReading();
-        await sensorWOrker.StartStreaming();
+        this.plot.Reset();
+        chartChannels.forEach(ch => {
+            this.channels.push(ch)
+        });
+
+        this.plot.SetChannels(this.channels);
+        //await sensorWOrker.StartReading();
+        //await sensorWOrker.StartStreaming();
+    }
+    
+    public Upload(snapshot: Snapshot)
+    {
+
     }
 
-    public StartAll()
+    public GetExistsChannels() : Channel[]
     {
-        this.sensors.forEach(e => e[1].StartStreaming());
+        return this.channels;
     }
-
-    public StopAll()
+    
+    public async StartAll()
     {
-        this.sensors.forEach(e => e[1].StopStreaming());
+        this.plot.StartListening();
+        this.sensors.forEach(async e => {
+            await e[1].SetT0();
+            await e[1].StartReading();
+            await e[1].StartStreaming();
+        });
     }
-
-    public rrr()
+    
+    public async StopAll()
     {
-        //this.plot.rrr();
-    }
+        this.plot.StopListening();
+        this.sensors.forEach(async e => {
+            await e[1].StopStreaming();
+            await e[1].StopReading();
+        });
 
-    public async CloseAll()
-    {
-        for (let i = 0; i < this.sensors.length; i++) {
-            //this.sensors[i].Close();
-        }   
+        await sleep(500).then(() => this.plot.Clear());
     }
 }

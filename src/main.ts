@@ -1,28 +1,24 @@
-require('./css/styles.css');
-require('../src/css/css/bootstrap.min.css');
-require('../src/css/js/bootstrap.bundle');
+require('../css/styles.css');
+require('../css/css/bootstrap.min.css');
+require('../css/js/bootstrap.bundle');
 require('./UIHandlers');
 require('./uPlot/uPlot');
-
-
 require('../dist/uPlot.iife');
 require('../dist/uPlot.min.css');
+require('./DropZone');
+
+
 import { MyUPlot } from "./uPlot/uPlot";
-import {Plot} from "./Plotly/plot";
 import { ViewController } from "./ViewController";
+import { RecordController } from "./RecordController";
+import { SensorController } from "./SensorController";
 
-export var myUplot = new MyUPlot(<HTMLElement>document.getElementById('gd'));
 export var viewController : ViewController;
-
+export var recordController : RecordController = new RecordController();
+export var sensorService: SensorController = new SensorController();
 
 window.onload = async function()
-  {
-
-
-    //var element = <HTMLElement>document.getElementById('gd');
-    //var plot = new Plot(element);
-    //await plot.DrawPlot();
-
-
-    viewController = new ViewController(myUplot);
-  }
+{
+  var myUplot = new MyUPlot(<HTMLElement>document.getElementById('gd'));
+  viewController = new ViewController(myUplot, sensorService);
+}

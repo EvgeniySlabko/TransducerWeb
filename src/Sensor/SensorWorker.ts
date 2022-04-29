@@ -41,7 +41,7 @@ export class SensorWorker
     public async StopReading()
     {
         if (!this.isInit) throw "Sersor is not initialized";
-        if (!this.isReading)
+        if (this.isReading)
         {
             await this.sensor.StopMeasuring(false); //bug.
             await this.sensor.StopMeasuring();

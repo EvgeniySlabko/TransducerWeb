@@ -1,5 +1,5 @@
 import * as Defs from './SensorDefinitions'; 
-import { SimpleEventDispatcher } from "strongly-typed-events";
+import { EventDispatcher, SimpleEventDispatcher } from "strongly-typed-events";
 import SerialBufferedWorker from "../IO/serialBuffer";
 import { SensorSK } from './SensorDefinitions';
 import { DefaultCommand, ISensorCommand, MultipleCommand, SingleCommand } from './SensorCommand/SensorCommand';
@@ -10,10 +10,10 @@ export class Sensor {
     private decoderClock: number = 62500;
     public serialWorker: SerialBufferedWorker;
 
-    private _onTorqueData = new SimpleEventDispatcher<Defs.dataEventArgs>();
-    private _onSpeedData = new SimpleEventDispatcher<Defs.dataEventArgs>();
-    private _onTmpData = new SimpleEventDispatcher<Defs.dataEventArgs>();
-    private _onReadingError = new SimpleEventDispatcher<string>();
+    private _onTorqueData = new EventDispatcher<Sensor, Defs.dataEventArgs>();
+    private _onSpeedData = new EventDispatcher<Sensor, Defs.dataEventArgs>();
+    private _onTmpData = new EventDispatcher<Sensor, Defs.dataEventArgs>();
+    private _onReadingError = new EventDispatcher<Sensor, string>();
 
     private baseTime: number | undefined = undefined;
 
@@ -74,7 +74,7 @@ export class Sensor {
     public SetAvgRatio = async (avgRatio: number) => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.PRESET_SINGLE_REGISTER, Defs.AVG_RATIO, 1));  
     public SetComputerConnection = async () => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_ON_VALUE));
     public UnsetComputerConnection = async () => this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_OFF_VALUE));
-    public  SetT0 = async () => await this.SendRequesAndWaitResponse<void>(new MultipleCommand(Defs.PRESET_MULTIPLE_REGISTERS, 3, new Uint8Array([0, 0])));
+    public SetT0 = async () => await this.SendRequesAndWaitResponse<void>(new MultipleCommand(Defs.PRESET_MULTIPLE_REGISTERS, 3, new Uint8Array([0, 0])));
     public CloseConnection = async () => await this.serialWorker.Close(); 
     
     public async StopMeasuring(waitAnswer: boolean = true)
@@ -216,7 +216,7 @@ export class Sensor {
                         torqArgs.time[i] = calculatedTime + (i * 0.0002);
                     }
 
-                    this._onTorqueData.dispatch(torqArgs);
+                    this._onTorqueData.dispatch(this, torqArgs);
 
                     break;
     
@@ -230,7 +230,7 @@ export class Sensor {
                         time: [calculatedTime],
                     }
     
-                    this._onSpeedData.dispatch(dataArgs);
+                    this._onSpeedData.dispatch(this, dataArgs);
                     //console.log(dataSpeed);
                     break;
     
@@ -243,7 +243,7 @@ export class Sensor {
                         time: [calculatedTime],
                     }
     
-                    this._onTmpData.dispatch(tmpArgs);
+                    this._onTmpData.dispatch(this, tmpArgs);
                     break;
     
                 case Defs.packageType.msg:
@@ -293,7 +293,7 @@ export class Sensor {
     private async ReadingErrorHandler() {
         console.log('Sensor reading error');
         await this.serialWorker.Close();
-        this._onReadingError.dispatch("Reading error");
+        this._onReadingError.dispatch(this, "Reading error");
     }
 
     private async SendMessage(command: ISensorCommand) {

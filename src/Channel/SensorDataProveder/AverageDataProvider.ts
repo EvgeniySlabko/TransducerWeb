@@ -4,45 +4,48 @@ import { dataEventArgs } from "../../Sensor/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
 //буферизирует данные
-export class BufferedSensorDataProvider implements ISensorDataProvider
+export class AverageSensorDataProvider implements ISensorDataProvider
 {
     private _onData = new EventDispatcher<Sensor, dataEventArgs>();
     private _onMessage = new EventDispatcher<Sensor,string>();
     private _onClose = new EventDispatcher<Sensor, string>();
-    
-    private bufferSize: number;
-    private dataCount: number = 0;
-    private dataBuffer: number[];
-    private timeBuffer: number[];
+
+    private averageRatio: number;
+
+    private averageCount: number = 0;
+    private averageValue: number = 0;
+    private t0: number = 0;
+    private th: number = 0;
 
     constructor(dataSource: IEvent<Sensor, dataEventArgs> | null, 
-        messageSource: IEvent<Sensor, string> | null, 
-        closeSource: IEvent<Sensor, string> | null, bufferSize: number)
+                messageSource: IEvent<Sensor, string> | null, 
+                closeSource: IEvent<Sensor, string> | null, averageRatio: number)
     {
-        this.bufferSize = bufferSize;
-        this.dataBuffer = new Array(this.bufferSize);
-        this.timeBuffer = new Array(this.bufferSize);
+        this.averageRatio = averageRatio;
 
         closeSource?.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
         messageSource?.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
         dataSource?.sub((sensor, data) => {
 
-            for (let i = 0; i < data.time.length; i++) {
-                this.dataBuffer[this.dataCount] = data.data[i];
-                this.timeBuffer[this.dataCount] = data.time[i];
+            if (this.averageCount == 0) this.t0 = data.time[0];
 
-                this.dataCount++;
-                if (this.dataCount == this.bufferSize)
+            data.data.forEach((v, i) =>{
+                this.averageValue += v;
+                this.averageCount++;
+                if (this.averageCount == this.averageRatio)
                 {
-                    var args: dataEventArgs = {
-                        data: this.dataBuffer,
-                        time: this.timeBuffer,
-                    }
+                    this.th = data.time[i];
+                    var curVal = this.averageValue / this.averageCount;
+                    var curTime = (this.th + this.t0) / 2;
+                    this._onData.dispatch(sensor, {
+                        data: [curVal],
+                        time: [curTime],
+                    } as dataEventArgs);
 
-                    this._onData.dispatch(sensor, args)
-                    this.dataCount = 0;
+                    this.averageCount = 0;
+                    this.averageValue = 0;
                 }
-            }
+            })
         });
     }
     get onData(): EventDispatcher<Sensor, dataEventArgs> {

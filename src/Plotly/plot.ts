@@ -99,11 +99,11 @@ export class Plot{
         //<>this.loyout.xaxis?.domain
 
         var newId = id;
-        channel.onData.sub(async (data) => 
+        channel.onData.sub(async (data, args) => 
         {
             await this.AddData({
-                x: [data.time],
-                y: [data.data]
+                x: [args.data.time],
+                y: [args.data.data]
             } as Partial<PlotData>, newId)
         });
         return id;

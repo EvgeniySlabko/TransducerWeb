@@ -7,10 +7,6 @@ export async function GetFullSensorInfo(sensor: Sensor) : Promise<SDefs.FullSens
 {
     if (sensor == null) throw "Sensor is null.";
     var sk = await sensor.GetSkInfo();
-    await sensor.GetHoldingRegisters();
-    await sensor.GetHoldingRegisters();
-    await sensor.GetHoldingRegisters();
-    await sensor.GetHoldingRegisters();
     var holdingRegisters = await sensor.GetHoldingRegisters();
     var fullSensorInfo = await CreateFullSensorInfo(sk, holdingRegisters);
     return fullSensorInfo;

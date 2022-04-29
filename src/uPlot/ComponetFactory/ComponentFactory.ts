@@ -24,6 +24,10 @@ export function GetXAxe()
 export function GetAxe(scale: string, side: number)
 {
     return {
+        grid:
+        {
+            show: false,
+        },
         scale: scale,
         show: true,
         gap: ii++ * 1,
