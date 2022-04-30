@@ -70,8 +70,11 @@ export class ReportListener
         var trackData = new Array<TrackData>();
 
         this.channelMap.forEach((k, v) => {
+            var dataArr = Array<dataEventArgs>();
+            k.forEach(d => dataArr.push(d));
+
             trackData.push({
-                data: k,
+                data: dataArr,
                 style: v.Style,
             } as TrackData);
         });
@@ -83,9 +86,17 @@ export class ReportListener
     {
         if (this.isListening)
         {
-            if (!this.channelMap.has(channel))
+            if (this.channelMap.has(channel))
+            {
+                var buff = this.channelMap.get(channel);
+                var copy = {
+                    data: args.data.data.slice(),
+                    time: args.data.time.slice(),
+                } as dataEventArgs
+                buff?.push(copy);
+            }
+            else
                 throw "Не удалось найти ключ";
-            this.channelMap.get(channel)?.push(args.data);
         }
     }
 }

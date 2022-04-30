@@ -1,6 +1,7 @@
 import uPlot, { AlignedData, Axis, Scale } from "uplot";
 import { Channel, ChannelDataArgs } from "../Channel/Channel/Channel";
 import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
+import { Snapshot } from "../ReportListener/Snapshot";
 import { GetAxe, GetOptions, GetScale, GetSeries } from "./ComponetFactory/ComponentFactory";
 export class MyUPlot
 {
@@ -21,17 +22,17 @@ export class MyUPlot
   
   private listening: boolean = false;
   private isInit: boolean = false;
-
+  private totalChannels: number = 3;
   
   private params =  {
     gridTicks: 50,     //делений графика в секунду.
     gridDx: 0,          //
-    screenSize: 5,              //
+    screenSize: 5,      //
     streaming: true,
     
     screenRollingGap: 2,
-    screenRollingStep: 4,
-    rangeX: [0, 3],
+    //screenRollingStep: 4,
+    //rangeX: [0, 3],
 
     rightGap: 3,
     sh: 0,
@@ -63,6 +64,83 @@ export class MyUPlot
     //this.plot.redraw()
   }
 
+  public FromSnapshot(snapshot: Snapshot)
+  {
+    if (this.listening) throw "Listening is going";
+
+    var trackData = snapshot.GetTrackData();
+
+    var buff : (number | null | undefined)[][] = new Array();
+    
+    for (let i = 0; i < trackData.length; i++) {
+      buff.push(new Array());
+    }
+
+    var maxTimeValues : number[] = [];
+    trackData.forEach(t => {
+      var lastSection = t.data[t.data.length - 1];
+      var lastValue = lastSection.time[lastSection.time.length - 1];
+      maxTimeValues.push(lastValue);
+    });
+
+
+    var dx = 1 / 5000;
+    var toArrayIndex = (time: number) =>{
+      return Math.floor(time / dx);
+    }
+
+    //определяем размер буфера 
+    var maxTimeValue = Math.max(...maxTimeValues)
+    var maxTimeIndex = toArrayIndex(maxTimeValue);
+    for (let i = 0; i < this.datBuf.length; i++) {
+      buff[i] = new Array(maxTimeIndex);
+    }
+    
+
+    //Ставим значени япо умолчанию
+    for (let i = 1; i <= trackData.length; i++) {
+      for (let j = 0; j < maxTimeIndex; j++) {
+        buff[i][j] = undefined;
+      }
+    }
+
+    //Ставим время
+    for (let i = 0; i < maxTimeIndex; i++) {
+      buff[0][i] = i * dx;
+    }
+
+    //проставляем данные
+    for (let i = 0; i < trackData.length; i++) {
+      for (let j = 0; j < trackData[i].data.length; j++) {
+        for (let k = 0; k < trackData[i].data[j].time.length; k++) {
+          var times = trackData[i].data[j].time;
+          var vals = trackData[i].data[j].data;
+
+          var index = toArrayIndex(times[k]);
+          if (index < maxTimeIndex)
+          {
+            buff[i + 1][index] = vals[k];
+          }
+          else
+          {
+            console.log();
+          }
+        }
+      }
+    }
+
+    var styles = snapshot.GetTrackData().map(t => t.style);
+    this.SetStyles(styles);
+    //this.SetDafaultStyles();
+    this.RebuidPlot(<any>buff);
+    this.params.th = maxTimeIndex;
+    this.params.sh = maxTimeValue;
+    //this.RebuidPlot();
+    //this.plot?.setData(<any>buff, true);
+    //this.SetScale(0, maxTimeValue);
+    //this.plot?.redraw();
+  }
+  
   public StartListening() 
   {
     this.Init();
@@ -98,15 +176,32 @@ export class MyUPlot
     if (this.isInit) throw "Already Init";
     if (channels.length == 0) "There are no channels";
 
+    var styles = channels.map(c => c.Style);
+    this.SetStyles(styles);
+
     channels.forEach(c => {
       c.onData.sub(this.HandleData);
       var curIndex: number = this.index++; 
       this.id_index_map.set(c, curIndex);
-
-      this.SetStyleFor(curIndex, c.Style);
     })
 
+    this.totalChannels = channels.length;
     this.isInit = true;
+  }
+
+  private SetDafaultStyles()
+  {
+    for (let i = 1; i <= this.totalChannels; i++) {
+      this.options!.axes![i] = GetAxe("y" + i.toString(), 1); 
+      this.options!.scales![i] = GetScale();
+    }
+
+    this.RebuidPlot();
+  }
+
+  private SetStyles(styles: ChannelStyle[])
+  {
+    styles.forEach((s, i) => this.SetStyleFor(i + 1, s));
   }
 
   private HandleData = (channel: Channel, args: ChannelDataArgs) => 
@@ -290,7 +385,7 @@ export class MyUPlot
     var series = GetSeries(scaleName);
     series.scale = scaleName;
     
-    this.options.series.push(series);
+    this.options.series[index] = series;
 
     var axis = this.options!.axes![index];
     var scale = this.options!.scales![scaleName];
@@ -311,11 +406,13 @@ export class MyUPlot
     this.RebuidPlot();
   }
   
-  private RebuidPlot()
+  private RebuidPlot(dataBuff?: AlignedData)
   {
-    if (this.plot != null)
+    if (!dataBuff) dataBuff = <AlignedData>this.datBuf;
+    if (this.plot)
       this.plot.destroy();
-    this.plot = new uPlot(this.options, <AlignedData>this.datBuf, this.element);
+      
+    this.plot = new uPlot(this.options, dataBuff, this.element);
     this.plot.setSize(this.getSize());
     this.SetScale(0, this.params.screenSize);
   } 

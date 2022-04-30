@@ -1,6 +1,7 @@
 
 import { saveStaticDataToFile } from "./FileWorking/FileWork";
 import { recordController, sensorService, viewController } from "./main";
+import { Snapshot } from "./ReportListener/Snapshot";
 import { SensorController } from "./SensorController";
 import { CreateSerialSensor } from "./SensorFactory";
 
@@ -36,29 +37,23 @@ var stopRecordingHandler = async () =>
   //saveStaticDataToFile(snapshot);
 }
 
-/*
-  document.getElementById('drop_zone')?.addEventListener('drop', async (ev: DragEvent) => {
-
-  ev.preventDefault();
-    
-
-  if (ev.dataTransfer?.items) {
-    // Use DataTransferItemList interface to access the file(s)
-    for (var i = 0; i < ev.dataTransfer.items.length; i++) {
-      // If dropped items aren't files, reject them
-      if (ev.dataTransfer.items[i].kind === 'file') {
-        var file = ev.dataTransfer.items[i].getAsFile();
-        console.log('... file[' + i + '].name = ' + file?.name);
-      }
-    }
-  } else {
-    // Use DataTransfer interface to access the file(s)
-    for (var i = 0; i < ev.dataTransfer.files.length; i++) {
-      console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
-    }
+document.getElementById('open')?.addEventListener('click', async () => {
+  try
+  {
+      let port = await navigator.serial.requestPort();    //запрашиваем выбор порта у пользователя
+      var sensor = await CreateSerialSensor(port);
+      await sensorService.AddSensor(sensor);
+      //await starthandler();
   }
-  });
-*/
+  catch(error)
+  {
+    console.log(error)  
+  }
+  finally
+  {
+  }
+});
+
   document.getElementById('drop_zone')?.addEventListener('dragover', async (ev: any) => {
     console.log('File(s) in drop zone');
 
@@ -66,12 +61,27 @@ var stopRecordingHandler = async () =>
     ev.preventDefault();
   });
  
+  document.getElementById('drop_zone')?.addEventListener('drop', async (event: DragEvent) => {
+    event.preventDefault();
+    if (event.dataTransfer?.items && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === 'file') {
+      var file = event.dataTransfer.items[0].getAsFile();
+      if(file)
+      {
+        var snapshot = new Snapshot();
+        await snapshot.FromFile(file);
+        viewController.UploadSnapshot(snapshot);
+      }
+    } 
+    // Prevent default behavior (Prevent file from being opened)
+    event.preventDefault();
+  });
+
   var startStop: boolean = false;
   var recording: boolean = false;
   var startStopButton = <HTMLElement>document.getElementById('Start');
   var startRecordingButton = <HTMLElement>document.getElementById('StartRec');
   
-  startRecordingButton.addEventListener('click', async () => {
+  startRecordingButton.addEventListener('click', async (event) => {
     recording ? await stopRecordingHandler() : await startRecordingHandler();
   });
 

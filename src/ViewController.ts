@@ -63,6 +63,12 @@ export class ViewController
 
     }
 
+    public UploadSnapshot(snapshot: Snapshot)
+    {
+        this.plot.StopListening();
+        this.plot.FromSnapshot(snapshot);
+    }
+
     public GetExistsChannels() : Channel[]
     {
         return this.channels;
