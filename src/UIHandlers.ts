@@ -10,14 +10,18 @@ import { CreateSerialSensor } from "./SensorFactory";
 var starthandler = async () =>
 {
     await viewController?.StartAll();
-    startStopButton.innerText = "Stop";
+    document.getElementById("StartStopSpan")?.classList.remove('glyphicon-play');
+    document.getElementById("StartStopSpan")?.classList.add('glyphicon-stop');
+
+    //document.getElementById("MyElement").classList.remove('MyClass');
     startStop = true;
 }
 
 var stophandler = async () =>
 {
+  document.getElementById("StartStopSpan")?.classList.remove('glyphicon-stop');
+  document.getElementById("StartStopSpan")?.classList.add('glyphicon-play');
   await viewController?.StopAll();
-  startStopButton.innerText = "Start";
   startStop = false;
 }
 

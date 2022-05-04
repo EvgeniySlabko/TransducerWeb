@@ -41,6 +41,8 @@ module.exports = {
     new webpack.ProvidePlugin({
       process: 'process/browser',
     }),
+    require('precss'),
+    require('autoprefixer'),
 ],
   
   resolve: {

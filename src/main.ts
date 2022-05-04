@@ -1,12 +1,12 @@
 require('../css/styles.css');
-require('../css/css/bootstrap.min.css');
-require('../css/js/bootstrap.bundle');
+//require('../css/css/bootstrap.min.css');
+//require('../css/js/bootstrap.bundle');
 require('./UIHandlers');
 require('./uPlot/uPlot');
 require('../dist/uPlot.iife');
 require('../dist/uPlot.min.css');
-require('./DropZone');
 
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { MyUPlot } from "./uPlot/uPlot";
 import { ViewController } from "./ViewController";
