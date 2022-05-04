@@ -1,6 +1,6 @@
 
 import { ColorsDefs } from "../../Common/Colors";
-import { FullSensorInfo } from "../../Sensor/SensorDefinitions";
+import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { CellChannelStyle } from "./CellChannelStyle";
 import { ChannelStyle } from "./ChannelStyle";
 

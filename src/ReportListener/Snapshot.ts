@@ -2,7 +2,7 @@
 import FileSaver from "file-saver";
 import { serialize } from "serialize-ts";
 import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
-import { dataEventArgs } from "../Sensor/SensorDefinitions";
+import { dataEventArgs } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 
 
 export type TrackData =

@@ -1,5 +1,5 @@
 import { ISensorDataProvider } from "../Channel/SensorDataProveder/ISensorDataProvider";
-import { dataEventArgs } from "../Sensor/SensorDefinitions";
+import { dataEventArgs } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
 import { Channel, ChannelDataArgs } from "../Channel/Channel/Channel";
 import { Snapshot, TrackData } from "./Snapshot";

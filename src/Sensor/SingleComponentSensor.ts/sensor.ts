@@ -1,19 +1,20 @@
 import * as Defs from './SensorDefinitions'; 
 import { EventDispatcher, SimpleEventDispatcher } from "strongly-typed-events";
-import SerialBufferedWorker from "../IO/serialBuffer";
+import SerialBufferedWorker from "../../IO/serialBuffer";
 import { SensorSK } from './SensorDefinitions';
-import { DefaultCommand, ISensorCommand, MultipleCommand, SingleCommand } from './SensorCommand/SensorCommand';
+import { DefaultCommand, ISensorCommand, MultipleCommand, SingleCommand } from '../SensorCommand/SensorCommand';
+import { ISingleComponentSensor } from './ISensor';
 
-export class Sensor {
+export class SensorComponentSensor  implements ISingleComponentSensor{
 
     private baseFrequency: number = 5000;
     private decoderClock: number = 62500;
     public serialWorker: SerialBufferedWorker;
 
-    private _onTorqueData = new EventDispatcher<Sensor, Defs.dataEventArgs>();
-    private _onSpeedData = new EventDispatcher<Sensor, Defs.dataEventArgs>();
-    private _onTmpData = new EventDispatcher<Sensor, Defs.dataEventArgs>();
-    private _onReadingError = new EventDispatcher<Sensor, string>();
+    private _onTorqueData = new EventDispatcher<SensorComponentSensor, Defs.dataEventArgs>();
+    private _onSpeedData = new EventDispatcher<SensorComponentSensor, Defs.dataEventArgs>();
+    private _onTmpData = new EventDispatcher<SensorComponentSensor, Defs.dataEventArgs>();
+    private _onReadingError = new EventDispatcher<SensorComponentSensor, string>();
 
     private baseTime: number | undefined = undefined;
 
@@ -312,5 +313,5 @@ export class Sensor {
     }
 }
 
-export default Sensor;
+export default SensorComponentSensor;
 

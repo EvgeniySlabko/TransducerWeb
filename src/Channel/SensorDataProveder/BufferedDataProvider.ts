@@ -1,23 +1,24 @@
 import { EventDispatcher, IEvent, ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
-import Sensor from "../../Sensor/sensor";
-import { dataEventArgs } from "../../Sensor/SensorDefinitions";
+import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
+import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor";
+import { dataEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
 //буферизирует данные
 export class BufferedSensorDataProvider implements ISensorDataProvider
 {
-    private _onData = new EventDispatcher<Sensor, dataEventArgs>();
-    private _onMessage = new EventDispatcher<Sensor,string>();
-    private _onClose = new EventDispatcher<Sensor, string>();
+    private _onData = new EventDispatcher<ISingleComponentSensor, dataEventArgs>();
+    private _onMessage = new EventDispatcher<ISingleComponentSensor,string>();
+    private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
     
     private bufferSize: number;
     private dataCount: number = 0;
     private dataBuffer: number[];
     private timeBuffer: number[];
 
-    constructor(dataSource: IEvent<Sensor, dataEventArgs> | null, 
-        messageSource: IEvent<Sensor, string> | null, 
-        closeSource: IEvent<Sensor, string> | null, bufferSize: number)
+    constructor(dataSource: IEvent<ISingleComponentSensor, dataEventArgs> | null, 
+        messageSource: IEvent<ISingleComponentSensor, string> | null, 
+        closeSource: IEvent<ISingleComponentSensor, string> | null, bufferSize: number)
     {
         this.bufferSize = bufferSize;
         this.dataBuffer = new Array(this.bufferSize);
@@ -45,13 +46,13 @@ export class BufferedSensorDataProvider implements ISensorDataProvider
             }
         });
     }
-    get onData(): EventDispatcher<Sensor, dataEventArgs> {
+    get onData(): EventDispatcher<ISingleComponentSensor, dataEventArgs> {
         return this._onData;
     }
-    get onClose(): EventDispatcher<Sensor, string> {
+    get onClose(): EventDispatcher<ISingleComponentSensor, string> {
         return this._onClose;
     }
-    get onMessage(): EventDispatcher<Sensor, string> {
+    get onMessage(): EventDispatcher<ISingleComponentSensor, string> {
         return this._onMessage;
     }
 }

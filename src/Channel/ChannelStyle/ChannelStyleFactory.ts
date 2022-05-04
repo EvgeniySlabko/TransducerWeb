@@ -1,6 +1,6 @@
 
 import { ColorsDefs } from "../../Common/Colors";
-import { FullSensorInfo } from "../../Sensor/SensorDefinitions";
+import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ChannelStyle } from "./ChannelStyle";
 
 export function CreateDefaultStyle() : ChannelStyle{

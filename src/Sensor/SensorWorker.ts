@@ -1,14 +1,15 @@
-import Sensor from "./sensor";
+import { ISingleComponentSensor } from "./SingleComponentSensor.ts/ISensor";
+import SensorComponentSensor from "./SingleComponentSensor.ts/sensor";
 
 // отвечает за логику работы с датчиком
 export class SensorWorker
 {
-    private sensor: Sensor;
+    private sensor: ISingleComponentSensor;
     private isInit: boolean = false;
     private isReading: boolean = false;
     private isStreaming: boolean = false;
 
-    constructor(sensor: Sensor)
+    constructor(sensor: ISingleComponentSensor)
     {
         this.sensor = sensor;
     }
@@ -17,7 +18,7 @@ export class SensorWorker
     {
         await this.sensor.Initialize();
         await this.sensor.StopStreaming();
-        await this.sensor.StopMeasuring();
+        await this.sensor.StopMeasuring(true);
         await this.sensor.SetComputerConnection();
 
         /// configure
@@ -33,7 +34,7 @@ export class SensorWorker
         if (!this.isReading)
         {
             await this.sensor.StartMeasuring(false); //bug.
-            await this.sensor.StartMeasuring();
+            await this.sensor.StartMeasuring(true);
             this.isReading = true;
         }
     }
@@ -44,7 +45,7 @@ export class SensorWorker
         if (this.isReading)
         {
             await this.sensor.StopMeasuring(false); //bug.
-            await this.sensor.StopMeasuring();
+            await this.sensor.StopMeasuring(true);
             this.isReading = false;
         }
     }
@@ -84,7 +85,7 @@ export class SensorWorker
         if (!this.isInit) throw "Sersor is not initialized";
 
         await this.sensor.StopStreaming();
-        await this.sensor.StopMeasuring();
+        await this.sensor.StopMeasuring(true);
         await this.sensor.CloseConnection();
         this.isStreaming = false;
         this.isReading = false;

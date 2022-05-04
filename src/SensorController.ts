@@ -1,11 +1,12 @@
 
 import { EventDispatcher } from "@foxandfly/ts-event-dispatcher";
-import Sensor from "./Sensor/sensor";
+import { ISingleComponentSensor } from "./Sensor/SingleComponentSensor.ts/ISensor";
+import SensorComponentSensor from "./Sensor/SingleComponentSensor.ts/sensor";
 
 export type SensorControllerArgs =
 {
     sender: SensorController,
-    sensor: Sensor
+    sensor: ISingleComponentSensor
 }
 
 export class SensorController
@@ -13,7 +14,7 @@ export class SensorController
     //private _onAddSensor = new EventDispatcher<SensorController, Sensor>();
     //private _onRemoveSensor = new EventDispatcher<SensorController, Sensor>();
     
-    private sensors: Sensor[] = new Array();
+    private sensors: ISingleComponentSensor[] = new Array();
 
     public _dispatcher = new EventDispatcher<SensorControllerArgs>();
 
@@ -22,7 +23,7 @@ export class SensorController
 
     }
 
-    public async AddSensor(sensor: Sensor)
+    public async AddSensor(sensor: ISingleComponentSensor)
     {
         var index = this.sensors.indexOf(sensor);
         if (index !== -1) {
@@ -34,10 +35,10 @@ export class SensorController
         await this._dispatcher.dispatch('Add', {
             sender: this,
             sensor: sensor,
-        } as SensorControllerArgs);
+        });
     }   
     
-    public async RemoveSensor(sensor: Sensor)
+    public async RemoveSensor(sensor: ISingleComponentSensor)
     {
         var index = this.sensors.indexOf(sensor);
         if (index !== -1) {
@@ -45,7 +46,7 @@ export class SensorController
             await this._dispatcher.dispatch('Remove', {
                 sender: this,
                 sensor: sensor,
-            } as SensorControllerArgs);
+            });
         }
 
         throw "there is no such sensor";

@@ -1,6 +1,5 @@
 import { CreateAllSensorChannels as CreateAllSensorPlotChannels } from "./Channel/Channel/ChannelFactory";
 import { MyUPlot } from "./uPlot/uPlot";
-import { Sensor } from "./Sensor/sensor";
 import { GetFullSensorInfo } from "./Sensor/SensorInfoParser/SensorInfoCreator";
 import { SensorWorker } from "./Sensor/SensorWorker";
 import { CellContainerController } from "./CellContainerController";
@@ -9,11 +8,12 @@ import { SensorController, SensorControllerArgs } from "./SensorController";
 import { Channel } from "./Channel/Channel/Channel";
 import { sleep } from "./Common/Common";
 import { Snapshot } from "./ReportListener/Snapshot";
+import { ISingleComponentSensor } from "./Sensor/SingleComponentSensor.ts/ISensor";
 // принимает датчики. Отвечает за их подачу на форму
 
 export class ViewController
 {
-    private sensors: [Sensor, SensorWorker][] = [];
+    private sensors: [ISingleComponentSensor, SensorWorker][] = [];
     private pannel = document.getElementsByClassName('sensorPannel'); // заменить на pannel controller
     
     private plot: MyUPlot;
@@ -25,14 +25,14 @@ export class ViewController
         var container = <HTMLElement>document.getElementById("cell-container");
         this.cellsController = new CellContainerController(container);
         
-        sensorService.onDispatch.addListener("Add", async (args : any) => {
+        sensorService.onDispatch.addListener("Add", async (args : SensorControllerArgs) => {
             await this.AddSensorHandler(args.sensor);
         });
         
         // TODO remove handler
     }
     
-    private async AddSensorHandler(sensor: Sensor)
+    private async AddSensorHandler(sensor: ISingleComponentSensor)
     {
         if (sensor == null) throw "Sensor null";
         

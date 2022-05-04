@@ -1,12 +1,13 @@
 import { EventDispatcher, ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
-import Sensor from "../../Sensor/sensor";
-import { dataEventArgs } from "../../Sensor/SensorDefinitions";
+import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
+import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor";
+import { dataEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 
 export interface ISensorDataProvider
 {
-    get onData() : EventDispatcher<Sensor, dataEventArgs>;
+    get onData() : EventDispatcher<ISingleComponentSensor, dataEventArgs>;
 
-    get onClose() : EventDispatcher<Sensor, string>;
+    get onClose() : EventDispatcher<ISingleComponentSensor, string>;
 
-    get onMessage() : EventDispatcher<Sensor, string>;
+    get onMessage() : EventDispatcher<ISingleComponentSensor, string>;
 }

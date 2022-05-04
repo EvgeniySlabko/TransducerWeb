@@ -2,22 +2,22 @@ import { ChannelStyle } from "../ChannelStyle/ChannelStyle";
 import { ISensorDataProvider } from "../SensorDataProveder/ISensorDataProvider";
 import { CreateDefaultStyle } from "../ChannelStyle/ChannelStyleFactory";
 import { EventDispatcher } from "strongly-typed-events";
-import { dataEventArgs } from "../../Sensor/SensorDefinitions";
+import { dataEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { type } from "jquery";
-import Sensor from "../../Sensor/sensor";
+import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor";
 //import { CreateDefaultStyle } from "./ChannelStyleFactory";
 
 // Содержит информацию для отображения на графике. подает данные на график
 export type ChannelDataArgs =
 {
     data: dataEventArgs;
-    sensor: Sensor;
+    sensor: SensorComponentSensor;
 }
 
 export type ChannelMessageArgs =
 {
     message: string;
-    sensor: Sensor;
+    sensor: SensorComponentSensor;
 }
 
 export class Channel
