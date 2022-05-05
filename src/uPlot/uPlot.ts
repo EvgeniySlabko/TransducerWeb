@@ -55,6 +55,11 @@ export class MyUPlot
       this.plot?.setSize(this.getSize());
     });
 
+    window.addEventListener("fullscreenchange", () => {
+      this.plot?.setSize(this.getSize());
+    });
+
+
     //var setCommonView = () => {
     //  this.plot.redraw();
     //  this.SetScale(0, this.params.sh + this.params.rightGap);
@@ -435,11 +440,10 @@ export class MyUPlot
 
   private getOptions()
   {
-    
     return  {  
         title: "Transducer",
-        width: 2450,
-        height: 600,
+        width: 100,
+        height: 100,
         pxAlign: true,
         plugins: [
           this.wheelZoomPlugin({factor: 0.75})
@@ -448,7 +452,6 @@ export class MyUPlot
             x: {
               time: false, 
               auto: false,  
-
             },
             y1: GetScale(),
             y2: GetScale(),
@@ -497,9 +500,11 @@ export class MyUPlot
   };
 
   private getSize() {
+    //var d = document.getElementById("gd")?
+    
     return {
-      width: this.element.clientWidth,
-      height: this.element.clientHeight,
+      width: this.element.clientWidth - 100,
+      height: this.element.clientHeight - 100,
     }
   }
 }

@@ -17,23 +17,33 @@ export class CellContainerController
     {
         //this.container.innerHTML += new HTMLElement();
 
-        var div = document.createElement("div");
+        var box = document.createElement("div");
+        var cellInfo = document.createElement("div");
+        var cellName = document.createElement("div");
+        var cellUnits = document.createElement("div");
+        var cellMeasure = document.createElement("div");
         var p = document.createElement("p");
-        
-        
-        div.classList.add("measure-box");
-        p.classList.add("measure");
-        div.append(p);
-        this.container.append(div);
+
+        box.classList.add("measure-box");
+        cellInfo.classList.add("cell-info");
+        cellName.classList.add("cell-name");
+        cellUnits.classList.add("cell-units");
+        cellMeasure.classList.add("cell-measure-content");  
+        p.classList.add("cell-measure");
+
+        box.append(cellInfo);
+        box.append(cellMeasure);
+        cellMeasure.append(p);
+        cellInfo.append(cellName);
+        cellInfo.append(cellUnits);
+        document.getElementById("cell-container")?.append(box);
+
+        cellName.innerText = channel.Style.valueName;
+        cellUnits.innerText = channel.Style.unitsName;
         p.innerText = "";
         channel.onData.sub((c, args) =>
         {
             p.innerText = args.data[0].toFixed(1);
-            //p.classList.add("measure");
-            //if (this.p)
-            //this.p.textContent = args.data[0].toString();
         })
     }
-
-    
 }

@@ -24,8 +24,8 @@
  
 
 	<body>
-
-		<nav class="navbar navbar-inverse">
+		<!--
+		<nav class="navbar navbar-default">
 			<div class="container-fluid">
 			  <div class="navbar-header">
 				<a class="navbar-brand" href="#">WebSiteName</a>
@@ -38,37 +38,33 @@
 			  </ul>
 			</div>
 		  </nav>
+-->
+		<div class="control-buttons">
+			<div class="btn-group mr-2" role="group" aria-label="First group">
 
-		  <button class="btn navbar-toggler-humburger-icon navbar-vertical-toggle" data-bs-toggle="tooltip" data-bs-placement="left" title="" data-bs-original-title="Toggle Navigation" aria-label="Toggle Navigation"><span class="navbar-toggle-icon"><span class="toggle-line"></span></span></button>
-		
-		  <div class="container">
-			<div id="cell-container" class="cell-container"></div>
-  
-			  <div class="control-buttons">
-				  <div class="btn-group mr-2" role="group" aria-label="First group">
-	  
-					  <button type="button" class="btn btn-primary" id="Start"><span id = "StartStopSpan" class="glyphicon glyphicon-play"></span></button>
-					  <button type="button" class="btn btn-primary" id="open">Connect</button>
-	  
-					  <button type="button"  class="btn btn-primary" id="StartRec">StartRec</button>
-					  <button type="button"  class="btn btn-primary" id="StopRec" >StopRec</button>
-					  <button type="button"  class="btn btn-primary" id="Facker">Facker</button>
-				  </div>
-				  </div>
-			  </div>
-		  </div>
+				<button type="button" class="btn btn-primary" id="Start"><span id = "StartStopSpan" class="glyphicon glyphicon-play"></span></button>
+				<button type="button" class="btn btn-primary" id="open">Connect</button>
+				<button type="button"  class="btn btn-primary" id="StartRec">StartRec</button>
+				<button type="button"  class="btn btn-primary" id="StopRec" >StopRec</button>
+				<button type="button"  class="btn btn-primary" id="Facker">Facker</button>
+			</div>
 		</div>
 
-		
-		<div id="drop_zone" >
-			<p>Drag one or more files to this Drop Zone ...</p>
+		<div class="middle-container">
+			<div class="left-container">
+
+				<div id="cell-container" class="cell-container">
+					
+				</div>
+			</div>
+			<div id="gd" class="plot"></div>
 		</div>
-		  
-		<div id="gd" class="plot"></div>
-	
-		<!-- JS Files  -->
-		<footer>
-			<p>© 2018 Gandalf</p>
-		</footer>	
-		<script>var exports = {};</script>		
+
+
+			<!--
+			<div id="drop_zone" >
+				<p>Drag one or more files to this Drop Zone ...</p>
+			</div>
+				-->
+		</div><script>var exports = {};</script>		
 </html>
