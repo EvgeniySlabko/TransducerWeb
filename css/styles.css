@@ -27,12 +27,7 @@
 
 
 
-.btn-group button {
-	color: white; /* White text */
-	cursor: pointer; /* Pointer/hand icon */
-	flex-wrap: nowrap;
-	justify-content: start;
-  }
+
 
   /* Clear floats (clearfix hack) */
 .btn-group:after {
@@ -42,9 +37,7 @@
 }
 
 /* Add a background color on hover */
-.btn-group button:hover {
-	background-color: #3e8e41;
-}
+
 
 a {
 	color: #546e7a;
@@ -118,15 +111,74 @@ li {
 .left-container{
 	height: 100%;
 	width: 160px;
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	justify-content: baseline;
 }
+
 .cell-container {
 	width: 100%;
-	height: 100%;
+	height: 80%;
 	background-color: rgb(172, 182, 154) ;
 	flex-direction: column;
 	display: flex;
+	border-radius: 2%;
 	background-size: cover;
-	background: linear-gradient(to bottom right, rgb(15, 219, 168), pink);
+	background: linear-gradient(to bottom right, rgb(255, 255, 255), rgb(162, 156, 199));
+}
+
+.sensors-container {
+	width: 100%;
+	height: 30%;
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	border-radius: 2%;
+	background-color: rgb(172, 182, 154) ;
+	background: linear-gradient(to bottom right, rgb(235, 235, 235), rgb(165, 201, 181));
+}
+
+.sensor-cell {
+	width: 100%;
+	height: 40px;
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	align-content: stretch;
+}
+
+.sensor-control-panel {
+	width: 50%;
+	
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+
+	
+}
+
+.button-flex {
+	width: 100%;
+	align-items: stretch;
+	padding: 0px;
+	size: 4px;
+}
+
+.sensor-name {
+	width: 50%;
+	height: 100%;
+	font-size: 15px;
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	text-align: center;
+	background-color: rgb(166, 255, 0) ;
+	align-items: center;
+}
+
+.sensor-pannel-button{
+	height: 100%;
 }
 
 h3 {
@@ -145,14 +197,16 @@ body {
 	scroll-behavior: smooth;
 	height: 100%;
 	margin: 0; 
-	overflow: hidden;
+	overflow: hidden;	
+}
 
+.all{
+	height: 100%;
 	display: flex;
 	flex-direction: column;
 	flex-wrap: nowrap;
 	justify-content: start;
 	align-content: stretch;
-	
 }
 
 .middle-container{
@@ -161,18 +215,18 @@ body {
 	flex-wrap: nowrap;
 	justify-content: start;
 	height: 97%;
-	
 }
-
 
 .plot {
 	flex-grow: 1;  	
 }
 
 .control-buttons{
+	height: 100%;
 	display: flex;
-	margin-bottom: 10px;
-	justify-content: center;
+    align-items: center;
+	margin-right: 100px;
+	margin-left: 5px;
 }
 
 #drop_zone {
@@ -180,3 +234,4 @@ body {
 	width:  200px;
 	height: 100px;
 }
+

@@ -1,10 +1,10 @@
 
-import { saveStaticDataToFile } from "./FileWorking/FileWork";
-import { recordController, sensorService, viewController } from "./main";
-import { Snapshot } from "./ReportListener/Snapshot";
-import { Facker } from "./Sensor/SingleComponentSensor.ts/FackerSensor";
-import { SensorController } from "./SensorController";
-import { CreateSerialSensor } from "./SensorFactory";
+import { saveStaticDataToFile } from "../FileWorking/FileWork";
+import { recordController, sensorService, viewController } from "../main";
+import { Snapshot } from "../ReportListener/Snapshot";
+import { Facker } from "../Sensor/SingleComponentSensor.ts/FackerSensor";
+import { SensorController } from "../SensorController";
+import { CreateSerialSensor } from "../SensorFactory";
 
 
 var starthandler = async () =>
@@ -29,14 +29,16 @@ var startRecordingHandler = () =>
 {
     let channels = viewController.GetExistsChannels();
     recordController.StartListening(channels);
-    startRecordingButton.innerText = "Recording";
+    startRecordingButton.classList.remove("text-primary");
+    startRecordingButton.classList.add("text-danger");
     recording = true;
 }
 
 var stopRecordingHandler = async () =>
 {
   var snapshot = recordController.StopListening();
-  startRecordingButton.innerText = "Rec";
+  startRecordingButton.classList.remove("text-danger");
+    startRecordingButton.classList.add("text-primary");
   recording = false;
 
   snapshot.ToFile();
@@ -87,14 +89,10 @@ document.getElementById('open')?.addEventListener('click', async () => {
   var startStopButton = <HTMLElement>document.getElementById('Start');
   var startRecordingButton = <HTMLElement>document.getElementById('StartRec');
   
-
-  
-
   document.getElementById('Facker')?.addEventListener('click', async () => {
     let facker = new Facker();
     await sensorService.AddSensor(facker);
   });
-
 
   startRecordingButton.addEventListener('click', async (event) => {
     recording ? await stopRecordingHandler() : startRecordingHandler();

@@ -1,14 +1,14 @@
-import { CreateAllSensorChannels as CreateAllSensorPlotChannels } from "./Channel/Channel/ChannelFactory";
-import { MyUPlot } from "./uPlot/uPlot";
-import { GetFullSensorInfo } from "./Sensor/SensorInfoParser/SensorInfoCreator";
-import { SensorWorker } from "./Sensor/SensorWorker";
-import { CellContainerController } from "./CellContainerController";
-import { CreateAllSensorCellChannels } from "./Channel/Channel/CellChannelFactory";
-import { SensorController, SensorControllerArgs } from "./SensorController";
-import { Channel } from "./Channel/Channel/Channel";
-import { sleep } from "./Common/Common";
-import { Snapshot } from "./ReportListener/Snapshot";
-import { ISingleComponentSensor } from "./Sensor/SingleComponentSensor.ts/ISensor";
+import { CreateAllSensorChannels as CreateAllSensorPlotChannels } from "../Channel/Channel/ChannelFactory";
+import { MyUPlot } from "../uPlot/uPlot";
+import { GetFullSensorInfo } from "../Sensor/SensorInfoParser/SensorInfoCreator";
+import { SensorWorker } from "../Sensor/SensorWorker";
+import { CellContainerController } from "../CellContainerController";
+import { CreateAllSensorCellChannels } from "../Channel/Channel/CellChannelFactory";
+import { SensorController, SensorControllerArgs } from "../SensorController";
+import { Channel } from "../Channel/Channel/Channel";
+import { sleep } from "../Common/Common";
+import { Snapshot } from "../ReportListener/Snapshot";
+import { ISingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/ISensor";
 // принимает датчики. Отвечает за их подачу на форму
 
 export class ViewController

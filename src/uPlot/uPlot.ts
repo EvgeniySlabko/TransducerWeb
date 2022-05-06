@@ -441,7 +441,6 @@ export class MyUPlot
   private getOptions()
   {
     return  {  
-        title: "Transducer",
         width: 100,
         height: 100,
         pxAlign: true,

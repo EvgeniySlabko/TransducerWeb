@@ -2,7 +2,7 @@ require('../css/styles.css');
 require('../bootstrap-5/css/bootstrap.min.css');
 require('../bootstrap-5/js/bootstrap.bundle.min.js');
 
-require('./UIHandlers');
+require('./Views/UIHandlers');
 require('./uPlot/uPlot');
 require('../dist/uPlot.iife');
 require('../dist/uPlot.min.css');
@@ -10,7 +10,7 @@ require('../dist/uPlot.min.css');
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { MyUPlot } from "./uPlot/uPlot";
-import { ViewController } from "./ViewController";
+import { ViewController } from "./Views/ViewController";
 import { RecordController } from "./RecordController";
 import { SensorController } from "./SensorController";
 
