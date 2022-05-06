@@ -1,6 +1,7 @@
 require('../css/styles.css');
-//require('../css/css/bootstrap.min.css');
-//require('../css/js/bootstrap.bundle');
+require('../bootstrap-5/css/bootstrap.min.css');
+require('../bootstrap-5/js/bootstrap.bundle.min.js');
+
 require('./UIHandlers');
 require('./uPlot/uPlot');
 require('../dist/uPlot.iife');
