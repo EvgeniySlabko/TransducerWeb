@@ -11,6 +11,10 @@ export interface ISingleComponentSensor {
 
     get onError() : IEvent<ISingleComponentSensor, string>;
 
+    get onClose() : IEvent<ISingleComponentSensor, string>;
+
+    get onStopStreaming() : IEvent<ISingleComponentSensor, string>;
+
     Initialize(): Promise<void>;
     GetHoldingRegisters(): Promise<HoldingRegisters>;
     GetSkInfo(): Promise<SensorSK>;

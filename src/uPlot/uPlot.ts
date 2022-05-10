@@ -1,8 +1,19 @@
-import uPlot, { AlignedData, Axis, Scale } from "uplot";
-import { Channel, ChannelDataArgs } from "../Channel/Channel/Channel";
+
+import uPlot, { AlignedData, Axis, Scale, Series } from "uplot";
+import { Channel, ChannelDataArgs, ChannelMessageArgs } from "../Channel/Channel/Channel";
 import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { GetAxe, GetOptions, GetScale, GetSeries } from "./ComponetFactory/ComponentFactory";
+
+
+export type TraceInfo =
+{
+    channel: Channel;
+    axis: Axis;
+    series: Series;
+    scale: Scale;
+}
+
 export class MyUPlot
 {
   private plot: uPlot | undefined;
@@ -14,9 +25,12 @@ export class MyUPlot
     new Array(250000),
     new Array(250000),
     new Array(250000),
+    new Array(250000),
+    new Array(250000),
+    
   ];
   
-  private id_index_map : Map<Channel, number> = new Map();
+  private channels : TraceInfo[] = [];
   private element: HTMLElement;
   private options: uPlot.Options;
   
@@ -161,19 +175,20 @@ export class MyUPlot
   public Reset()
   {
     this.isInit = false;
-    this.index = 1;
-    this.id_index_map.forEach((a, v) => {
-      v.onData.unsub(this.HandleData);
+    this.channels.forEach(c => {
+      c.channel.onData.unsub(this.HandleData);
+      c.channel.onClose.unsub(this.HandleClose);
     });
 
-    this.id_index_map.clear();
-    this.isInit = false;
+    this.channels = [];
   }
 
   public Clear()
   {
+    // чистим данный графика
     this.Init();
     this.SetScale(0, this.params.screenRollingGap);
+    this.RebuidPlot();
   }
 
   public SetChannels(channels: Channel[])
@@ -182,31 +197,74 @@ export class MyUPlot
     if (channels.length == 0) "There are no channels";
 
     var styles = channels.map(c => c.Style);
-    this.SetStyles(styles);
+    //var traceInfo = this.SetStyles(styles);
 
-    channels.forEach(c => {
+    channels.forEach((c, i) => {
       c.onData.sub(this.HandleData);
-      var curIndex: number = this.index++; 
-      this.id_index_map.set(c, curIndex);
+      c.onClose.sub(this.HandleClose);
+
+      let traceInfo = this.SetStyleFor(i + 1, c.Style);
+      this.channels.push({
+        axis: traceInfo.axis,
+        channel: c,
+        scale: traceInfo.scale,
+        series: traceInfo.series
+      });
     })
 
     this.totalChannels = channels.length;
     this.isInit = true;
   }
-
-  private SetDafaultStyles()
-  {
-    for (let i = 1; i <= this.totalChannels; i++) {
-      this.options!.axes![i] = GetAxe("y" + i.toString(), 1); 
-      this.options!.scales![i] = GetScale();
-    }
-
-    this.RebuidPlot();
-  }
-
+  
   private SetStyles(styles: ChannelStyle[])
   {
     styles.forEach((s, i) => this.SetStyleFor(i + 1, s));
+  }
+  
+  private SetStyleFor(index: number, style: ChannelStyle)
+  {
+    let scaleName = "y" + index.toString();               //for scale
+    let series = GetSeries(scaleName);
+    series.scale = scaleName;
+    
+    this.options.series[index] = series;
+
+    let axis = this.options!.axes![index];
+    let scale = this.options!.scales![scaleName];
+    axis.show = true;
+
+    scale.auto = false;
+    scale.range = <Scale.Range>style.range;
+    series.stroke = style.color;
+    axis.stroke = style.color;
+    axis.label = style.legendTitle;
+    series.label = style.legendTitle;
+    axis.grid!.show = style.grid;
+    //axis.grid!.stroke = style.color;
+
+    axis.side = style.yAxeSide == "left" ? 1 : 3;
+    axis.stroke = style.color;
+    axis.show = true;
+    this.RebuidPlot();
+
+    let traceInfo = {
+      axis: axis,
+      scale: scale,
+      series: series,
+    };
+
+    return traceInfo;
+  }
+  
+  private HandleClose = (channel: Channel, msg: ChannelMessageArgs) =>
+  {
+      let index = this.channels.findIndex(c => c.channel == channel);
+      let traceInfo = this.channels[index];
+      traceInfo!.axis.show = false;
+      traceInfo!.scale.range = [-10, 10];
+      this.RebuidPlot();
+      this.clearTrace(index);
+      //traceInfo?.series.stroke = "black"
   }
 
   private HandleData = (channel: Channel, args: ChannelDataArgs) => 
@@ -214,11 +272,8 @@ export class MyUPlot
 
     if (this.listening) 
     {
-      if (!this.id_index_map.has(channel))
-        throw "index not found";
-
-      var curIndex = <number>this.id_index_map.get(channel);
-
+      var curIndex = this.channels.findIndex(c => c.channel == channel) + 1;
+      
       var lastTicksValue = args.data.time[args.data.time.length - 1];
       var xIndex = this.tickToGridIndex(lastTicksValue);        //вычисляем индекс последнего значения данных
 
@@ -227,7 +282,6 @@ export class MyUPlot
       for (let k = 0; k < args.data.time.length; k++) //проставляем данные
       {
         var currentIndex = this.tickToGridIndex(args.data.time[k]);
-
         this.datBuf[curIndex][currentIndex] = args.data.data[k];
       }
 
@@ -243,22 +297,12 @@ export class MyUPlot
   private wheelZoomPlugin(opts: any) {
     let factor = opts.factor || 0.75;
 
-    let xMin: any, xMax: any, yMin: any, yMax: any, xRange: any, yRange: any;
+    let xMin: number, xMax: number, yMin: number, yMax: number, xRange: number, yRange: number;
 
-    function clamp(nRange: any, nMin: any, nMax: any, fRange: any, fMin: any, fMax: any) {
-      if (nRange > fRange) {
-        nMin = fMin;
-        nMax = fMax;
-      }
-      else if (nMin < fMin) {
-        nMin = fMin;
-        nMax = fMin + nRange;
-      }
-      else if (nMax > fMax) {
-        nMax = fMax;
-        nMin = fMax - nRange;
-      }
-
+    function clamp(nRange: number, nMin: number, nMax: number, fRange: number, fMin: number, fMax: number, gap: number) {
+      if (nMin < 0) nMin = 0;
+    
+      //if (nMax > fRange + gap) nMax = fRange + gap;
       return [nMin, nMax];
     }
 
@@ -266,7 +310,7 @@ export class MyUPlot
       hooks: {
         ready: (u: any) => {
           xMin = u.scales.x.min;
-          xMax = u.scales.x.max;
+          xMax = u.scales.x.max + this.params.rightGap;
           yMin = u.scales.y.min;
           yMax = u.scales.y.max;
 
@@ -306,8 +350,10 @@ export class MyUPlot
 
                 let dx = xUnitsPerPx * (left1 - left0);
 
+                let nMin = scXMin0 - dx;
+                if (nMin >= -0.1)
                 u.setScale('x', {
-                  min: scXMin0 - dx,
+                  min: nMin,
                   max: scXMax0 - dx,
                 });
               }
@@ -328,7 +374,7 @@ export class MyUPlot
             this.params.streaming = false;
 
             xMin = u.scales.x.min;
-            xMax = this.params.sh + this.params.rightGap//u.scales.x.max;
+            xMax = this.params.sh //u.scales.x.max;
             yMin = u.scales.y1.min;
             yMax = u.scales.y1.max;
             xRange = xMax - xMin;
@@ -348,14 +394,11 @@ export class MyUPlot
             u.scales.y.min;
 
             let nxRange = e.deltaY < 0 ? oxRange * factor : oxRange / factor;
-            let nxMin = xVal - leftPct * nxRange;
+            let nxMin = xVal - nxRange * leftPct;
             let nxMax = nxMin + nxRange;
-            [nxMin, nxMax] = clamp(nxRange, nxMin, nxMax, xRange, xMin, xMax);
+            [nxMin, nxMax] = clamp(nxRange, nxMin, nxMax, xRange, xMin, xMax, this.params.rightGap);
 
-            let nyRange = e.deltaY < 0 ? oyRange * factor : oyRange / factor;
-            let nyMin = yVal - btmPct * nyRange;
-            let nyMax = nyMin + nyRange;
-            [nyMin, nyMax] = clamp(nyRange, nyMin, nyMax, yRange, yMin, yMax);
+          
 
             this.SetScale(nxMin, nxMax);
           });
@@ -383,33 +426,6 @@ export class MyUPlot
       max: max,
     });
   }
-
-  private SetStyleFor(index: number, style: ChannelStyle)
-  {
-    var scaleName = "y" + index.toString();               //for scale
-    var series = GetSeries(scaleName);
-    series.scale = scaleName;
-    
-    this.options.series[index] = series;
-
-    var axis = this.options!.axes![index];
-    var scale = this.options!.scales![scaleName];
-    axis.show = true;
-
-    scale.auto = false;
-    scale.range = <Scale.Range>style.range;
-    series.stroke = style.color;
-    axis.stroke = style.color;
-    axis.label = style.legendTitle;
-    series.label = style.legendTitle;
-    axis.grid!.show = style.grid;
-    //axis.grid!.stroke = style.color;
-
-    axis.side = style.yAxeSide == "left" ? 1 : 3;
-    axis.stroke = style.color;
-    axis.show = true;
-    this.RebuidPlot();
-  }
   
   private RebuidPlot(dataBuff?: AlignedData)
   {
@@ -428,7 +444,7 @@ export class MyUPlot
 
     //проставляем основной массив с данными
     for (let i = 1; i < this.datBuf.length; i++) {
-      for (let j = 0; j < this.datBuf[i].length; j++) {
+      for (let j = 0; j < this.datBuf[0].length; j++) {
         this.datBuf[i][j] = undefined;
       }
     }
@@ -497,6 +513,13 @@ export class MyUPlot
   private tickToGridIndex (sensorTimeValue: number) {
     return Math.floor(sensorTimeValue / this.params.gridDx ); // получаем индекс на графике по оси x (пододвигаем в меньшую сторону)
   };
+
+  private clearTrace = (index: number) =>
+  {
+    for (let k = 0; k < this.datBuf[0].length; k++) {
+      this.datBuf[index][k] = undefined;
+    }
+  }
 
   private getSize() {
     //var d = document.getElementById("gd")?

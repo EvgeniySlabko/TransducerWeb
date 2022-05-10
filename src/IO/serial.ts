@@ -89,6 +89,7 @@ export class SerialWorker
   }
 
   public async Close() : Promise<void>{
+    this.reader?.cancel();
     this.reader?.releaseLock();
     this.writer?.releaseLock();
     //await this.port.writable?.cancel();

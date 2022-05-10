@@ -133,7 +133,7 @@ li {
 	height: 30%;
 	display: flex;
 	flex-wrap: nowrap;
-	flex-direction: row;
+	flex-direction: column;
 	border-radius: 2%;
 	background-color: rgb(172, 182, 154) ;
 	background: linear-gradient(to bottom right, rgb(235, 235, 235), rgb(165, 201, 181));
@@ -154,8 +154,6 @@ li {
 	display: flex;
 	flex-wrap: nowrap;
 	flex-direction: row;
-
-	
 }
 
 .button-flex {
@@ -172,7 +170,7 @@ li {
 	display: flex;
 	flex-wrap: nowrap;
 	flex-direction: row;
-	text-align: center;
+	text-align: right;
 	background-color: rgb(166, 255, 0) ;
 	align-items: center;
 }

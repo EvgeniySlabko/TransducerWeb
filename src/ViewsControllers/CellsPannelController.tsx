@@ -1,8 +1,8 @@
-import { EasingFunction } from 'chart.js';
-import React from 'react'
-import { CellChannel } from "./Channel/Channel/CellChannel";
+import { CellChannel } from "../Channel/Channel/CellChannel";
+import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISensor';
+import { dataEventArgs } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 
-export class CellContainerController
+export class DataCellsController
 {
     private container: HTMLElement;
     private p: HTMLParagraphElement | undefined;
@@ -13,7 +13,14 @@ export class CellContainerController
         this.container = container;
     }
 
-    public pushChannel(channel: CellChannel) 
+    public PushChannels(channels: CellChannel[])
+    {
+        channels.forEach(ch => {
+            this.pushChannel(ch);
+        });
+    }
+
+    private pushChannel(channel: CellChannel) 
     {
         //this.container.innerHTML += new HTMLElement();
 
@@ -36,14 +43,23 @@ export class CellContainerController
         cellMeasure.append(p);
         cellInfo.append(cellName);
         cellInfo.append(cellUnits);
+        
         document.getElementById("cell-container")?.append(box);
 
         cellName.innerText = channel.Style.valueName;
         cellUnits.innerText = channel.Style.unitsName;
         p.innerText = "";
-        channel.onData.sub((c, args) =>
+
+        let dataHandler = (sensor: CellChannel, args: dataEventArgs) => 
         {
             p.innerText = args.data[0].toFixed(1);
+        }
+
+        channel.onData.sub(dataHandler);
+
+        channel.onClose.sub((c, args) =>
+        {
+            this.container.removeChild(box);
         })
     }
 }

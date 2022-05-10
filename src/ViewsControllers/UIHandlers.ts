@@ -1,18 +1,42 @@
 
 import { saveStaticDataToFile } from "../FileWorking/FileWork";
-import { recordController, sensorService, viewController } from "../main";
+import { recordController, sensorService, plotViewController } from "../main";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { Facker } from "../Sensor/SingleComponentSensor.ts/FackerSensor";
 import { SensorController } from "../SensorController";
 import { CreateSerialSensor } from "../SensorFactory";
 
+var startStop: boolean = false;
+var recording: boolean = false;
+var startStopButton = <HTMLElement>document.getElementById('Start');
+var startRecordingButton = <HTMLElement>document.getElementById('StartRec');
+var fileInput = <HTMLElement>document.getElementById('file-input');
+var fileInputButton = <HTMLElement>document.getElementById('file-input-button');
+
+fileInputButton.addEventListener('click', function() {
+  let input = document.createElement('input');
+  input.type = 'file';
+  input.onchange = async () => {
+
+    if(input.files && input.files?.length != 1) return;
+    let file = input.files?.item(0);
+    if (!file) return;
+    
+    var snapshot = new Snapshot();
+    await snapshot.FromFile(file);
+    plotViewController.UploadSnapshot(snapshot);
+            
+  };
+  
+  input.click();
+});
 
 var starthandler = async () =>
 {
-    await viewController?.StartAll();
+    let started = await sensorService.StartAll();
+    if (!started) return;
     document.getElementById("StartStopSpan")?.classList.remove('glyphicon-play');
     document.getElementById("StartStopSpan")?.classList.add('glyphicon-stop');
-
     //document.getElementById("MyElement").classList.remove('MyClass');
     startStop = true;
 }
@@ -21,13 +45,15 @@ var stophandler = async () =>
 {
   document.getElementById("StartStopSpan")?.classList.remove('glyphicon-stop');
   document.getElementById("StartStopSpan")?.classList.add('glyphicon-play');
-  await viewController?.StopAll();
+  await sensorService.StopAll();
+  setTimeout(async () =>{plotViewController.Clear()}, 500);
+  
   startStop = false;
 }
 
 var startRecordingHandler = () =>
 {
-    let channels = viewController.GetExistsChannels();
+    let channels = plotViewController.GetExistsChannels();
     recordController.StartListening(channels);
     startRecordingButton.classList.remove("text-primary");
     startRecordingButton.classList.add("text-danger");
@@ -77,17 +103,13 @@ document.getElementById('open')?.addEventListener('click', async () => {
       {
         var snapshot = new Snapshot();
         await snapshot.FromFile(file);
-        viewController.UploadSnapshot(snapshot);
+        plotViewController.UploadSnapshot(snapshot);
       }
     } 
     // Prevent default behavior (Prevent file from being opened)
     event.preventDefault();
   });
 
-  var startStop: boolean = false;
-  var recording: boolean = false;
-  var startStopButton = <HTMLElement>document.getElementById('Start');
-  var startRecordingButton = <HTMLElement>document.getElementById('StartRec');
   
   document.getElementById('Facker')?.addEventListener('click', async () => {
     let facker = new Facker();

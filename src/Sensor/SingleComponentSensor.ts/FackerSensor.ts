@@ -5,6 +5,7 @@ import { dataEventArgs, HoldingRegisters, SensorSK } from "./SensorDefinitions";
 
 export class Facker implements ISingleComponentSensor
 {
+    
     StopMeasuring(waitAnswer?: boolean): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
             resolve();
@@ -19,18 +20,22 @@ export class Facker implements ISingleComponentSensor
     private _onSpeedData = new EventDispatcher<ISingleComponentSensor, dataEventArgs>();
     private _onTmpData = new EventDispatcher<ISingleComponentSensor, dataEventArgs>();
     private _onReadingError = new EventDispatcher<ISingleComponentSensor, string>();
-
-
+    private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
+    private _onStreamingStop = new EventDispatcher<ISingleComponentSensor, string>();
+    
     private isStreaming: boolean = false;
     private mainInterval: NodeJS.Timer | undefined;
     private tmpInterval: NodeJS.Timer | undefined;
     private speedInterval: NodeJS.Timer | undefined;
-
-
+    
+    
     private timeBase: number = Date.now();
     //private currentTime: number;
     //private currentTime: number;
 
+    get onStopStreaming(): IEvent<ISingleComponentSensor, string> {
+        return this._onStreamingStop.asEvent();
+    }
     get onData(): IEvent<ISingleComponentSensor, dataEventArgs> {
         return this._onTorqueData.asEvent();
     }
@@ -43,6 +48,9 @@ export class Facker implements ISingleComponentSensor
     get onError(): IEvent<ISingleComponentSensor, string> {
         return this._onReadingError.asEvent();
     }
+    get onClose(): IEvent<ISingleComponentSensor, string> {
+        return this._onClose.asEvent();
+    }
 
     Initialize(): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
@@ -51,8 +59,6 @@ export class Facker implements ISingleComponentSensor
         });
     }
     GetHoldingRegisters(): Promise<HoldingRegisters> {
-        
-        
         return new Promise<HoldingRegisters>(async (resolve, reject) => {
             var bytes = new Uint8Array([40, 0, 1, 0, 100, 0, 248, 0, 0, 0]);
             var view = new DataView(bytes.buffer);
@@ -131,6 +137,7 @@ export class Facker implements ISingleComponentSensor
     StopStreaming(): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
             this.ClearIntervals();
+            this._onStreamingStop.dispatch(this, "Stop streaming");
             resolve();
             });
     }
@@ -159,6 +166,7 @@ export class Facker implements ISingleComponentSensor
     }
     CloseConnection(): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
+            this._onClose.dispatch(this, "Соединение закрыто");
             resolve();
             });
     }

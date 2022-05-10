@@ -17,15 +17,26 @@ export class BufferedSensorDataProvider implements ISensorDataProvider
     private timeBuffer: number[];
 
     constructor(dataSource: IEvent<ISingleComponentSensor, dataEventArgs> | null, 
-        messageSource: IEvent<ISingleComponentSensor, string> | null, 
-        closeSource: IEvent<ISingleComponentSensor, string> | null, bufferSize: number)
+        messageSource: IEvent<ISingleComponentSensor,string> | null, 
+        closeSource: IEvent<ISingleComponentSensor,string> | null,
+        clearBufferTrigger: IEvent<ISingleComponentSensor,string> | null,
+        bufferSize: number)
     {
         this.bufferSize = bufferSize;
         this.dataBuffer = new Array(this.bufferSize);
         this.timeBuffer = new Array(this.bufferSize);
 
-        closeSource?.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
-        messageSource?.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
+        closeSource?.sub((sensor, msg) => 
+        {
+            this._onClose.dispatch(sensor, msg);
+            this.dataCount = 0;
+        });
+
+        clearBufferTrigger?.sub((sensor: ISingleComponentSensor, msg: string) =>
+        {
+            this.dataCount = 0;
+        });
+        //messageSource?.onError?.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
         dataSource?.sub((sensor, data) => {
 
             for (let i = 0; i < data.time.length; i++) {
@@ -46,6 +57,7 @@ export class BufferedSensorDataProvider implements ISensorDataProvider
             }
         });
     }
+
     get onData(): EventDispatcher<ISingleComponentSensor, dataEventArgs> {
         return this._onData;
     }

@@ -9,8 +9,9 @@ export class SensorWorker
     private isReading: boolean = false;
     private isStreaming: boolean = false;
 
-    constructor(sensor: ISingleComponentSensor)
+    constructor(sensor: ISingleComponentSensor, alreadyInit: boolean = false)
     {
+        this.isInit = alreadyInit;
         this.sensor = sensor;
     }
 

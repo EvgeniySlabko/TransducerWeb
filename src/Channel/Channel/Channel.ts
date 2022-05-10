@@ -68,4 +68,6 @@ export class Channel
     public get onMessage() {return this._onMessage.asEvent();}
 
     public get onError() {return this._onClose.asEvent();}
+
+    public get onClose() {return this._onClose.asEvent();}
 }

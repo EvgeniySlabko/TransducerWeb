@@ -11,16 +11,19 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
     private decoderClock: number = 62500;
     public serialWorker: SerialBufferedWorker;
 
-    private _onTorqueData = new EventDispatcher<SensorComponentSensor, Defs.dataEventArgs>();
-    private _onSpeedData = new EventDispatcher<SensorComponentSensor, Defs.dataEventArgs>();
-    private _onTmpData = new EventDispatcher<SensorComponentSensor, Defs.dataEventArgs>();
-    private _onReadingError = new EventDispatcher<SensorComponentSensor, string>();
+    private _onTorqueData = new EventDispatcher<ISingleComponentSensor, Defs.dataEventArgs>();
+    private _onSpeedData = new EventDispatcher<ISingleComponentSensor, Defs.dataEventArgs>();
+    private _onTmpData = new EventDispatcher<ISingleComponentSensor, Defs.dataEventArgs>();
+    private _onReadingError = new EventDispatcher<ISingleComponentSensor, string>();
+    private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
+    private _onStreamingStop = new EventDispatcher<ISingleComponentSensor, string>();
+
 
     private baseTime: number | undefined = undefined;
 
     private commandHandlers : Map<number, any> = new Map();
 
-    private timeout: number = 1000; // Максимальное время ожидание ответа на командуж
+    private timeout: number = 5000; // Максимальное время ожидание ответа на командуж
     constructor(worker: SerialBufferedWorker) {
         if (worker == null) throw "Worker is null";
         this.serialWorker = worker;
@@ -37,6 +40,10 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
     public get onSpeed() {return this._onSpeedData.asEvent();}
 
     public get onError() {return this._onReadingError.asEvent();}
+
+    public get onClose() {return this._onClose.asEvent();}
+
+    public get onStopStreaming() {return this._onStreamingStop.asEvent();}
 
     public async Initialize() {
         if (!this.serialWorker.baseWorker.IsConnected)
@@ -76,7 +83,12 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
     public SetComputerConnection = async () => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_ON_VALUE));
     public UnsetComputerConnection = async () => this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_OFF_VALUE));
     public SetT0 = async () => await this.SendRequesAndWaitResponse<void>(new MultipleCommand(Defs.PRESET_MULTIPLE_REGISTERS, 3, new Uint8Array([0, 0])));
-    public CloseConnection = async () => await this.serialWorker.Close(); 
+    public CloseConnection = async () => 
+    {
+        await this.serialWorker.Close(); 
+        //this._onClose.dispatch(this, "Соединение закрыто");
+    }
+    
     
     public async StopMeasuring(waitAnswer: boolean = true)
     {
@@ -102,17 +114,19 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
             await this.SendRequesAndWaitResponse<void>(command);
         else
             this.SendMessage(command);
+
+        this._onStreamingStop.dispatch(this, "Stop streaming");
     }
 
     private async ProcessDecoderCommands(command: number): Promise<boolean> {
         switch (command) {
             case Defs.FORCE_SINGLE_COIL:
-                {
-                    var data = await this.serialWorker.Read(4);
-                    //console.log(data);
-                    this.DispatchCommandListener(Defs.FORCE_SINGLE_COIL, data);
-                    return true;
-                }
+            {
+                var data = await this.serialWorker.Read(4);
+                //console.log(data);
+                this.DispatchCommandListener(Defs.FORCE_SINGLE_COIL, data);
+                return true;
+            }
             case Defs.PRESET_SINGLE_REGISTER:
             {
                 var data = await this.serialWorker.Read(4);
@@ -280,7 +294,7 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
 
         handeled = await this.ProcessStreamingData(dataType);
         if (!handeled) {
-            await this.ReadingErrorHandler();
+            this.ReadingErrorHandler();
             return;
         }
 
@@ -288,13 +302,14 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
         }
         catch (ex){
             console.log(ex);
+            this.ReadingErrorHandler();
         }
     }
 
-    private async ReadingErrorHandler() {
+    private ReadingErrorHandler() {
         console.log('Sensor reading error');
-        await this.serialWorker.Close();
         this._onReadingError.dispatch(this, "Reading error");
+        this._onClose.dispatch(this, "Reading error");
     }
 
     private async SendMessage(command: ISensorCommand) {
