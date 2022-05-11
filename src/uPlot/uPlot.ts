@@ -32,6 +32,11 @@ export class MyUPlot
     new Array(200000),
     new Array(200000),
     new Array(200000),
+
+    new Array(200000),
+    new Array(200000),
+    new Array(200000),
+    new Array(200000),
   ];
   
   private channels : TraceInfo[] = [];
@@ -70,6 +75,8 @@ export class MyUPlot
     window.addEventListener("fullscreenchange", () => {
       this.plot?.setSize(this.getSize());
     });
+
+    setInterval(() => {this.plot?.redraw()}, 100);
   }
 
   public FromSnapshot(snapshot: Snapshot)
@@ -263,7 +270,7 @@ export class MyUPlot
       this.datBuf[curIndex][currentIndex] = args.data.data[k];
     }
 
-    this.plot?.redraw();
+    //this.plot?.redraw();
     this.ScaleHandler();
   }
 
@@ -429,6 +436,9 @@ export class MyUPlot
     return  {  
         width: 100,
         height: 100,
+        legend:{
+          
+        },
         pxAlign: true,
         plugins: [
           //this.tooltipsPlugin(this.options),
@@ -440,14 +450,21 @@ export class MyUPlot
               auto: false,  
             },
             y1: GetScale(),
+
             y2: GetScale(),
             y3: GetScale(),
             y4: GetScale(),
             y5: GetScale(),
+
             y6: GetScale(),
             y7: GetScale(),
             y8: GetScale(),
             y9: GetScale(),
+
+            y10: GetScale(),
+            y11: GetScale(),
+            y12: GetScale(),
+            y13: GetScale(),
         },
         axes: [
             {
@@ -459,10 +476,16 @@ export class MyUPlot
             GetAxe("y2", 1),
             GetAxe("y3", 3),
             GetAxe("y4", 1),
+
             GetAxe("y6", 3),
             GetAxe("y7", 3),
             GetAxe("y8", 3),
             GetAxe("y9", 3),
+
+            GetAxe("y10", 3),
+            GetAxe("y11", 3),
+            GetAxe("y12", 3),
+            GetAxe("y13", 3),
         ],
         hooks: {
 					setSelect: [
