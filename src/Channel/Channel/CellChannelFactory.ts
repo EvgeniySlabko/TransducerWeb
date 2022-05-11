@@ -2,14 +2,15 @@ import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor"
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { Channel } from "./Channel";
 import { CreateDefaultStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "../ChannelStyle/ChannelStyleFactory";
-import { CreateAverageValueDataSource, CreateMainValueDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "../SensorDataProveder/DataSourceFactory";
+import { CreateAverageValueDataSource, CreateMainValueDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "../SensorDataProveder/DataSourceFactory";
 import { CellChannel } from "./CellChannel";
-import { CreateCellSpeedStyle, CreatetemperatureCellStyle, CreateTorqueCellStyle } from "../ChannelStyle/CellChannelStyleFactory";
+import { CreateCellSpeedStyle, CreatePowerCellStyle, CreatetemperatureCellStyle, CreateTorqueCellStyle } from "../ChannelStyle/CellChannelStyleFactory";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
 
 function CreateMainValueCellChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : CellChannel
 {
-    var dataSource = CreateAverageValueDataSource(sensor, 100);
+    let baseMainValueSource = CreateMainValueDataSource(sensor);
+    var dataSource = CreateAverageValueDataSource(baseMainValueSource, sensor, 100);
     return new CellChannel(dataSource, CreateTorqueCellStyle(fullSensorInfo));
 }
 
@@ -25,6 +26,12 @@ function CreateTemperatureCellChannel(sensor: ISingleComponentSensor, fullSensor
     return new CellChannel(dataSource, CreatetemperatureCellStyle());
 }
 
+function CreatePowerCellChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : CellChannel
+{
+    var dataSource = CreatePowerDataSource(sensor);
+    return new CellChannel(dataSource, CreatePowerCellStyle(fullSensorInfo));
+}
+
 export function CreateAllSensorCellChannels(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : CellChannel[]
 {
     var channels: CellChannel[] = []; 
@@ -33,6 +40,7 @@ export function CreateAllSensorCellChannels(sensor: ISingleComponentSensor, full
     channels.push(CreateTemperatureCellChannel(sensor, fullSensorInfo));
     if (fullSensorInfo.isRotative != 0)
     {
+        channels.push(CreatePowerCellChannel(sensor, fullSensorInfo));
         channels.push(CreateSpeedCellChannel(sensor, fullSensorInfo));
     }    
     

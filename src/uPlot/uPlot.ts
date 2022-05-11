@@ -3,7 +3,7 @@ import uPlot, { AlignedData, Axis, Scale, Series } from "uplot";
 import { Channel, ChannelDataArgs, ChannelMessageArgs } from "../Channel/Channel/Channel";
 import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
 import { Snapshot } from "../ReportListener/Snapshot";
-import { GetAxe, GetOptions, GetScale, GetSeries } from "./ComponetFactory/ComponentFactory";
+import { GetAxe, GetScale, GetSeries } from "./ComponetFactory/ComponentFactory";
 
 
 export type TraceInfo =
@@ -21,13 +21,17 @@ export class MyUPlot
   private index: number = 1;
   private datBuf : (number | null | undefined)[][] = 
   [
-    new Array(250000),
-    new Array(250000),
-    new Array(250000),
-    new Array(250000),
-    new Array(250000),
-    new Array(250000),
-    
+    new Array(200000),
+
+    new Array(200000),
+    new Array(200000),
+    new Array(200000),
+    new Array(200000),
+
+    new Array(200000),
+    new Array(200000),
+    new Array(200000),
+    new Array(200000),
   ];
   
   private channels : TraceInfo[] = [];
@@ -36,7 +40,7 @@ export class MyUPlot
   
   private listening: boolean = false;
   private isInit: boolean = false;
-  private totalChannels: number = 3;
+
   
   private params =  {
     gridTicks: 50,     //делений графика в секунду.
@@ -45,8 +49,6 @@ export class MyUPlot
     streaming: true,
     
     screenRollingGap: 2,
-    //screenRollingStep: 4,
-    //rangeX: [0, 3],
 
     rightGap: 3,
     sh: 0,
@@ -60,10 +62,6 @@ export class MyUPlot
     this.element = element;
     this.options = this.getOptions();    
     this.RebuidPlot();
-    //this.plot = new uPlot(this.options, <AlignedData>this.datBuf, element);
-    //this.SetScale(0, 3);
-    
-    //this.plot.setData(<AlignedData>this.datBuf);
 
     window.addEventListener("resize", e => {
       this.plot?.setSize(this.getSize());
@@ -72,15 +70,6 @@ export class MyUPlot
     window.addEventListener("fullscreenchange", () => {
       this.plot?.setSize(this.getSize());
     });
-
-
-    //var setCommonView = () => {
-    //  this.plot.redraw();
-    //  this.SetScale(0, this.params.sh + this.params.rightGap);
-    //}
-    //this.plot.root.querySelector(".over")?.addEventListener('dblclick', setCommonView);
-    
-    //this.plot.redraw()
   }
 
   public FromSnapshot(snapshot: Snapshot)
@@ -115,7 +104,6 @@ export class MyUPlot
       buff[i] = new Array(maxTimeIndex);
     }
     
-
     //Ставим значени япо умолчанию
     for (let i = 1; i <= trackData.length; i++) {
       for (let j = 0; j < maxTimeIndex; j++) {
@@ -150,37 +138,22 @@ export class MyUPlot
 
     var styles = snapshot.GetTrackData().map(t => t.style);
     this.SetStyles(styles);
-    //this.SetDafaultStyles();
     this.RebuidPlot(<any>buff);
     this.params.th = maxTimeIndex;
     this.params.sh = maxTimeValue;
-    //this.RebuidPlot();
-    //this.plot?.setData(<any>buff, true);
-    //this.SetScale(0, maxTimeValue);
-    //this.plot?.redraw();
-  }
-  
-  public StartListening() 
-  {
-    this.Init();
-    this.RebuidPlot();
-    this.listening = true;
-  }
-
-  public StopListening()
-  {
-    this.listening = false;
   }
 
   public Reset()
   {
     this.isInit = false;
-    this.channels.forEach(c => {
+    this.channels.forEach((c, index) => {
+      //this.clearTrace(index + 1);
       c.channel.onData.unsub(this.HandleData);
       c.channel.onClose.unsub(this.HandleClose);
     });
 
     this.channels = [];
+    this.RebuidPlot();
   }
 
   public Clear()
@@ -196,9 +169,6 @@ export class MyUPlot
     if (this.isInit) throw "Already Init";
     if (channels.length == 0) "There are no channels";
 
-    var styles = channels.map(c => c.Style);
-    //var traceInfo = this.SetStyles(styles);
-
     channels.forEach((c, i) => {
       c.onData.sub(this.HandleData);
       c.onClose.sub(this.HandleClose);
@@ -212,7 +182,6 @@ export class MyUPlot
       });
     })
 
-    this.totalChannels = channels.length;
     this.isInit = true;
   }
   
@@ -235,18 +204,19 @@ export class MyUPlot
 
     scale.auto = false;
     scale.range = <Scale.Range>style.range;
-    series.stroke = style.color;
-    axis.stroke = style.color;
-    axis.label = style.legendTitle;
-    series.label = style.legendTitle;
-    axis.grid!.show = style.grid;
-    //axis.grid!.stroke = style.color;
 
+    series.stroke = style.color;
+    series.label = style.legendTitle;
+    
+    //axis.grid!.stroke = style.color;
     axis.side = style.yAxeSide == "left" ? 1 : 3;
     axis.stroke = style.color;
     axis.show = true;
-    this.RebuidPlot();
+    axis.stroke = style.color;
+    axis.label = style.legendTitle;
+    axis.grid!.show = style.grid;
 
+    this.RebuidPlot();
     let traceInfo = {
       axis: axis,
       scale: scale,
@@ -260,38 +230,41 @@ export class MyUPlot
   {
       let index = this.channels.findIndex(c => c.channel == channel);
       let traceInfo = this.channels[index];
+      traceInfo!.series.label = "";
+      traceInfo!.series.alpha  = 0;
+
+      let seriesIndex = this.plot!.series.indexOf(traceInfo!.series);
+      //this.plot?.series.slice(seriesIndex, 1);
       traceInfo!.axis.show = false;
       traceInfo!.scale.range = [-10, 10];
-      this.RebuidPlot();
+      //traceInfo.axis.
+
+      //let legendPannel = document.getElementsByClassName("u-legend")[0];
+      //legendPannel.
       this.clearTrace(index);
-      //traceInfo?.series.stroke = "black"
+      this.RebuidPlot();
+      this.plot?.setLegend({
+        idx: index,
+      }, false);
   }
 
   private HandleData = (channel: Channel, args: ChannelDataArgs) => 
   {
+    var curIndex = this.channels.findIndex(c => c.channel == channel) + 1;
+    
+    var lastTicksValue = args.data.time[args.data.time.length - 1];
+    var xIndex = this.tickToGridIndex(lastTicksValue);        //вычисляем индекс последнего значения данных
 
-    if (this.listening) 
+    if (this.params.th < xIndex) {this.params.th = xIndex; this.params.sh = lastTicksValue;}
+
+    for (let k = 0; k < args.data.time.length; k++) //проставляем данные
     {
-      var curIndex = this.channels.findIndex(c => c.channel == channel) + 1;
-      
-      var lastTicksValue = args.data.time[args.data.time.length - 1];
-      var xIndex = this.tickToGridIndex(lastTicksValue);        //вычисляем индекс последнего значения данных
-
-      if (this.params.th < xIndex) {this.params.th = xIndex; this.params.sh = lastTicksValue;}
-
-      for (let k = 0; k < args.data.time.length; k++) //проставляем данные
-      {
-        var currentIndex = this.tickToGridIndex(args.data.time[k]);
-        this.datBuf[curIndex][currentIndex] = args.data.data[k];
-      }
-
-      //this.SetScale(0, 1000);
-      this.plot?.redraw();
-      this.ScaleHandler();
+      var currentIndex = this.tickToGridIndex(args.data.time[k]);
+      this.datBuf[curIndex][currentIndex] = args.data.data[k];
     }
-    else{
-      console.log();
-    }
+
+    this.plot?.redraw();
+    this.ScaleHandler();
   }
 
   private wheelZoomPlugin(opts: any) {
@@ -413,9 +386,6 @@ export class MyUPlot
     if (max == null) {max = 0};
     if (this.params.sh > <any>max  && this.params.streaming)
     {
-      //this.params.rangeX[0] = this.params.sh - this.params.screenSize;
-      //this.params.rangeX[1] = this.params.sh;
-
       this.SetScale(0, this.params.sh + this.params.rightGap);
     }
   }
@@ -461,6 +431,7 @@ export class MyUPlot
         height: 100,
         pxAlign: true,
         plugins: [
+          //this.tooltipsPlugin(this.options),
           this.wheelZoomPlugin({factor: 0.75})
         ],
         scales: {
@@ -471,6 +442,12 @@ export class MyUPlot
             y1: GetScale(),
             y2: GetScale(),
             y3: GetScale(),
+            y4: GetScale(),
+            y5: GetScale(),
+            y6: GetScale(),
+            y7: GetScale(),
+            y8: GetScale(),
+            y9: GetScale(),
         },
         axes: [
             {
@@ -481,6 +458,11 @@ export class MyUPlot
             GetAxe("y1", 1),
             GetAxe("y2", 1),
             GetAxe("y3", 3),
+            GetAxe("y4", 1),
+            GetAxe("y6", 3),
+            GetAxe("y7", 3),
+            GetAxe("y8", 3),
+            GetAxe("y9", 3),
         ],
         hooks: {
 					setSelect: [
@@ -488,8 +470,6 @@ export class MyUPlot
               this.params.streaming = false;
 							let min = u.posToVal(u.select.left, 'x');
 							let max = u.posToVal(u.select.left + u.select.width, 'x');
-
-							//console.log("Fetching data for range...", {min, max});
 
 							// zoom to selection
 							u.setScale('x', {min, max});
@@ -504,8 +484,9 @@ export class MyUPlot
 				},
         series: [
             {
+              // x series
                 auto: false,
-            }, // x series
+            }, 
         ],
         } as uPlot.Options;
   }
@@ -521,12 +502,71 @@ export class MyUPlot
     }
   }
 
-  private getSize() {
-    //var d = document.getElementById("gd")?
-    
+  private getSize() {    
     return {
       width: this.element.clientWidth - 100,
       height: this.element.clientHeight - 100,
+    }
+  }
+
+  private tooltipsPlugin(opts: any) {
+    function init(u: any, opts: any, data: any) {
+      let over = u.over;
+
+      let ttc = u.cursortt = document.createElement("div");
+      ttc.className = "tooltip";
+      ttc.textContent = "(x,y)";
+      ttc.style.pointerEvents = "none";
+      ttc.style.position = "absolute";
+      ttc.style.background = "rgba(0,0,255,0.1)";
+      over.appendChild(ttc);
+
+      u.seriestt = opts.series.map((s: any, i: any) => {
+        if (i == 0) return;
+
+        let tt = document.createElement("div");
+        tt.className = "tooltip";
+        tt.textContent = "Tooltip!";
+        tt.style.pointerEvents = "none";
+        tt.style.position = "absolute";
+        tt.style.background = "rgba(0,0,0,0.1)";
+        tt.style.color = s.color;
+        //tt.style.display = s.show ? null : "none";
+        over.appendChild(tt);
+        return tt;
+      });
+
+      function hideTips() {
+        ttc.style.display = "none";
+        u.seriestt.forEach((tt: any, i: any) => {
+          if (i == 0) return;
+
+          tt.style.display = "none";
+        });
+      }
+
+      function showTips() {
+        ttc.style.display = "";
+        u.seriestt.forEach((tt: any, i: any) => {
+          if (i == 0) return;
+
+          let s = u.series[i];
+          tt.style.display = s.show ? null : "none";
+        });
+      }
+
+      over.addEventListener("mouseleave", () => {
+        if (!u.cursor._lock) {
+        //	u.setCursor({left: -10, top: -10});
+          hideTips();
+        }
+      });
+
+      over.addEventListener("mouseenter", () => {
+        showTips();
+      });
+
+      hideTips();
     }
   }
 }

@@ -71,7 +71,7 @@ export class Facker implements ISingleComponentSensor
         });
     }
     GetSkInfo(): Promise<SensorSK> {
-        var data = new Uint8Array([5, 70, 1, 53, 128, 1, 0, 100, 1, 2, 21, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48]);
+        var data = new Uint8Array([0, 70, 1, 53, 128, 1, 0, 100, 1, 2, 21, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48]);
         return new Promise<SensorSK>(async (resolve, reject) => {
         var idView = new DataView(data.buffer);
         var sk = new SensorSK()

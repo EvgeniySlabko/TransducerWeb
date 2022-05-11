@@ -92,7 +92,6 @@ export class SerialWorker
     this.reader?.cancel();
     this.reader?.releaseLock();
     this.writer?.releaseLock();
-    //await this.port.writable?.cancel();
     await this.port.close();
   }
 }

@@ -1,0 +1,57 @@
+.cell-speed-color {
+	color: blue;
+}
+
+.cell-main-color {
+	color: rgb(37, 172, 32);
+}
+
+.cell-tmp-color {
+	color: brown;
+}
+
+.cell-power-color {
+	color: coral;
+}
+
+/*background*/
+.cell-speed-style {
+	background-color: rgb(139, 126, 255);
+	border-color: rgb(0, 0, 255);
+}
+
+.cell-main-style {
+	background-color: rgb(173, 253, 170);
+	border-color: rgb(255, 0, 170);
+}
+
+.cell-tmp-style {
+	background-color: rgb(247, 168, 168);
+	border-color: rgb(90, 2, 2);
+}
+
+.cell-power-style {
+	background-color: rgb(218, 128, 96);
+	border-color: rgb(255, 68, 0);
+}
+
+/*font color*/
+.cell-speed-font {
+	color: rgb(0, 0, 0);
+	font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.cell-main-font {
+	color: rgb(0, 0, 0);
+	font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.cell-tmp-font {
+	color: rgb(0, 0, 0);
+	font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.cell-power-font {
+	color: rgb(0, 0, 0);
+	font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}

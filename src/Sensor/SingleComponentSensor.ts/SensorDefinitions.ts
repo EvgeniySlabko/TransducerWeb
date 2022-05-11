@@ -93,7 +93,6 @@ export class SensorSK
 export class FullSensorInfo{
     public Razmernost: number = 0;
     public Mnogitel: number = 0;
-    //public IsRotative : boolean = false;
     public SensorType: string = "";
     public Name: string = "";
     public Unitname: string = "";
@@ -106,4 +105,7 @@ export class FullSensorInfo{
     public MaxValue: number = 0;
     public MinValue: number = 0;
     public isRotative: number = 0;
+    public speedUnitsName: string = "";
+    public powerName: string = "";
+    public powerUnitsName: string = ""
 }

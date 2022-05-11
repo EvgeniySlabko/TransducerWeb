@@ -1,11 +1,27 @@
 
+import { type } from "jquery";
 import { EventDispatcher } from "strongly-typed-events";
+import { FullSensorInfo } from "../../dist/bundle";
 import { ISingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/ISensor";
 import {SensorController, SensorControllerArgs} from "../SensorController"
+
+export type SensorPannelInfo = 
+{
+    sensor: ISingleComponentSensor,
+    info: FullSensorInfo,
+}
+
+
+export type SensorPannelEventArgs = 
+{
+    sensor: ISingleComponentSensor,
+}
+
+
 export class SensorPanelControllers
 {
     private container: HTMLElement;
-    private _onRemoveSensor = new EventDispatcher<SensorPanelControllers, ISingleComponentSensor>();
+    private _onRemoveSensor = new EventDispatcher<SensorPanelControllers, SensorPannelEventArgs>();
 
     constructor(container: HTMLElement)
     {
@@ -14,7 +30,7 @@ export class SensorPanelControllers
         //sensorController.onDispatch.addListener("Remove", this.RemoveHandler);
     }
 
-    public AddSensorHandler = (args: SensorControllerArgs) =>
+    public AddSensorHandler = (args: SensorPannelInfo) =>
     {
         let cell = document.createElement("div");
         let name = document.createElement("div");
@@ -29,7 +45,7 @@ export class SensorPanelControllers
         this.container.append(cell);
         cell.append(name);
         cell.append(controlPanel);
-        controlPanel.append(playButton);
+        //controlPanel.append(playButton);
         controlPanel.append(disconnectButton);
         playButton.append(playSpan);
         disconnectButton.append(disconnectSpan);
@@ -46,8 +62,6 @@ export class SensorPanelControllers
         }
 
         let removeButton = () =>{
-            
-            
             playButton.onclick = null;
             disconnectButton.onclick = null;
             this.container.removeChild(cell);
@@ -61,7 +75,7 @@ export class SensorPanelControllers
         disconnectButton.classList.add("glyphicon");
         disconnectButton.classList.add("glyphicon-remove");
 
-        name.innerText = "датчик";
+        name.innerText = args.info.SensorType;
 
         playButton.onclick = () => {
             
@@ -76,7 +90,9 @@ export class SensorPanelControllers
         disconnectButton.onclick = async () => {
             args.sensor.onClose.unsub(closeHandler);
             removeButton();
-            this._onRemoveSensor.dispatch(this, args.sensor);
+            this._onRemoveSensor.dispatch(this,  {
+                sensor: args.sensor,
+            });
         }
     }
 

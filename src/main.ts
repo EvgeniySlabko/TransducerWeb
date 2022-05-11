@@ -1,4 +1,5 @@
 require('../css/styles.css');
+require('../css/cellStyles.css');
 require('../bootstrap-5/css/bootstrap.min.css');
 require('../bootstrap-5/js/bootstrap.bundle.min.js');
 
@@ -50,12 +51,17 @@ window.onload = async function()
     let plotChannels = CreateAllSensorPlotChannels(args.sensor, args.fullSensorInfo);
     let cellChannels = CreateAllSensorCellChannels(args.sensor, args.fullSensorInfo);
     
-    sensorPanelController.AddSensorHandler(args);
+    sensorPanelController.AddSensorHandler(
+      {
+        sensor: args.sensor,
+        info: args.fullSensorInfo,
+      }
+    );
     cellsDataController.PushChannels(cellChannels);
     plotViewController.AddSensorHandler(plotChannels);
   });
   
-  sensorPanelController.onSensorClose.sub((panel, sensor) =>{
-    sensorService.RemoveSensor(sensor);
+  sensorPanelController.onSensorClose.sub((panel, args) =>{
+    sensorService.RemoveSensor(args.sensor);
   })
 }

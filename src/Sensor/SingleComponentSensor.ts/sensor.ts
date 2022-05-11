@@ -192,9 +192,9 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
                 }
                 catch(ex)
                 {
-                clearInterval(interval);
-                reject(ex);
-            }
+                    clearInterval(interval);
+                    reject(ex);
+                }
         });
     }
 

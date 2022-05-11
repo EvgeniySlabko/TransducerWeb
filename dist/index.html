@@ -21,36 +21,65 @@
 		<meta name="apple-mobile-web-app-title" content="Progressive Web Application" />
 		<meta name="application-name" content="Progressive Web Application" />	
 	<script defer src="bundle.js"></script></head>
-
+ 
+	
 	<body>
-		<div class="container">
-			<div id="cell-container" class="cell-container"></div>
-  
-			  <div class="control-buttons">
-				  <div class="btn-group mr-2" role="group" aria-label="First group">
-	  
-					  <button type="button" class="play-button" id="Start">Start</button>
-					  <button class="button" id="open">Connect</button>
-	  
-					  <button type="button"  id="StartRec" style="margin-left: 10px; border-top-left-radius: 15%; border-bottom-left-radius: 15%;">StartRec</button>
-					  <button type="button"  id="StopRec" style="border-top-right-radius: 15%; border-bottom-right-radius: 15%;">StopRec</button>
-					  <button type="button"  id="SaveCooki">SaveCooki</button>
-					  <button type="button"  id="ShowCooki">show</button>
-				  </div>
-				  </div>
-			  </div>
-		  </div>
+		<ul class="nav nav-tabs">
+			<li class="nav-item" >
+				<div class="control-buttons">
+					<div class="btn-group mr-2" role="group" aria-label="First group">
+						<button type="button" title="Начать измерение" class="btn btn-outline-primary" id="Start"><span id = "StartStopSpan" class="glyphicon glyphicon-play"></span></button>
+						<button type="button" title="Добавить датчик" class="btn btn-outline-primary" id="open"><span id = "StartStopSpan" class="glyphicon glyphicon-plus"></span</button>
+						<button type="button"  title="Начать запись в файл" class="btn btn-outline-primary" id="StartRec"><span id = "StartStopSpan" class="glyphicon glyphicon-record"></span></button>
+					</div>
+				</div>
+			</li>
+			<li class="nav-item dropdown">
+			  <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Dropdown</a>
+			  <ul class="dropdown-menu">
+				<li><button class="dropdown-item" id="Facker" >Add facker</button></li>
+				<li><button id="file-input-button">Open</button>
+				
+			  </ul>
+			</li>
+			<li class="nav-item">
+			  <a class="nav-link" href="#">Link</a>
+			</li>
+		  </ul>
+
+		  
+		<div class = "all">
+			
+	
+			<div class="middle-container">
+				<div class="left-container">
+
+					<div id="cell-container" class="cell-container">
+						
+					</div>
+
+					<div id="sensor-container" class="sensors-container">
+						<!--
+						<div class ="sensor-cell">
+							<div class = "sensor-name">Имя датчика</div>
+							
+
+							<div class = "sensor-control-panel">
+								<button class="btn btn-outline-primary sensor-pannel-button"><span id = "StartStopSpan" class="glyphicon glyphicon-play"></span></button>
+								<button class="btn btn-outline-primary sensor-pannel-button"><span id = "StartStopSpan" class="glyphicon glyphicon-remove"></span></button>
+							</div>
+						</div>
+					-->
+					</div>
+				</div>
+				<div id="gd" class="plot"></div>
+			</div>
 		</div>
 
-		
+		<!--
 		<div id="drop_zone" >
 			<p>Drag one or more files to this Drop Zone ...</p>
 		</div>
-		  
-		<div id="gd" class="plot"></div>
-	
-		<!-- JS Files  -->
-		
-		<script>var exports = {};</script>		
-		<script src="bundle.js"></script>
+			-->
+		</div><script>var exports = {};</script>		
 </html>

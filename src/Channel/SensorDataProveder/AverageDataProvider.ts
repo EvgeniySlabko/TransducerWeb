@@ -18,15 +18,19 @@ export class AverageSensorDataProvider implements ISensorDataProvider
     private t0: number = 0;
     private th: number = 0;
 
-    constructor(dataSource: IEvent<ISingleComponentSensor, dataEventArgs> | null, 
-                messageSource: IEvent<ISingleComponentSensor, string> | null, 
-                closeSource: IEvent<ISingleComponentSensor, string> | null, averageRatio: number)
+    constructor(baseSource: ISensorDataProvider,
+                clearBufferTrigger: IEvent<ISingleComponentSensor,string> | null, 
+                averageRatio: number)
     {
         this.averageRatio = averageRatio;
 
-        closeSource?.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
-        messageSource?.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
-        dataSource?.sub((sensor, data) => {
+        clearBufferTrigger?.sub(() => {
+            this.reset();
+        });
+        
+        baseSource.onClose.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
+        baseSource.onMessage.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
+        baseSource.onData.sub((sensor, data) => {
 
             if (this.averageCount == 0) this.t0 = data.time[0];
 
@@ -43,19 +47,25 @@ export class AverageSensorDataProvider implements ISensorDataProvider
                         time: [curTime],
                     } as dataEventArgs);
 
-                    this.averageCount = 0;
-                    this.averageValue = 0;
+                    this.reset();
                 }
             })
         });
     }
-    get onData(): EventDispatcher<ISingleComponentSensor, dataEventArgs> {
-        return this._onData;
+
+    private reset = () =>
+    {
+        this.averageCount = 0;
+        this.averageValue = 0;
     }
-    get onClose(): EventDispatcher<ISingleComponentSensor, string> {
-        return this._onClose;
+
+    get onData(): IEvent<ISingleComponentSensor, dataEventArgs> {
+        return this._onData.asEvent();
     }
-    get onMessage(): EventDispatcher<ISingleComponentSensor, string> {
-        return this._onMessage;
+    get onClose(): IEvent<ISingleComponentSensor, string> {
+        return this._onClose.asEvent();
+    }
+    get onMessage(): IEvent<ISingleComponentSensor, string> {
+        return this._onMessage.asEvent();
     }
 }

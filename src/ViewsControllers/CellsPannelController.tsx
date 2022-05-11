@@ -32,11 +32,13 @@ export class DataCellsController
         var p = document.createElement("p");
 
         box.classList.add("measure-box");
+        box.classList.add(channel.Style.cellStyle);
         cellInfo.classList.add("cell-info");
         cellName.classList.add("cell-name");
         cellUnits.classList.add("cell-units");
         cellMeasure.classList.add("cell-measure-content");  
         p.classList.add("cell-measure");
+        p.classList.add(channel.Style.fontStyle);
 
         box.append(cellInfo);
         box.append(cellMeasure);

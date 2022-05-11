@@ -1,5 +1,6 @@
 
 import { ColorsDefs } from "../../Common/Colors";
+import { CalculatePower } from "../../Common/Common";
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ChannelStyle } from "./ChannelStyle";
 
@@ -53,5 +54,20 @@ export function CreatetemperatureStyle() : ChannelStyle{
         unitName: "Dg",
         valueType: "tmp",
         yAxeSide: "right",
+    } as ChannelStyle;
+}
+
+
+export function CreatePowerStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
+    return {
+        grid: false,
+        color: "darkRed",
+        legendTitle: "Power",
+        line: "dash",
+        range: [CalculatePower(sensorInfo.MaxSpeed, sensorInfo.MinValue + 0.1 * sensorInfo.MinValue), CalculatePower(sensorInfo.MaxSpeed, sensorInfo.MaxValue - 0.1 * sensorInfo.MaxValue)],
+        yTitle: "Power",
+        unitName: sensorInfo.powerUnitsName,
+        valueType: "power",
+        yAxeSide: "left",
     } as ChannelStyle;
 }

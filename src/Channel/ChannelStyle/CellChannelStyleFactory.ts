@@ -8,11 +8,9 @@ export function CreateDefaultCellStyle() : CellChannelStyle{
     return {
         valueName: "undefined",
         unitsName: "V",
-        fontColor: "#000000",
-        backgroundColor: "#c2db74",
-        borderColor: "#a7d41c",
-
-    } as CellChannelStyle
+        cellStyle: "",
+        fontStyle: ""
+    } 
 }
 
 
@@ -20,9 +18,8 @@ export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo) : CellChannelS
     return {
         valueName: sensorInfo.ValueName,
         unitsName: sensorInfo.Unitname,
-        fontColor: "#000000",
-        backgroundColor: "#7bbda1",
-        borderColor: "#11ad77",
+        cellStyle: "cell-main-style",
+        fontStyle: "cell-main-font"
 
 
     } as CellChannelStyle
@@ -32,9 +29,8 @@ export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo) : CellChannelSt
     return {
         valueName: "Скорость вр.",
         unitsName: "rpm",
-        fontColor: "#000000",
-        backgroundColor: "#7f7ba8",
-        borderColor: "#2b1dab",
+        fontStyle: "cell-speed-font",
+        cellStyle: "cell-speed-style",
     } 
 }
 
@@ -42,9 +38,16 @@ export function CreatetemperatureCellStyle() : CellChannelStyle{
     return {
         valueName: "Температура",
         unitsName: "C",
-        fontColor: "#000000",
-        backgroundColor: "#b08696",
-        borderColor: "#782f4b",
+        fontStyle: "cell-tmp-font",
+        cellStyle: "cell-tmp-style",
+    } as CellChannelStyle
+}
 
+export function CreatePowerCellStyle(sensorInfo: FullSensorInfo) : CellChannelStyle{
+    return {
+        valueName: "Мощность",
+        unitsName: sensorInfo.powerUnitsName,
+        fontStyle: "cell-power-font",
+        cellStyle: "cell-power-style",
     } as CellChannelStyle
 }

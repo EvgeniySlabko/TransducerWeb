@@ -1,4 +1,3 @@
-
 import { EventDispatcher } from "@foxandfly/ts-event-dispatcher";
 import { GetFullSensorInfo } from "./Sensor/SensorInfoParser/SensorInfoCreator";
 import { SensorWorker } from "./Sensor/SensorWorker";
@@ -9,7 +8,7 @@ import { FullSensorInfo } from "./Sensor/SingleComponentSensor.ts/SensorDefiniti
 export type SensorControllerArgs =
 {
     sender: SensorController,
-    sensor: ISingleComponentSensor
+    sensor: ISingleComponentSensor,
     fullSensorInfo: FullSensorInfo
 }
 

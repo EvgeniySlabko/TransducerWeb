@@ -216,10 +216,11 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
   //................... Сделать видимыми панели скорости и мощности
   //PFBaseChannel->SetSpeedVisible(PDecoderParametrs->IsRotative);
 
-/*
+
   switch (fullInfo.isRotative) {
     case 0: break;
     case 1: 
+    /*
       PSensorDescriptor = &PDecoderParametrs->SensorDescriptors[6];
       PSensorDescriptor->ThereIs = true;
       if (PSensorDescriptor->MaxValue) {
@@ -230,35 +231,37 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
       }
       //................. Формирование названия скорости
       AS = Ures_RotationAngle;  
+      
       strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
       strcpy(PSensorDescriptor->NaimValue, AS.c_str());
       strcpy(PSensorDescriptor->NaimEdIzm, "degree");
+      */
       break;
     case 2: 
-      PSensorDescriptor = &PDecoderParametrs->SensorDescriptors[6];
-      PSensorDescriptor->ThereIs = true;
-      PSensorDescriptor->MaxValue = PFBaseChannel->MaxSkorVr;
+      //PSensorDescriptor = &PDecoderParametrs->SensorDescriptors[6];
+      //PSensorDescriptor->ThereIs = true;
+      //PSensorDescriptor->MaxValue = PFBaseChannel->MaxSkorVr;
       //................. Формирование названия скорости
-      AS = Ures_Speed;  
-      strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
-      strcpy(PSensorDescriptor->NaimValue, AS.c_str());
-      strcpy(PSensorDescriptor->NaimEdIzm, "rpm");
+      //AS = Ures_Speed;  
+      //strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
+      //strcpy(PSensorDescriptor->NaimValue, AS.c_str());
+      fullInfo.speedUnitsName = "rpm";
   
-      PSensorDescriptor = &PDecoderParametrs->SensorDescriptors[7];
-      PSensorDescriptor->ThereIs = true;
-      TempFloat = (PFBaseChannel->MaxSkorVr * PFBaseChannel->MaxDopustBase[0] * M_PI)/30;
-      PSensorDescriptor->MaxValue = TempFloat;
-      PSensorDescriptor->MinValue = -TempFloat;
+      //PSensorDescriptor = &PDecoderParametrs->SensorDescriptors[7];
+      //PSensorDescriptor->ThereIs = true;
+      //TempFloat = (PFBaseChannel->MaxSkorVr * PFBaseChannel->MaxDopustBase[0] * M_PI)/30;
+      //PSensorDescriptor->MaxValue = TempFloat;
+      //PSensorDescriptor->MinValue = -TempFloat;
       //................. Формирование названия мощности
-      AS = Ures_Power;
-      strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
-      strcpy(PSensorDescriptor->NaimValue, AS.c_str());
-      PDecoderParametrs->IndexRazmPowerIsx = IndexRazmPowerIsx;
-      AS = Stroka + L"W";   // единица измерения мощности
-      strcpy(PSensorDescriptor->NaimEdIzm, AS.c_str());
+      fullInfo.powerName = "Мощность";
+      //strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
+      //strcpy(PSensorDescriptor->NaimValue, AS.c_str());
+      //PDecoderParametrs->IndexRazmPowerIsx = IndexRazmPowerIsx;
+      fullInfo.powerUnitsName ="W";   // единица измерения мощности
+      //strcpy(PSensorDescriptor->NaimEdIzm, AS.c_str());
       break;
     }
-*/
+
   return fullInfo;
     
 }

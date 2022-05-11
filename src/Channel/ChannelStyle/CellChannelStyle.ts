@@ -1,7 +1,6 @@
 export declare class CellChannelStyle{
-    borderColor: string;
-    backgroundColor: string;
-    fontColor: string;
+    cellStyle: string;
+    fontStyle: string;
     valueName: string;
-    unitsName: string;
+    unitsName: string;   
 }

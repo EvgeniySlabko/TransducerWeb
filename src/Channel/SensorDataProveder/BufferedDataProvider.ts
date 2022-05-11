@@ -2,9 +2,10 @@ import { EventDispatcher, IEvent, ISimpleEvent, SimpleEventDispatcher } from "st
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
 import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor";
 import { dataEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
-import { ISensorDataProvider } from "./ISensorDataProvider";
+import { IBufferedDataProviderArgs, ISensorDataProvider } from "./ISensorDataProvider";
 
 //буферизирует данные
+
 export class BufferedSensorDataProvider implements ISensorDataProvider
 {
     private _onData = new EventDispatcher<ISingleComponentSensor, dataEventArgs>();
@@ -16,9 +17,7 @@ export class BufferedSensorDataProvider implements ISensorDataProvider
     private dataBuffer: number[];
     private timeBuffer: number[];
 
-    constructor(dataSource: IEvent<ISingleComponentSensor, dataEventArgs> | null, 
-        messageSource: IEvent<ISingleComponentSensor,string> | null, 
-        closeSource: IEvent<ISingleComponentSensor,string> | null,
+    constructor(baseSource: ISensorDataProvider,
         clearBufferTrigger: IEvent<ISingleComponentSensor,string> | null,
         bufferSize: number)
     {
@@ -26,7 +25,8 @@ export class BufferedSensorDataProvider implements ISensorDataProvider
         this.dataBuffer = new Array(this.bufferSize);
         this.timeBuffer = new Array(this.bufferSize);
 
-        closeSource?.sub((sensor, msg) => 
+
+        baseSource.onClose.sub((sensor, msg) => 
         {
             this._onClose.dispatch(sensor, msg);
             this.dataCount = 0;
@@ -36,8 +36,9 @@ export class BufferedSensorDataProvider implements ISensorDataProvider
         {
             this.dataCount = 0;
         });
+
         //messageSource?.onError?.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
-        dataSource?.sub((sensor, data) => {
+        baseSource.onData?.sub((sensor, data) => {
 
             for (let i = 0; i < data.time.length; i++) {
                 this.dataBuffer[this.dataCount] = data.data[i];
@@ -58,13 +59,13 @@ export class BufferedSensorDataProvider implements ISensorDataProvider
         });
     }
 
-    get onData(): EventDispatcher<ISingleComponentSensor, dataEventArgs> {
-        return this._onData;
+    get onData(): IEvent<ISingleComponentSensor, dataEventArgs> {
+        return this._onData.asEvent();;
     }
-    get onClose(): EventDispatcher<ISingleComponentSensor, string> {
-        return this._onClose;
+    get onClose(): IEvent<ISingleComponentSensor, string> {
+        return this._onClose.asEvent();
     }
-    get onMessage(): EventDispatcher<ISingleComponentSensor, string> {
-        return this._onMessage;
+    get onMessage(): IEvent<ISingleComponentSensor, string> {
+        return this._onMessage.asEvent();;
     }
 }

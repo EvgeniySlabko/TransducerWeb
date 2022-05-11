@@ -1,5 +1,5 @@
 
-import { saveStaticDataToFile } from "../FileWorking/FileWork";
+
 import { recordController, sensorService, plotViewController } from "../main";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { Facker } from "../Sensor/SingleComponentSensor.ts/FackerSensor";
@@ -27,7 +27,7 @@ fileInputButton.addEventListener('click', function() {
     plotViewController.UploadSnapshot(snapshot);
             
   };
-  
+
   input.click();
 });
 
