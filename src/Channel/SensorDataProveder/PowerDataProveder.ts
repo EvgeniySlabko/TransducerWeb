@@ -2,31 +2,28 @@ import { EventDispatcher, IEvent, ISimpleEvent, SimpleEventDispatcher } from "st
 import { CalculatePower } from "../../Common/Common";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
 import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor";
-import { dataEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { dataEventArgs, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
 export class PowerDataProvider implements ISensorDataProvider
 {
     private _onData = new EventDispatcher<ISingleComponentSensor, dataEventArgs>();
-    private _onMessage = new EventDispatcher<ISingleComponentSensor,string>();
+    private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
     private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
 
     private lastMainValue: number | undefined;
     private lastMainTime: number | undefined;
 
-    constructor(speedSource: IEvent<ISingleComponentSensor, dataEventArgs>, 
-                mainValueSource: IEvent<ISingleComponentSensor, dataEventArgs>, 
-                messageSource: IEvent<ISingleComponentSensor,string> | null, 
-                closeSource: IEvent<ISingleComponentSensor,string> | null)
+    constructor(sensor: ISingleComponentSensor)
     {
-        closeSource?.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
-        messageSource?.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
-        mainValueSource?.sub((sensor, args) =>{
+        sensor.onClose.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
+        sensor.onMessage.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
+        sensor.onData.sub((sensor, args) =>{
             this.lastMainValue = args.data[args.data.length - 1];
             this.lastMainTime = args.time[args.time.length - 1];
         });
 
-        speedSource?.sub((sensor, args) =>{
+        sensor.onSpeed.sub((sensor, args) =>{
             if (this.lastMainValue && this.lastMainTime)
             {
                 let power = CalculatePower(args.data[0], this.lastMainValue); 
@@ -45,7 +42,7 @@ export class PowerDataProvider implements ISensorDataProvider
     get onClose(): EventDispatcher<ISingleComponentSensor, string> {
         return this._onClose;
     }
-    get onMessage(): EventDispatcher<ISingleComponentSensor, string> {
+    get onMessage(): EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs> {
         return this._onMessage;
     }
 }

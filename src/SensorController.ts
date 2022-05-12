@@ -94,13 +94,28 @@ export class SensorController
         }
     }   
 
+
+    public async SetT0()
+    {
+        if (this.sensors.length == 0) return false;
+
+        this.sensors.forEach(async node => {
+            if (node.worker.IsReading)
+                await node.worker.StopReading();
+
+            await node.worker.SetT0();
+            await node.worker.StartReading();
+        });
+    }
+
     public async StartAll() : Promise<boolean>
     {
         if (this.sensors.length == 0) return false;
 
         this.sensors.forEach(async node => {
-            await node.worker.SetT0();
-            await node.worker.StartReading();
+            if (!node.worker.IsReading)
+                await node.worker.StartReading();
+                
             await node.worker.StartStreaming();
         });
 
@@ -111,7 +126,7 @@ export class SensorController
     {
         this.sensors.forEach(async node => {
             await node.worker.StopStreaming();
-            await node.worker.StopReading();
+            //await node.worker.StopReading();
         });
     }
 

@@ -1,9 +1,27 @@
 import { EventDispatcher } from "strongly-typed-events";
-import { dataEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
+import { dataEventArgs, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { CellChannelStyle } from "../ChannelStyle/CellChannelStyle";
 import { CreateDefaultCellStyle } from "../ChannelStyle/CellChannelStyleFactory";
 import { ISensorDataProvider } from "../SensorDataProveder/ISensorDataProvider";
 
+export type ChannelDataArgs =
+{
+    sensor: ISingleComponentSensor;
+    data: dataEventArgs;
+}
+
+export type ChannelMessageArgs =
+{
+    sensor: ISingleComponentSensor;
+    sensorMsgArgs: SensorMessageEventArgs;
+}
+
+export type ChannelCloseArgs =
+{
+    sensor: ISingleComponentSensor;
+    msg: string;
+}
 
 export class CellChannel
 {
@@ -11,26 +29,32 @@ export class CellChannel
     private traceId: number | undefined;
     private isAttached: boolean = false;
 
-    private _onData = new EventDispatcher<CellChannel, dataEventArgs>();
-    private _onMessage = new EventDispatcher<CellChannel,string>();
-    private _onClose = new EventDispatcher<CellChannel, string>();
+    private _onData = new EventDispatcher<CellChannel, ChannelDataArgs>();
+    private _onMessage = new EventDispatcher<CellChannel,ChannelMessageArgs>();
+    private _onClose = new EventDispatcher<CellChannel, ChannelCloseArgs>();
 
     constructor(dataSourсe: ISensorDataProvider, style: CellChannelStyle = CreateDefaultCellStyle())
     {
         this.style = style;
         dataSourсe.onData?.sub((sensor, args) => {
             this._onData.dispatch(this, {
-                data: args.data,
-                time: args.time,
-            } as dataEventArgs)
+                data: args,
+                sensor: sensor,
+            })
         });
 
         dataSourсe.onClose?.sub((sensor, args) => {
-            this._onClose.dispatch(this, args);
+            this._onClose.dispatch(this, {
+                msg: args,
+                sensor: sensor,
+            });
         });
 
         dataSourсe.onMessage?.sub((sensor, args) => {
-            this._onMessage.dispatch(this, args);
+            this._onMessage.dispatch(this, {
+                sensor: sensor,
+                sensorMsgArgs: args,
+            });
         });
     }
 

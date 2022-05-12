@@ -1,8 +1,7 @@
-import { type } from "jquery";
 import { EventDispatcher, IEvent, ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
 import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor";
-import { dataEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { dataEventArgs, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 
 export interface ISensorDataProvider
 {
@@ -10,17 +9,11 @@ export interface ISensorDataProvider
 
     get onClose() : IEvent<ISingleComponentSensor, string>;
 
-    get onMessage() : IEvent<ISingleComponentSensor, string>;
+    get onMessage() : IEvent<ISingleComponentSensor, SensorMessageEventArgs>;
 }
 
-
-export type ISensorDataProviderBaseArgs =
-{
-    onData : IEvent<ISingleComponentSensor, dataEventArgs>;
-
-    onClose : IEvent<ISingleComponentSensor, string>;
-
-    onMessage : IEvent<ISingleComponentSensor, string> | null;
+export enum DataSourseType{
+    MainValue,
+    Temperature,
+    Speed,
 }
-
-export type IBufferedDataProviderArgs = ISensorDataProvider | ISensorDataProviderBaseArgs;

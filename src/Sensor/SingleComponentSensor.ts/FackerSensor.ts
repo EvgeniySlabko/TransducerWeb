@@ -1,7 +1,7 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
 import { ISingleComponentSensor } from "./ISensor";
 import SensorComponentSensor from "./sensor";
-import { dataEventArgs, HoldingRegisters, SensorSK } from "./SensorDefinitions";
+import { dataEventArgs, HoldingRegisters, SensorMessage, SensorMessageEventArgs, SensorSK } from "./SensorDefinitions";
 
 export class Facker implements ISingleComponentSensor
 {
@@ -19,9 +19,8 @@ export class Facker implements ISingleComponentSensor
     private _onTorqueData = new EventDispatcher<ISingleComponentSensor,  dataEventArgs>();
     private _onSpeedData = new EventDispatcher<ISingleComponentSensor, dataEventArgs>();
     private _onTmpData = new EventDispatcher<ISingleComponentSensor, dataEventArgs>();
-    private _onReadingError = new EventDispatcher<ISingleComponentSensor, string>();
     private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
-    private _onStreamingStop = new EventDispatcher<ISingleComponentSensor, string>();
+    private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
     
     private isStreaming: boolean = false;
     private mainInterval: NodeJS.Timer | undefined;
@@ -33,9 +32,6 @@ export class Facker implements ISingleComponentSensor
     //private currentTime: number;
     //private currentTime: number;
 
-    get onStopStreaming(): IEvent<ISingleComponentSensor, string> {
-        return this._onStreamingStop.asEvent();
-    }
     get onData(): IEvent<ISingleComponentSensor, dataEventArgs> {
         return this._onTorqueData.asEvent();
     }
@@ -45,8 +41,8 @@ export class Facker implements ISingleComponentSensor
     get onSpeed(): IEvent<ISingleComponentSensor, dataEventArgs> {
         return this._onSpeedData.asEvent();
     }
-    get onError(): IEvent<ISingleComponentSensor, string> {
-        return this._onReadingError.asEvent();
+    get onMessage(): IEvent<ISingleComponentSensor, SensorMessageEventArgs> {
+        return this._onMessage.asEvent();
     }
     get onClose(): IEvent<ISingleComponentSensor, string> {
         return this._onClose.asEvent();
@@ -137,7 +133,10 @@ export class Facker implements ISingleComponentSensor
     StopStreaming(): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
             this.ClearIntervals();
-            this._onStreamingStop.dispatch(this, "Stop streaming");
+            this._onMessage.dispatch(this, {
+                msgType: SensorMessage.StopStreaming
+            });
+            
             resolve();
             });
     }

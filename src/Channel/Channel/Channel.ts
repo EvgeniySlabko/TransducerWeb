@@ -1,25 +1,32 @@
 import { ChannelStyle } from "../ChannelStyle/ChannelStyle";
 import { ISensorDataProvider } from "../SensorDataProveder/ISensorDataProvider";
 import { CreateDefaultStyle } from "../ChannelStyle/ChannelStyleFactory";
-import { EventDispatcher } from "strongly-typed-events";
-import { dataEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { EventDispatcher, IEvent } from "strongly-typed-events";
+import { dataEventArgs, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { type } from "jquery";
 import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor";
+import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
 //import { CreateDefaultStyle } from "./ChannelStyleFactory";
 
-// Содержит информацию для отображения на графике. подает данные на график
 export type ChannelDataArgs =
 {
+    sensor: ISingleComponentSensor;
     data: dataEventArgs;
-    sensor: SensorComponentSensor;
 }
 
 export type ChannelMessageArgs =
 {
-    message: string;
-    sensor: SensorComponentSensor;
+    sensor: ISingleComponentSensor;
+    sensorMsgArgs: SensorMessageEventArgs;
 }
 
+export type ChannelCloseArgs =
+{
+    sensor: ISingleComponentSensor;
+    msg: string;
+}
+
+// Содержит информацию для отображения на графике. подает данные на график
 export class Channel
 {
     private dataSourse: ISensorDataProvider;
@@ -30,7 +37,7 @@ export class Channel
 
     private _onData = new EventDispatcher<Channel, ChannelDataArgs>();
     private _onMessage = new EventDispatcher<Channel, ChannelMessageArgs>();
-    private _onClose = new EventDispatcher<Channel, ChannelMessageArgs>();
+    private _onClose = new EventDispatcher<Channel, ChannelCloseArgs>();
 
     public constructor (dataSource: ISensorDataProvider, style: ChannelStyle = CreateDefaultStyle())
     {
@@ -45,14 +52,14 @@ export class Channel
 
         dataSource.onClose?.sub((sensor, args) => {
             this._onClose.dispatch(this, {
-                message: args,
                 sensor: sensor,
-            } as ChannelMessageArgs)
+                msg: args,
+            } as ChannelCloseArgs)
         });
 
         dataSource.onMessage?.sub((sensor, args) => {
             this._onMessage.dispatch(this, {
-                message: args,
+                sensorMsgArgs: args,
                 sensor: sensor,
             } as ChannelMessageArgs)
         });
@@ -66,8 +73,6 @@ export class Channel
     public get onData() {return this._onData.asEvent();}
 
     public get onMessage() {return this._onMessage.asEvent();}
-
-    public get onError() {return this._onClose.asEvent();}
 
     public get onClose() {return this._onClose.asEvent();}
 }

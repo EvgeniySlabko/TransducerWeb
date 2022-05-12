@@ -2,13 +2,14 @@ import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor"
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { Channel } from "./Channel";
 import { CreateDefaultStyle, CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "../ChannelStyle/ChannelStyleFactory";
-import { CreateMainValueDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "../SensorDataProveder/DataSourceFactory";
+import { CreateAverageValueDataSource, CreateMainValueDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "../SensorDataProveder/DataSourceFactory";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
 
 function CreateMainValueChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : Channel
 {
     var dataSource = CreateMainValueDataSource(sensor);
-    return new Channel(dataSource, CreateTorqueStyle(fullSensorInfo));
+    let avgSrc = CreateAverageValueDataSource(dataSource, 1);
+    return new Channel(avgSrc, CreateTorqueStyle(fullSensorInfo));
 }
 
 function CreateSpeedChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : Channel

@@ -1,5 +1,3 @@
-
-
 import { recordController, sensorService, plotViewController } from "../main";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { Facker } from "../Sensor/SingleComponentSensor.ts/FackerSensor";
@@ -36,17 +34,17 @@ var starthandler = async () =>
     let started = await sensorService.StartAll();
     if (!started) return;
     document.getElementById("StartStopSpan")?.classList.remove('glyphicon-play');
-    document.getElementById("StartStopSpan")?.classList.add('glyphicon-stop');
+    document.getElementById("StartStopSpan")?.classList.add('glyphicon-pause');
     //document.getElementById("MyElement").classList.remove('MyClass');
     startStop = true;
 }
 
 var stophandler = async () =>
 {
-  document.getElementById("StartStopSpan")?.classList.remove('glyphicon-stop');
+  document.getElementById("StartStopSpan")?.classList.remove('glyphicon-pause');
   document.getElementById("StartStopSpan")?.classList.add('glyphicon-play');
   await sensorService.StopAll();
-  setTimeout(async () =>{plotViewController.Clear()}, 500);
+  //setTimeout(async () =>{plotViewController.Clear()}, 500);
   
   startStop = false;
 }

@@ -1,8 +1,9 @@
 
 import uPlot, { AlignedData, Axis, Scale, Series } from "uplot";
-import { Channel, ChannelDataArgs, ChannelMessageArgs } from "../Channel/Channel/Channel";
+import { Channel, ChannelCloseArgs, ChannelDataArgs, ChannelMessageArgs } from "../Channel/Channel/Channel";
 import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
 import { Snapshot } from "../ReportListener/Snapshot";
+import { SensorMessage } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { GetAxe, GetScale, GetSeries } from "./ComponetFactory/ComponentFactory";
 
 
@@ -12,6 +13,8 @@ export type TraceInfo =
     axis: Axis;
     series: Series;
     scale: Scale;
+    lastDataIndex: number;
+    requireGap: boolean;
 }
 
 export class MyUPlot
@@ -179,13 +182,23 @@ export class MyUPlot
     channels.forEach((c, i) => {
       c.onData.sub(this.HandleData);
       c.onClose.sub(this.HandleClose);
+      c.onMessage.sub((channel, args) => {
+        if (args.sensorMsgArgs.msgType === SensorMessage.StopStreaming)
+          this.handleStopStreaming(channel);
+        if (args.sensorMsgArgs.msgType === SensorMessage.StartStreaming)
+            this.handleStartStreaming(channel)
+      })
 
+      //c.onMessage.sub()
       let traceInfo = this.SetStyleFor(i + 1, c.Style);
+      
       this.channels.push({
         axis: traceInfo.axis,
         channel: c,
         scale: traceInfo.scale,
-        series: traceInfo.series
+        series: traceInfo.series,
+        lastDataIndex: 0,
+        requireGap: false,
       });
     })
 
@@ -233,7 +246,20 @@ export class MyUPlot
     return traceInfo;
   }
   
-  private HandleClose = (channel: Channel, msg: ChannelMessageArgs) =>
+  private handleStopStreaming = (channel: Channel) =>
+  {
+    let index = this.channels.findIndex(t => t.channel === channel)
+    let lastIndex = this.channels[index].lastDataIndex;
+  }
+
+  private handleStartStreaming = (channel: Channel) =>
+  {
+    let index = this.channels.findIndex(t => t.channel === channel);
+    if (this.channels[index].lastDataIndex != 0)
+      this.channels[index].requireGap = true; 
+  }
+
+  private HandleClose = (channel: Channel, msg: ChannelCloseArgs) =>
   {
       let index = this.channels.findIndex(c => c.channel == channel);
       let traceInfo = this.channels[index];
@@ -257,19 +283,34 @@ export class MyUPlot
 
   private HandleData = (channel: Channel, args: ChannelDataArgs) => 
   {
-    var curIndex = this.channels.findIndex(c => c.channel == channel) + 1;
-    
+    var curIndex = this.channels.findIndex(c => c.channel == channel);
     var lastTicksValue = args.data.time[args.data.time.length - 1];
     var xIndex = this.tickToGridIndex(lastTicksValue);        //вычисляем индекс последнего значения данных
+    
+    let firstTickVal = args.data.time[0];
+    let firstIndex = this.tickToGridIndex(firstTickVal);
+    //if(args.data.data.length > 2)
+      //console.log(firstIndex);
 
+    if (this.channels[curIndex].requireGap)
+    {
+      //if(args.data.data.length > 2)
+        //console.log("gap from", this.channels[curIndex].lastDataIndex, "to", firstIndex);
+
+      this.channels[curIndex].requireGap = false;
+      for (let i = this.channels[curIndex].lastDataIndex + 1; i < firstIndex; i++) {
+        this.datBuf[curIndex + 1][i] = null;
+      }
+    }
     if (this.params.th < xIndex) {this.params.th = xIndex; this.params.sh = lastTicksValue;}
 
     for (let k = 0; k < args.data.time.length; k++) //проставляем данные
     {
       var currentIndex = this.tickToGridIndex(args.data.time[k]);
-      this.datBuf[curIndex][currentIndex] = args.data.data[k];
+      this.datBuf[curIndex + 1][currentIndex] = args.data.data[k];
     }
 
+    this.channels[curIndex].lastDataIndex = xIndex;
     //this.plot?.redraw();
     this.ScaleHandler();
   }
@@ -446,6 +487,7 @@ export class MyUPlot
         ],
         scales: {
             x: {
+              distr: 1,
               time: false, 
               auto: false,  
             },

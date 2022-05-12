@@ -10,7 +10,7 @@ import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/IS
 function CreateMainValueCellChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : CellChannel
 {
     let baseMainValueSource = CreateMainValueDataSource(sensor);
-    var dataSource = CreateAverageValueDataSource(baseMainValueSource, sensor, 100);
+    var dataSource = CreateAverageValueDataSource(baseMainValueSource, 100);
     return new CellChannel(dataSource, CreateTorqueCellStyle(fullSensorInfo));
 }
 

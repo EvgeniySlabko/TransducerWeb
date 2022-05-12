@@ -36,6 +36,18 @@ export enum packageType {
     msg = 103,
 };
 
+export enum SensorMessage
+{
+    StartStreaming,
+    StopStreaming,
+    StopReading,
+}
+
+export interface SensorMessageEventArgs
+{
+    msgType: SensorMessage;
+}
+
 export type dataEventArgs =
 {
     data: number[],

@@ -1,7 +1,7 @@
 import * as Defs from './SensorDefinitions'; 
 import { EventDispatcher, SimpleEventDispatcher } from "strongly-typed-events";
 import SerialBufferedWorker from "../../IO/serialBuffer";
-import { SensorSK } from './SensorDefinitions';
+import { SensorMessage, SensorMessageEventArgs, SensorSK } from './SensorDefinitions';
 import { DefaultCommand, ISensorCommand, MultipleCommand, SingleCommand } from '../SensorCommand/SensorCommand';
 import { ISingleComponentSensor } from './ISensor';
 
@@ -14,9 +14,8 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
     private _onTorqueData = new EventDispatcher<ISingleComponentSensor, Defs.dataEventArgs>();
     private _onSpeedData = new EventDispatcher<ISingleComponentSensor, Defs.dataEventArgs>();
     private _onTmpData = new EventDispatcher<ISingleComponentSensor, Defs.dataEventArgs>();
-    private _onReadingError = new EventDispatcher<ISingleComponentSensor, string>();
+    private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
     private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
-    private _onStreamingStop = new EventDispatcher<ISingleComponentSensor, string>();
 
 
     private baseTime: number | undefined = undefined;
@@ -39,11 +38,9 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
 
     public get onSpeed() {return this._onSpeedData.asEvent();}
 
-    public get onError() {return this._onReadingError.asEvent();}
-
     public get onClose() {return this._onClose.asEvent();}
 
-    public get onStopStreaming() {return this._onStreamingStop.asEvent();}
+    public get onMessage() {return this._onMessage.asEvent();}
 
     public async Initialize() {
         if (!this.serialWorker.baseWorker.IsConnected)
@@ -78,7 +75,12 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
         return sk;
     }
     
-    public  StartStreaming = async () => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL, Defs.START_STREAMING, Defs.COIL_ON_VALUE));
+    public  StartStreaming = async () =>{
+        await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL, Defs.START_STREAMING, Defs.COIL_ON_VALUE));
+        this._onMessage.dispatch(this, {
+            msgType: SensorMessage.StartStreaming
+        })
+    }
     public SetAvgRatio = async (avgRatio: number) => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.PRESET_SINGLE_REGISTER, Defs.AVG_RATIO, 1));  
     public SetComputerConnection = async () => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_ON_VALUE));
     public UnsetComputerConnection = async () => this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_OFF_VALUE));
@@ -115,7 +117,9 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
         else
             this.SendMessage(command);
 
-        this._onStreamingStop.dispatch(this, "Stop streaming");
+        this._onMessage.dispatch(this, {
+            msgType: SensorMessage.StopStreaming
+        });
     }
 
     private async ProcessDecoderCommands(command: number): Promise<boolean> {
@@ -308,7 +312,6 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
 
     private ReadingErrorHandler() {
         console.log('Sensor reading error');
-        this._onReadingError.dispatch(this, "Reading error");
         this._onClose.dispatch(this, "Reading error");
     }
 

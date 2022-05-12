@@ -15,6 +15,18 @@ export class SensorWorker
         this.sensor = sensor;
     }
 
+    public get IsInit(): boolean {
+        return this.isInit;
+    }
+
+    public get IsReading(): boolean {
+        return this.isReading;
+    }
+
+    public get IsStreaming(): boolean {
+        return this.isStreaming;
+    }
+
     public async Initialize()
     {
         await this.sensor.Initialize();

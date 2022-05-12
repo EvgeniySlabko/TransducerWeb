@@ -1,4 +1,5 @@
 import { CellChannel } from "../Channel/Channel/CellChannel";
+import { ChannelDataArgs } from "../Channel/Channel/Channel";
 import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISensor';
 import { dataEventArgs } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 
@@ -52,9 +53,9 @@ export class DataCellsController
         cellUnits.innerText = channel.Style.unitsName;
         p.innerText = "";
 
-        let dataHandler = (sensor: CellChannel, args: dataEventArgs) => 
+        let dataHandler = (channel: CellChannel, args: ChannelDataArgs) => 
         {
-            p.innerText = args.data[0].toFixed(1);
+            p.innerText = args.data.data[0].toFixed(1);
         }
 
         channel.onData.sub(dataHandler);

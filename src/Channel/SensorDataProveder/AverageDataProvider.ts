@@ -1,14 +1,13 @@
 import { EventDispatcher, IEvent, ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
-import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor";
-import { dataEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { dataEventArgs, SensorMessage, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
 //буферизирует данные
 export class AverageSensorDataProvider implements ISensorDataProvider
 {
     private _onData = new EventDispatcher<ISingleComponentSensor, dataEventArgs>();
-    private _onMessage = new EventDispatcher<ISingleComponentSensor,string>();
+    private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
     private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
 
     private averageRatio: number;
@@ -19,29 +18,32 @@ export class AverageSensorDataProvider implements ISensorDataProvider
     private th: number = 0;
 
     constructor(baseSource: ISensorDataProvider,
-                clearBufferTrigger: IEvent<ISingleComponentSensor,string> | null, 
                 averageRatio: number)
     {
         this.averageRatio = averageRatio;
 
-        clearBufferTrigger?.sub(() => {
-            this.reset();
+        baseSource.onClose.sub((sender, args) => {
+            this._onClose.dispatch(sender, args);
+        });
+
+        baseSource.onMessage.sub((sender, args) => {
+            if (args.msgType == SensorMessage.StopStreaming)
+                this.reset();
+            this._onMessage.dispatch(sender, args);
         });
         
-        baseSource.onClose.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
-        baseSource.onMessage.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
         baseSource.onData.sub((sensor, data) => {
-
-            if (this.averageCount == 0) this.t0 = data.time[0];
-
             data.data.forEach((v, i) =>{
+                if (this.averageCount == 0) this.t0 = data.time[0];
                 this.averageValue += v;
                 this.averageCount++;
                 if (this.averageCount == this.averageRatio)
                 {
                     this.th = data.time[i];
                     var curVal = this.averageValue / this.averageCount;
-                    var curTime = (this.th + this.t0) / 2;
+
+                    let dt = ((this.th - this.t0) / 2);
+                    var curTime = this.th - dt;//  + ((this.th - this.t0) / 2);
                     this._onData.dispatch(sensor, {
                         data: [curVal],
                         time: [curTime],
@@ -65,7 +67,7 @@ export class AverageSensorDataProvider implements ISensorDataProvider
     get onClose(): IEvent<ISingleComponentSensor, string> {
         return this._onClose.asEvent();
     }
-    get onMessage(): IEvent<ISingleComponentSensor, string> {
+    get onMessage(): IEvent<ISingleComponentSensor, SensorMessageEventArgs> {
         return this._onMessage.asEvent();
     }
 }

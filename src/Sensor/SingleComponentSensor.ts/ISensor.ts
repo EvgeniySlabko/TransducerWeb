@@ -1,6 +1,6 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
 import SensorComponentSensor from "./sensor";
-import { dataEventArgs, HoldingRegisters, SensorSK } from "./SensorDefinitions";
+import { dataEventArgs, HoldingRegisters, SensorMessageEventArgs, SensorSK } from "./SensorDefinitions";
 
 export interface ISingleComponentSensor {
     get onData() : IEvent<ISingleComponentSensor, dataEventArgs>;
@@ -9,11 +9,9 @@ export interface ISingleComponentSensor {
 
     get onSpeed() : IEvent<ISingleComponentSensor, dataEventArgs>;
 
-    get onError() : IEvent<ISingleComponentSensor, string>;
-
     get onClose() : IEvent<ISingleComponentSensor, string>;
 
-    get onStopStreaming() : IEvent<ISingleComponentSensor, string>;
+    get onMessage() : IEvent<ISingleComponentSensor, SensorMessageEventArgs>;
 
     Initialize(): Promise<void>;
     GetHoldingRegisters(): Promise<HoldingRegisters>;
