@@ -1,10 +1,10 @@
-
 import uPlot, { AlignedData, Axis, Scale, Series } from "uplot";
 import { Channel, ChannelCloseArgs, ChannelDataArgs, ChannelMessageArgs } from "../Channel/Channel/Channel";
 import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
+import { sleep } from "../Common/Common";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { SensorMessage } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
-import { GetAxe, GetScale, GetSeries } from "./ComponetFactory/ComponentFactory";
+import { GetAxe, GetSeries } from "./ComponetFactory/ComponentFactory";
 
 
 export type TraceInfo =
@@ -15,6 +15,8 @@ export type TraceInfo =
     scale: Scale;
     lastDataIndex: number;
     requireGap: boolean;
+
+    curRange: number[];
 }
 
 export class MyUPlot
@@ -58,7 +60,7 @@ export class MyUPlot
     
     screenRollingGap: 2,
 
-    rightGap: 3,
+    rightGap: 5,
     sh: 0,
     th: 0,
     t0: 0,
@@ -70,6 +72,7 @@ export class MyUPlot
     this.element = element;
     this.options = this.getOptions();    
     this.RebuidPlot();
+    this.SetScale(0, this.params.screenSize);
 
     window.addEventListener("resize", e => {
       this.plot?.setSize(this.getSize());
@@ -79,7 +82,9 @@ export class MyUPlot
       this.plot?.setSize(this.getSize());
     });
 
-    setInterval(() => {this.plot?.redraw()}, 100);
+    setInterval(() => {
+      this.plot?.redraw(true, true)
+    }, 100);
   }
 
   public FromSnapshot(snapshot: Snapshot)
@@ -164,13 +169,14 @@ export class MyUPlot
 
     this.channels = [];
     this.RebuidPlot();
+    this.SetScale(0, this.params.screenSize);
   }
 
   public Clear()
   {
     // чистим данный графика
     this.Init();
-    this.SetScale(0, this.params.screenRollingGap);
+    this.SetScale(0, this.params.screenSize);
     this.RebuidPlot();
   }
 
@@ -191,18 +197,26 @@ export class MyUPlot
 
       //c.onMessage.sub()
       let traceInfo = this.SetStyleFor(i + 1, c.Style);
-      
-      this.channels.push({
+      let trace = {
         axis: traceInfo.axis,
         channel: c,
         scale: traceInfo.scale,
         series: traceInfo.series,
         lastDataIndex: 0,
         requireGap: false,
-      });
+        curRange: c.Style.range,
+      }
+      traceInfo.scale.range = () => {return [trace.curRange[0], trace.curRange[1]]};
+      this.channels.push(trace);
+      this.RebuidPlot();
+      
     })
-
+    
     this.isInit = true;
+
+    setTimeout(this.SetupAxis, 100);
+    this.SetScale(0, this.params.screenSize);
+    //this.SetupAxis()
   }
   
   private SetStyles(styles: ChannelStyle[])
@@ -222,9 +236,9 @@ export class MyUPlot
     let scale = this.options!.scales![scaleName];
     axis.show = true;
 
-    scale.auto = false;
-    scale.range = <Scale.Range>style.range;
-
+    //scale.auto = false;
+   
+    //scale.range = () => {return [style.range[0], style.range[1]]};
     series.stroke = style.color;
     series.label = style.legendTitle;
     
@@ -236,7 +250,6 @@ export class MyUPlot
     axis.label = style.legendTitle;
     axis.grid!.show = style.grid;
 
-    this.RebuidPlot();
     let traceInfo = {
       axis: axis,
       scale: scale,
@@ -311,8 +324,9 @@ export class MyUPlot
     }
 
     this.channels[curIndex].lastDataIndex = xIndex;
-    //this.plot?.redraw();
     this.ScaleHandler();
+    //this.plot?.redraw();
+   
   }
 
   private wheelZoomPlugin(opts: any) {
@@ -344,8 +358,8 @@ export class MyUPlot
           over.addEventListener("dblclick", (e: MouseEvent) => {
             if (e.button == 0) {
               e.preventDefault();
-              this.params.streaming = true;
-              this.SetScale(0, this.params.sh + this.params.rightGap);
+              this.params.streaming = !this.params.streaming;
+              this.SetCurrentScale();
             }
           });
 
@@ -392,8 +406,17 @@ export class MyUPlot
           // wheel scroll zoom
           over.addEventListener("wheel", (e: any) => {
             e.preventDefault();
-            this.params.streaming = false;
-
+            
+            if (this.params.streaming)
+            {
+              let dw = ((e.deltaY < 0) ? -1 : 1);
+              let newSize = this.params.screenSize + dw;
+              this.params.screenSize = newSize < 2 ? 2 : newSize;
+              this.SetCurrentScale();
+              return;
+            }
+            
+            
             xMin = u.scales.x.min;
             xMax = this.params.sh //u.scales.x.max;
             yMin = u.scales.y1.min;
@@ -418,9 +441,7 @@ export class MyUPlot
             let nxMin = xVal - nxRange * leftPct;
             let nxMax = nxMin + nxRange;
             [nxMin, nxMax] = clamp(nxRange, nxMin, nxMax, xRange, xMin, xMax, this.params.rightGap);
-
-          
-
+            
             this.SetScale(nxMin, nxMax);
           });
         }
@@ -428,13 +449,13 @@ export class MyUPlot
     };
   }
   
-  private ScaleHandler()
+  private ScaleHandler = () =>
   {
     var max = this.plot?.scales["x"].max;
     if (max == null) {max = 0};
-    if (this.params.sh > <any>max  && this.params.streaming)
+    if (this.params.sh > max - (this.params.screenSize / 2) + 0.05 && this.params.streaming)
     {
-      this.SetScale(0, this.params.sh + this.params.rightGap);
+      this.SetCurrentScale();
     }
   }
   
@@ -453,7 +474,7 @@ export class MyUPlot
       
     this.plot = new uPlot(this.options, dataBuff, this.element);
     this.plot.setSize(this.getSize());
-    this.SetScale(0, this.params.screenSize);
+    //this.SetScale(0, this.params.screenSize);
   } 
 
   private Init()
@@ -470,6 +491,19 @@ export class MyUPlot
     for (let k = 0; k < this.datBuf[0].length; k++) {
       this.datBuf[0][k] = k * this.params.gridDx;
     }
+  }
+
+  private GetScale()
+  {
+      return {
+          auto: false,
+          distr: 1,
+          time: false, 
+          
+          //range: (self, min, max) => [-44, 44]
+          //range: [-100, 100],
+          //space: 10,
+      } as uPlot.Scale
   }
 
   private getOptions()
@@ -491,22 +525,22 @@ export class MyUPlot
               time: false, 
               auto: false,  
             },
-            y1: GetScale(),
+            y1: this.GetScale(),
 
-            y2: GetScale(),
-            y3: GetScale(),
-            y4: GetScale(),
-            y5: GetScale(),
+            y2: this.GetScale(),
+            y3: this.GetScale(),
+            y4: this.GetScale(),
+            y5: this.GetScale(),
 
-            y6: GetScale(),
-            y7: GetScale(),
-            y8: GetScale(),
-            y9: GetScale(),
+            y6: this.GetScale(),
+            y7: this.GetScale(),
+            y8: this.GetScale(),
+            y9: this.GetScale(),
 
-            y10: GetScale(),
-            y11: GetScale(),
-            y12: GetScale(),
-            y13: GetScale(),
+            y10: this.GetScale(),
+            y11: this.GetScale(),
+            y12: this.GetScale(),
+            y13: this.GetScale(),
         },
         axes: [
             {
@@ -572,6 +606,81 @@ export class MyUPlot
       width: this.element.clientWidth - 100,
       height: this.element.clientHeight - 100,
     }
+  }
+
+  private SetupAxis = () =>
+  {
+    let axisDivs = this.element.getElementsByClassName("u-axis");
+    for (let i = 0; i < this.channels.length; i++) {
+      let divAxis = axisDivs[i];
+
+      let dragStart = false;
+      let yCoord = 0;
+      let initialRange = new Array<number>(2);
+
+      
+      divAxis.addEventListener('mousedown', (e: any) => {
+        dragStart = true;
+        yCoord = e.clientY;
+
+        initialRange[0] = this.channels[index- 1].curRange[0];
+        initialRange[1] = this.channels[index- 1].curRange[1];
+      });
+
+
+
+      divAxis.addEventListener('mouseup', (e: any) => {
+        dragStart = false;
+      });
+
+      divAxis.addEventListener('mouseleave', (e: any) => {
+        dragStart = false;
+      });
+
+      divAxis.addEventListener('mousemove', (e: any) => {
+        if (dragStart)
+        {
+          let curY = e.clientY;;
+          let divHeigh = divAxis.clientHeight;  
+          
+          let channel = this.channels[index- 1];
+          let range = this.channels[index- 1].curRange;
+          let curRangeVal = range[1] - range[0];
+
+          //вычисляем относительное смещение 
+          let cursorDy = curY - yCoord;
+          let l = cursorDy / divHeigh;
+          let dVal = curRangeVal * l;
+
+          channel.curRange[0] = initialRange[0] + dVal;
+          channel.curRange[1] = initialRange[1] + dVal;
+          
+        }
+      });
+
+      let index = i; 
+      divAxis.addEventListener('mousewheel', (e: any) => {
+        e.preventDefault();
+
+        let dir = e.deltaY > 0 ? 1 : -1; 
+        
+        let channel = this.channels[index- 1];
+        let curRange = channel.curRange;
+        
+        let rangeVal = curRange[1] - curRange[0];
+        let dyTop = channel.channel.Style.rescaleRationTop * rangeVal;
+        let dyBottom = channel.channel.Style.rescaleRationBottom * rangeVal;
+        let newRange = [curRange[0] - dyBottom * dir, curRange[1] + dyTop * dir];
+
+        channel.curRange = newRange;
+      });
+    }
+  }
+
+  private SetCurrentScale()
+  {
+    let newMax = this.params.sh + this.params.screenSize / 2;
+    this.SetScale(this.params.sh - this.params.screenSize, newMax);
   }
 
   private tooltipsPlugin(opts: any) {

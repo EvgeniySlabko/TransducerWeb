@@ -29,7 +29,7 @@ export function GetAxe(scale: string, side: number)
             show: false,
         },
         scale: scale,
-        show: true,
+        show: false,
         gap: ii++ * 1,
         ticks: 10,
         space: 20,
@@ -37,11 +37,3 @@ export function GetAxe(scale: string, side: number)
     } as Axis
 }
 
-export function GetScale()
-{
-    return {
-        auto: true,
-        //range: [-100, 100],
-        //space: 10,
-    } as uPlot.Scale
-}

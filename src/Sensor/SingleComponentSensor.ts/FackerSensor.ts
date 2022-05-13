@@ -126,6 +126,10 @@ export class Facker implements ISingleComponentSensor
             this._onSpeedData.dispatch(this, speedArgs);
         });
 
+        this._onMessage.dispatch(this, {
+            msgType: SensorMessage.StartStreaming
+        });
+
         resolve();
         });
     }

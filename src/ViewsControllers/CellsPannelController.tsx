@@ -5,11 +5,10 @@ import { dataEventArgs } from "../Sensor/SingleComponentSensor.ts/SensorDefiniti
 
 export class DataCellsController
 {
-    private container: HTMLElement;
+    private container: HTMLDivElement;
     private p: HTMLParagraphElement | undefined;
 
-    
-    constructor(container: HTMLElement)
+    constructor(container: HTMLDivElement)
     {
         this.container = container;
     }
@@ -19,6 +18,13 @@ export class DataCellsController
         channels.forEach(ch => {
             this.pushChannel(ch);
         });
+    }
+
+    public Clear = () =>
+    {
+        let vals = this.container.getElementsByClassName("cell-measure");
+
+          
     }
 
     private pushChannel(channel: CellChannel) 
@@ -38,6 +44,7 @@ export class DataCellsController
         cellName.classList.add("cell-name");
         cellUnits.classList.add("cell-units");
         cellMeasure.classList.add("cell-measure-content");  
+        p.id = "value";
         p.classList.add("cell-measure");
         p.classList.add(channel.Style.fontStyle);
 

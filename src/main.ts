@@ -37,7 +37,7 @@ window.onload = async function()
 {
   // Создаем UI компоненты
   let cellsContainer = <HTMLElement>document.getElementById("cell-container");
-  cellsDataController = new DataCellsController(cellsContainer);
+  cellsDataController = new DataCellsController(<any>cellsContainer);
 
   let myUplot = new MyUPlot(<HTMLElement>document.getElementById('gd'));
   plotViewController = new PlotViewController(myUplot);

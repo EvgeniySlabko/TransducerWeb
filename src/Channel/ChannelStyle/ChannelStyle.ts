@@ -15,4 +15,6 @@ export declare class ChannelStyle{
     color: Axis.Stroke ;
     line: "dash" | "solid";
     yAxeSide: "right" | "left";
+    rescaleRationTop: number;
+    rescaleRationBottom: number;
 }

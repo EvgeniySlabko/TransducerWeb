@@ -11,7 +11,13 @@ export function CreateDefaultStyle() : ChannelStyle{
         line: "solid",
         range: [100, 100],
         yTitle: "Default y Title",
-    } as ChannelStyle
+        grid: false,
+        rescaleRationBottom: rescaleRatio,
+        rescaleRationTop: rescaleRatio,
+        unitName: "Undefined",
+        valueType: "torque",
+        yAxeSide: "left"
+    } 
 }
 
 
@@ -26,7 +32,9 @@ export function CreateTorqueStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
         unitName: sensorInfo.Unitname,
         valueType: "torque",
         yAxeSide: "left",
-    } as ChannelStyle;
+        rescaleRationBottom: rescaleRatio,
+        rescaleRationTop: rescaleRatio,
+    };
 }
 
 export function CreateSpeedStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
@@ -40,7 +48,9 @@ export function CreateSpeedStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
         unitName: "hz",
         valueType: "speed",
         yAxeSide: "right",
-    } as ChannelStyle;
+        rescaleRationBottom: 0,
+        rescaleRationTop: rescaleRatio,
+    };
 }
 
 export function CreatetemperatureStyle() : ChannelStyle{
@@ -54,20 +64,28 @@ export function CreatetemperatureStyle() : ChannelStyle{
         unitName: "Dg",
         valueType: "tmp",
         yAxeSide: "right",
-    } as ChannelStyle;
+        rescaleRationBottom: rescaleRatio,
+        rescaleRationTop: rescaleRatio,
+    };
 }
 
 
 export function CreatePowerStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
+        let minPower = CalculatePower(sensorInfo.MaxSpeed + 0.1 * sensorInfo.MaxSpeed, sensorInfo.MinValue + 0.1 * sensorInfo.MinValue);
+        let maxPower = -minPower;
     return {
         grid: false,
         color: "darkRed",
         legendTitle: "Power",
         line: "dash",
-        range: [CalculatePower(sensorInfo.MaxSpeed, sensorInfo.MinValue + 0.1 * sensorInfo.MinValue), CalculatePower(sensorInfo.MaxSpeed, sensorInfo.MaxValue - 0.1 * sensorInfo.MaxValue)],
+        range: [minPower, maxPower],
         yTitle: "Power",
         unitName: sensorInfo.powerUnitsName,
         valueType: "power",
         yAxeSide: "left",
-    } as ChannelStyle;
+        rescaleRationBottom: rescaleRatio,
+        rescaleRationTop: rescaleRatio,
+    };
 }
+
+let rescaleRatio = 0.2;
