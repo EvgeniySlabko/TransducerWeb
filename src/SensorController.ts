@@ -94,17 +94,27 @@ export class SensorController
         }
     }   
 
-
     public async SetT0()
     {
         if (this.sensors.length == 0) return false;
 
         this.sensors.forEach(async node => {
-            if (node.worker.IsReading)
+            if (node.worker.IsStreaming)
+            {
+                await node.worker.StopStreaming();
                 await node.worker.StopReading();
+                await node.worker.SetT0();
+                await node.worker.StartReading();
+                await node.worker.StartStreaming();
+            }
 
-            await node.worker.SetT0();
-            await node.worker.StartReading();
+            if (node.worker.IsReading)
+            {
+                await node.worker.StopReading();
+                await node.worker.SetT0();
+                await node.worker.StartReading();
+            }
+            //await node.worker.StartReading();
         });
     }
 

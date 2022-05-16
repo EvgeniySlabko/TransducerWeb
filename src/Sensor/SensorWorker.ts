@@ -89,6 +89,7 @@ export class SensorWorker
         if (this.isStreaming)
         {
             await this.sensor.StopStreaming();
+            await this.sensor.StopStreaming();
             this.isStreaming = false;
         }
     }

@@ -24,6 +24,7 @@ var fileInputButton = <HTMLElement>document.getElementById('file-input-button');
 clearButton.addEventListener('click', () =>{
   plotViewController.Clear();
   cellsDataController.Clear();
+  firstStart = true;
 })
 
 fileInputButton.addEventListener('click', function() {
@@ -99,7 +100,7 @@ startStopButton.addEventListener('click', async (event) => {
 var starthandler = async () =>
 {
     let started = await sensorService.StartAll();
-    if (!started) return;
+      if (!started) return;
     document.getElementById("StartStopSpan")?.classList.remove('glyphicon-play');
     document.getElementById("StartStopSpan")?.classList.add('glyphicon-pause');
     clearButton.disabled = true;

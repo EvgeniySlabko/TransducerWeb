@@ -15,7 +15,6 @@ export type TraceInfo =
     scale: Scale;
     lastDataIndex: number;
     requireGap: boolean;
-
     curRange: number[];
 }
 
@@ -165,8 +164,13 @@ export class MyUPlot
       //this.clearTrace(index + 1);
       c.channel.onData.unsub(this.HandleData);
       c.channel.onClose.unsub(this.HandleClose);
+      c.channel.onMessage.unsub(this.HandleMessage);
     });
 
+    //let legend = <HTMLTableElement><unknown>(document.getElementsByClassName("u-legend"));
+    //legend.deleteRow(1);
+    while(this.plot!.series.length > 1)
+      this.plot!.delSeries(1);
     this.channels = [];
     this.RebuidPlot();
     this.SetScale(0, this.params.screenSize);
@@ -176,8 +180,9 @@ export class MyUPlot
   {
     // чистим данный графика
     this.Init();
-    this.SetScale(0, this.params.screenSize);
     this.RebuidPlot();
+    this.SetScale(0, this.params.screenSize);
+    //this.params.sh;
   }
 
   public SetChannels(channels: Channel[])
@@ -186,74 +191,145 @@ export class MyUPlot
     if (channels.length == 0) "There are no channels";
 
     channels.forEach((c, i) => {
+      this.SetupChannel(c);
+
       c.onData.sub(this.HandleData);
       c.onClose.sub(this.HandleClose);
-      c.onMessage.sub((channel, args) => {
-        if (args.sensorMsgArgs.msgType === SensorMessage.StopStreaming)
-          this.handleStopStreaming(channel);
-        if (args.sensorMsgArgs.msgType === SensorMessage.StartStreaming)
-            this.handleStartStreaming(channel)
-      })
-
-      //c.onMessage.sub()
-      let traceInfo = this.SetStyleFor(i + 1, c.Style);
-      let trace = {
-        axis: traceInfo.axis,
-        channel: c,
-        scale: traceInfo.scale,
-        series: traceInfo.series,
-        lastDataIndex: 0,
-        requireGap: false,
-        curRange: c.Style.range,
-      }
-      traceInfo.scale.range = () => {return [trace.curRange[0], trace.curRange[1]]};
-      this.channels.push(trace);
-      this.RebuidPlot();
-      
-    })
+      c.onMessage.sub(this.HandleMessage);
+    });
     
+    
+    this.RebuidPlot();
     this.isInit = true;
-
     setTimeout(this.SetupAxis, 100);
     this.SetScale(0, this.params.screenSize);
     //this.SetupAxis()
   }
   
+  private HandleMessage = (channel: Channel, args: ChannelMessageArgs) =>
+  {
+    if (args.sensorMsgArgs.msgType === SensorMessage.StopStreaming)
+          this.handleStopStreaming(channel);
+    if (args.sensorMsgArgs.msgType === SensorMessage.StartStreaming)
+          this.handleStartStreaming(channel);
+  }
+
   private SetStyles(styles: ChannelStyle[])
   {
     styles.forEach((s, i) => this.SetStyleFor(i + 1, s));
   }
   
+  private SetupChannel(channel: Channel)
+  { 
+    let style = channel.Style;
+  
+    let axis: uPlot.Axis;
+    let scale: uPlot.Scale;
+    let range : number[];
+    let series: uPlot.Series;
+    let index = this.channels.length + 1;
+    
+
+    let sameTypeChannel = this.channels.find(c => c.channel.Style.valueType == style.valueType);
+    if (sameTypeChannel)
+    {
+      let scaleName = <string>sameTypeChannel.axis.scale;
+      series = GetSeries(scaleName);
+      this.options.series.push(series);
+      axis = sameTypeChannel.axis;
+      scale = sameTypeChannel.scale;
+      range = sameTypeChannel.curRange;
+      series.stroke = style.color;
+      series.label = style.legendTitle;
+    }
+    else
+    {
+
+      let scaleName = "y" + index.toString();               //for scale
+      series = GetSeries(scaleName);
+      series.scale = scaleName;
+      this.options.series[index] = series;
+      
+      axis = this.options!.axes![index];
+      scale = this.options!.scales![scaleName];
+      axis.show = true;
+  
+      //scale.auto = false;
+      range = [style.range[0], style.range[1]];
+      //scale.range = () => {return [style.range[0], style.range[1]]};
+      series.stroke = style.color;
+      series.label = style.legendTitle;
+      
+      //axis.grid!.stroke = style.color;
+      axis.side = style.yAxeSide == "left" ? 1 : 3;
+      axis.stroke = style.color;
+      axis.show = true;
+      axis.stroke = style.color;
+      axis.label = style.legendTitle;
+      axis.grid!.show = style.grid;
+
+      setInterval( () => {this.SetupAxis(index - 1)}, 100);
+      scale.range = () => {return [range[0], range[1]]};
+    }
+
+    let trace = {
+      axis: axis,
+      channel: channel,
+      scale: scale,
+      series: series,
+      lastDataIndex: 0,
+      requireGap: false,
+      curRange: range, 
+    }
+
+    this.channels.push(trace);
+  }
+
   private SetStyleFor(index: number, style: ChannelStyle)
   {
     let scaleName = "y" + index.toString();               //for scale
     let series = GetSeries(scaleName);
     series.scale = scaleName;
-    
+
     this.options.series[index] = series;
 
-    let axis = this.options!.axes![index];
-    let scale = this.options!.scales![scaleName];
-    axis.show = true;
+    let axis: uPlot.Axis;
+    let scale: uPlot.Scale;
+    let range : number[];
 
-    //scale.auto = false;
-   
-    //scale.range = () => {return [style.range[0], style.range[1]]};
-    series.stroke = style.color;
-    series.label = style.legendTitle;
+    let sameTypeChannel = this.channels.find(c => c.channel.Style.valueType == style.valueType);
+    if (sameTypeChannel)
+    {
+      axis = sameTypeChannel.axis;
+      scale = sameTypeChannel.scale;
+      range = sameTypeChannel.curRange;
+    }
+    else
+    {
+      axis = this.options!.axes![index];
+      scale = this.options!.scales![scaleName];
+      axis.show = true;
+  
+      //scale.auto = false;
+      range = [-50, 50];
+      //scale.range = () => {return [style.range[0], style.range[1]]};
+      series.stroke = style.color;
+      series.label = style.legendTitle;
+      
+      //axis.grid!.stroke = style.color;
+      axis.side = style.yAxeSide == "left" ? 1 : 3;
+      axis.stroke = style.color;
+      axis.show = true;
+      axis.stroke = style.color;
+      axis.label = style.legendTitle;
+      axis.grid!.show = style.grid;
+    }
     
-    //axis.grid!.stroke = style.color;
-    axis.side = style.yAxeSide == "left" ? 1 : 3;
-    axis.stroke = style.color;
-    axis.show = true;
-    axis.stroke = style.color;
-    axis.label = style.legendTitle;
-    axis.grid!.show = style.grid;
-
     let traceInfo = {
       axis: axis,
       scale: scale,
       series: series,
+      range: range,
     };
 
     return traceInfo;
@@ -411,7 +487,7 @@ export class MyUPlot
             {
               let dw = ((e.deltaY < 0) ? -1 : 1);
               let newSize = this.params.screenSize + dw;
-              this.params.screenSize = newSize < 2 ? 2 : newSize;
+              this.params.screenSize = newSize < 0.1 ? 0.1 : newSize;
               this.SetCurrentScale();
               return;
             }
@@ -608,73 +684,70 @@ export class MyUPlot
     }
   }
 
-  private SetupAxis = () =>
+  private SetupAxis = (i: number) =>
   {
     let axisDivs = this.element.getElementsByClassName("u-axis");
-    for (let i = 0; i < this.channels.length; i++) {
-      let divAxis = axisDivs[i];
+    
+    let divAxis = axisDivs[i];
 
-      let dragStart = false;
-      let yCoord = 0;
-      let initialRange = new Array<number>(2);
+    let dragStart = false;
+    let yCoord = 0;
+    let initialRange = new Array<number>(2);
 
-      
-      divAxis.addEventListener('mousedown', (e: any) => {
-        dragStart = true;
-        yCoord = e.clientY;
+    
+    divAxis.addEventListener('mousedown', (e: any) => {
+      dragStart = true;
+      yCoord = e.clientY;
 
-        initialRange[0] = this.channels[index- 1].curRange[0];
-        initialRange[1] = this.channels[index- 1].curRange[1];
-      });
+      initialRange[0] = this.channels[index- 1].curRange[0];
+      initialRange[1] = this.channels[index- 1].curRange[1];
+    });
 
+    divAxis.addEventListener('mouseup', (e: any) => {
+      dragStart = false;
+    });
 
+    divAxis.addEventListener('mouseleave', (e: any) => {
+      dragStart = false;
+    });
 
-      divAxis.addEventListener('mouseup', (e: any) => {
-        dragStart = false;
-      });
-
-      divAxis.addEventListener('mouseleave', (e: any) => {
-        dragStart = false;
-      });
-
-      divAxis.addEventListener('mousemove', (e: any) => {
-        if (dragStart)
-        {
-          let curY = e.clientY;;
-          let divHeigh = divAxis.clientHeight;  
-          
-          let channel = this.channels[index- 1];
-          let range = this.channels[index- 1].curRange;
-          let curRangeVal = range[1] - range[0];
-
-          //вычисляем относительное смещение 
-          let cursorDy = curY - yCoord;
-          let l = cursorDy / divHeigh;
-          let dVal = curRangeVal * l;
-
-          channel.curRange[0] = initialRange[0] + dVal;
-          channel.curRange[1] = initialRange[1] + dVal;
-          
-        }
-      });
-
-      let index = i; 
-      divAxis.addEventListener('mousewheel', (e: any) => {
-        e.preventDefault();
-
-        let dir = e.deltaY > 0 ? 1 : -1; 
+    divAxis.addEventListener('mousemove', (e: any) => {
+      if (dragStart)
+      {
+        let curY = e.clientY;;
+        let divHeigh = divAxis.clientHeight;  
         
         let channel = this.channels[index- 1];
-        let curRange = channel.curRange;
-        
-        let rangeVal = curRange[1] - curRange[0];
-        let dyTop = channel.channel.Style.rescaleRationTop * rangeVal;
-        let dyBottom = channel.channel.Style.rescaleRationBottom * rangeVal;
-        let newRange = [curRange[0] - dyBottom * dir, curRange[1] + dyTop * dir];
+        let range = this.channels[index- 1].curRange;
+        let curRangeVal = range[1] - range[0];
 
-        channel.curRange = newRange;
-      });
-    }
+        //вычисляем относительное смещение 
+        let cursorDy = curY - yCoord;
+        let l = cursorDy / divHeigh;
+        let dVal = curRangeVal * l;
+
+        channel.curRange[0] = initialRange[0] + dVal;
+        channel.curRange[1] = initialRange[1] + dVal;
+      }
+    });
+
+    let index = i; 
+    divAxis.addEventListener('mousewheel', (e: any) => {
+      e.preventDefault();
+
+      let dir = e.deltaY > 0 ? 1 : -1; 
+      
+      let channel = this.channels[index- 1];
+      let curRange = channel.curRange;
+      
+      let rangeVal = curRange[1] - curRange[0];
+      let dyTop = channel.channel.Style.rescaleRationTop * rangeVal;
+      let dyBottom = channel.channel.Style.rescaleRationBottom * rangeVal;
+      let newRange = [curRange[0] - dyBottom * dir, curRange[1] + dyTop * dir];
+
+      channel.curRange = newRange;
+    });
+    
   }
 
   private SetCurrentScale()
