@@ -45,7 +45,6 @@ export class SensorController
         return index;
     }
 
-
     public async AddSensor(sensor: ISingleComponentSensor)
     {
         let index = this.GetIndex(sensor);
@@ -99,21 +98,9 @@ export class SensorController
         if (this.sensors.length == 0) return false;
 
         this.sensors.forEach(async node => {
-            if (node.worker.IsStreaming)
-            {
-                await node.worker.StopStreaming();
-                await node.worker.StopReading();
-                await node.worker.SetT0();
-                await node.worker.StartReading();
-                await node.worker.StartStreaming();
-            }
+            
+            await node.worker.SetT0();
 
-            if (node.worker.IsReading)
-            {
-                await node.worker.StopReading();
-                await node.worker.SetT0();
-                await node.worker.StartReading();
-            }
             //await node.worker.StartReading();
         });
     }
@@ -123,9 +110,7 @@ export class SensorController
         if (this.sensors.length == 0) return false;
 
         this.sensors.forEach(async node => {
-            if (!node.worker.IsReading)
-                await node.worker.StartReading();
-                
+            await node.worker.StartReading();
             await node.worker.StartStreaming();
         });
 
@@ -136,8 +121,20 @@ export class SensorController
     {
         this.sensors.forEach(async node => {
             await node.worker.StopStreaming();
+            await node.worker.StopReading();
             //await node.worker.StopReading();
         });
+    }
+
+    public GetAllSensors()
+    {
+        let data = new Array();
+        this.sensors.forEach(s => data.push({
+            sensor: s.sensor,
+            info: s.fullSensorInfo,
+        }))
+
+        return data;
     }
 
     public get onDispatch() {return this._dispatcher;}

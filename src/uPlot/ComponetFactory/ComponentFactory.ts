@@ -21,6 +21,15 @@ export function GetXAxe()
     } as uPlot.Axis
 }
 
+export function GetScale()
+  {
+      return {
+          auto: false,
+          distr: 1,
+          time: false, 
+      } as uPlot.Scale
+  }
+
 export function GetAxe(scale: string, side: number)
 {
     return {

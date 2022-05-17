@@ -16,7 +16,7 @@ import { RecordController } from "./RecordController";
 import { SensorController, SensorControllerArgs } from "./SensorController";
 import { SensorPanelControllers as SensorPanelViewControllers } from './ViewsControllers/SensorsPannelController';
 import { DataCellsController } from './ViewsControllers/CellsPannelController';
-import { CreateAllSensorChannels as CreateAllSensorPlotChannels } from "./Channel/Channel/ChannelFactory";
+import { CreateAllSensorChannelsForPlot as CreateAllSensorPlotChannels } from "./Channel/Channel/ChannelFactory";
 import { SensorWorker } from './Sensor/SensorWorker';
 import { CreateAllSensorCellChannels } from './Channel/Channel/CellChannelFactory';
 
@@ -39,8 +39,7 @@ window.onload = async function()
   let cellsContainer = <HTMLElement>document.getElementById("cell-container");
   cellsDataController = new DataCellsController(<any>cellsContainer);
 
-  let myUplot = new MyUPlot(<HTMLElement>document.getElementById('gd'));
-  plotViewController = new PlotViewController(myUplot);
+  plotViewController = new PlotViewController(<HTMLElement>document.getElementById('gd'));
 
   let sensorContainer = <HTMLElement>document.getElementById("sensor-container");
   sensorPanelController = new SensorPanelViewControllers(sensorContainer);
@@ -57,8 +56,9 @@ window.onload = async function()
         info: args.fullSensorInfo,
       }
     );
+
     cellsDataController.PushChannels(cellChannels);
-    plotViewController.AddSensorHandler(plotChannels);
+    plotViewController.AddChannels(plotChannels);
   });
   
   sensorPanelController.onSensorClose.sub((panel, args) =>{

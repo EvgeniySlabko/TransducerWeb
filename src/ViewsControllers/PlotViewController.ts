@@ -8,23 +8,47 @@ import { Channel } from "../Channel/Channel/Channel";
 import { sleep } from "../Common/Common";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { ISingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/ISensor";
+import { MyUPlotViewer } from "../uPlot/uPlotViewer";
 // принимает датчики. Отвечает за их подачу на форму
 
 export class ViewController
 {
-    private plot: MyUPlot;
+    private element: HTMLElement;
     private channels: Channel[] = [];
-    constructor(plot: MyUPlot)
+
+    private streamingMode: boolean = true;
+
+    private plot: MyUPlot | MyUPlotViewer;
+
+    constructor(element: HTMLElement)
     {
-        this.plot = plot;
-        var container = <HTMLElement>document.getElementById("cell-container");
+        this.element = element;
+        this.plot = new MyUPlot(element);
     }
     
-    public async AddSensorHandler(channels: Channel[])
+    public async SetChannels(channels: Channel[])
     {        
-        channels.forEach(ch => this.channels.push(ch));
-        this.plot.Reset();
-        this.plot.SetChannels(this.channels);
+        if (this.streamingMode)
+        {
+            let streamingPlot = <MyUPlot>this.plot;
+            streamingPlot.Reset();
+            this.channels = channels;
+            streamingPlot.SetChannels(channels);
+        }
+    }
+
+    public async AddChannels(channels: Channel[])
+    {        
+        if (this.streamingMode)
+        {
+            let streamingPlot = <MyUPlot>this.plot;
+            streamingPlot.Reset();
+            for (let i = 0; i < channels.length; i++) {
+                this.channels.push(channels[i]);
+            }
+
+            streamingPlot.SetChannels(this.channels);
+        }
     }
 
     public GetExistsChannels()
@@ -34,17 +58,35 @@ export class ViewController
 
     public UploadSnapshot(snapshot: Snapshot)
     {
-        this.plot.Reset();
-        this.plot.FromSnapshot(snapshot);
+        if (this.streamingMode)
+        {
+            /// To do check listening
+            let streamingPlot = <MyUPlot>this.plot;
+            streamingPlot.Reset(); 
+            streamingPlot.DestroyPlot();
+            this.plot = new MyUPlotViewer(this.element);    
+            this.plot.FromSnapshot(snapshot); 
+            this.streamingMode = false;  
+        }
     }
 
     public Reset()
     {
-        this.plot.Reset();
+        if (this.streamingMode)
+        {
+            /// To do check listening
+            let streamingPlot = <MyUPlot>this.plot;
+            streamingPlot.Reset();
+        }
     }
 
     public Clear()
     {
-        this.plot.Clear();
+        if (this.streamingMode)
+        {
+            /// To do check listening
+            let streamingPlot = <MyUPlot>this.plot;
+            streamingPlot.Clear();
+        }
     }
 }

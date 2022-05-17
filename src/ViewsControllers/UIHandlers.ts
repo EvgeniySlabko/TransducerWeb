@@ -1,3 +1,5 @@
+import { Channel } from "../Channel/Channel/Channel";
+import { CreateAllSensorChannelsSaving } from "../Channel/Channel/ChannelFactory";
 import { recordController, sensorService, plotViewController, cellsDataController } from "../main";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { Facker } from "../Sensor/SingleComponentSensor.ts/FackerSensor";
@@ -101,6 +103,7 @@ var starthandler = async () =>
 {
     let started = await sensorService.StartAll();
       if (!started) return;
+
     document.getElementById("StartStopSpan")?.classList.remove('glyphicon-play');
     document.getElementById("StartStopSpan")?.classList.add('glyphicon-pause');
     clearButton.disabled = true;
@@ -109,6 +112,8 @@ var starthandler = async () =>
       firstStart = false;
       await sensorService.SetT0();
     }
+
+    await sensorService.StartAll();
     //document.getElementById("MyElement").classList.remove('MyClass');
     startStop = true;
 }
@@ -127,7 +132,14 @@ var stophandler = async () =>
 
 var startRecordingHandler = () =>
 {
-    let channels = plotViewController.GetExistsChannels();
+    let channels =  new Array<Channel>(0);
+    let allSensorsWithInfo = sensorService.GetAllSensors();
+
+    for (let i = 0; i < allSensorsWithInfo.length; i++) {
+      let channelsForSensor = CreateAllSensorChannelsSaving(allSensorsWithInfo[i].sensor, allSensorsWithInfo[i].info);
+      channelsForSensor.forEach(c => channels.push(c));
+    }
+
     recordController.StartListening(channels);
     startRecordingButton.classList.remove("text-primary");
     startRecordingButton.classList.add("text-danger");
