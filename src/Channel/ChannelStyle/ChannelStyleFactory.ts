@@ -41,7 +41,7 @@ export function CreateSpeedStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
     return {
         grid: false,
         color: "blue",
-        legendTitle: "Speed",
+        legendTitle: sensorInfo.SensorType + "-Speed",
         line: "solid",
         range: [0, 30000],
         yTitle: "Speed",
@@ -53,14 +53,14 @@ export function CreateSpeedStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
     };
 }
 
-export function CreatetemperatureStyle() : ChannelStyle{
+export function CreatetemperatureStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
     return {
         grid: false,
         color: "red",
         legendTitle: "Tmp",
         line: "dash",
         range: [-60, 60],
-        yTitle: "Tmp",
+        yTitle: sensorInfo.SensorType + " Tmp",
         unitName: "Dg",
         valueType: "tmp",
         yAxeSide: "right",
@@ -68,7 +68,6 @@ export function CreatetemperatureStyle() : ChannelStyle{
         rescaleRationTop: rescaleRatio,
     };
 }
-
 
 export function CreatePowerStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
         let minPower = CalculatePower(sensorInfo.MaxSpeed + 0.1 * sensorInfo.MaxSpeed, sensorInfo.MinValue + 0.1 * sensorInfo.MinValue);
@@ -79,7 +78,7 @@ export function CreatePowerStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
         legendTitle: "Power",
         line: "dash",
         range: [minPower, maxPower],
-        yTitle: "Power",
+        yTitle: sensorInfo.SensorType + " Power",
         unitName: sensorInfo.powerUnitsName,
         valueType: "power",
         yAxeSide: "left",

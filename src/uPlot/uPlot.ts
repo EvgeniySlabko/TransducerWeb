@@ -16,13 +16,13 @@ export type TraceInfo =
     lastDataIndex: number;
     requireGap: boolean;
     curRange: number[];
+    dataBufferIndex: number;
 }
 
 export class MyUPlot
 {
   private plot: uPlot | undefined;
 
-  private index: number = 1;
   private datBuf : (number | null | undefined)[][] = 
   [
     new Array(200000),
@@ -43,6 +43,7 @@ export class MyUPlot
     new Array(200000),
   ];
   
+  private currentChannels: Channel[] = [];
   private channels : TraceInfo[] = [];
   private element: HTMLElement;
   private options: uPlot.Options;
@@ -70,7 +71,7 @@ export class MyUPlot
     this.Init();
     this.element = element;
     this.options = this.getOptions();    
-    this.RebuidPlot();
+    this.BuildNewPlot([]);
     this.SetScale(0, this.params.screenSize);
 
     window.addEventListener("resize", e => {
@@ -152,7 +153,7 @@ export class MyUPlot
 
     var styles = snapshot.GetTrackData().map(t => t.style);
     this.SetStyles(styles);
-    this.RebuidPlot(<any>buff);
+    //this.RebuidPlot(<any>buff);
     this.params.th = maxTimeIndex;
     this.params.sh = maxTimeValue;
   }
@@ -161,7 +162,6 @@ export class MyUPlot
   {
     this.isInit = false;
     this.channels.forEach((c, index) => {
-      //this.clearTrace(index + 1);
       c.channel.onData.unsub(this.HandleData);
       c.channel.onClose.unsub(this.HandleClose);
       c.channel.onMessage.unsub(this.HandleMessage);
@@ -169,10 +169,10 @@ export class MyUPlot
 
     //let legend = <HTMLTableElement><unknown>(document.getElementsByClassName("u-legend"));
     //legend.deleteRow(1);
-    while(this.plot!.series.length > 1)
+    while(this.options!.series.length > 1)
       this.plot!.delSeries(1);
     this.channels = [];
-    this.RebuidPlot();
+    //this.RebuidPlot();
     this.SetScale(0, this.params.screenSize);
   }
 
@@ -180,7 +180,7 @@ export class MyUPlot
   {
     // чистим данный графика
     this.Init();
-    this.RebuidPlot();
+    //this.RebuidPlot();
     this.SetScale(0, this.params.screenSize);
     //this.params.sh;
   }
@@ -190,20 +190,10 @@ export class MyUPlot
     if (this.isInit) throw "Already Init";
     if (channels.length == 0) "There are no channels";
 
-    channels.forEach((c, i) => {
-      this.SetupChannel(c);
+    this.currentChannels = channels;
 
-      c.onData.sub(this.HandleData);
-      c.onClose.sub(this.HandleClose);
-      c.onMessage.sub(this.HandleMessage);
-    });
-    
-    
-    this.RebuidPlot();
+    this.BuildNewPlot(channels);
     this.isInit = true;
-    setTimeout(this.SetupAxis, 100);
-    this.SetScale(0, this.params.screenSize);
-    //this.SetupAxis()
   }
   
   private HandleMessage = (channel: Channel, args: ChannelMessageArgs) =>
@@ -238,13 +228,10 @@ export class MyUPlot
       this.options.series.push(series);
       axis = sameTypeChannel.axis;
       scale = sameTypeChannel.scale;
-      range = sameTypeChannel.curRange;
-      series.stroke = style.color;
-      series.label = style.legendTitle;
+      range = sameTypeChannel.curRange; 
     }
     else
     {
-
       let scaleName = "y" + index.toString();               //for scale
       series = GetSeries(scaleName);
       series.scale = scaleName;
@@ -257,8 +244,6 @@ export class MyUPlot
       //scale.auto = false;
       range = [style.range[0], style.range[1]];
       //scale.range = () => {return [style.range[0], style.range[1]]};
-      series.stroke = style.color;
-      series.label = style.legendTitle;
       
       //axis.grid!.stroke = style.color;
       axis.side = style.yAxeSide == "left" ? 1 : 3;
@@ -267,10 +252,15 @@ export class MyUPlot
       axis.stroke = style.color;
       axis.label = style.legendTitle;
       axis.grid!.show = style.grid;
-
-      setInterval( () => {this.SetupAxis(index - 1)}, 100);
+      
+      //setInterval( () => {this.SetupAxis(index - 1)}, 100);
       scale.range = () => {return [range[0], range[1]]};
     }
+    
+    series.stroke = style.color;
+    series.label = style.legendTitle;
+    this.plot?.addSeries(series, 1);
+    //this.plot?.addSeries(series, index);
 
     let trace = {
       axis: axis,
@@ -279,9 +269,13 @@ export class MyUPlot
       series: series,
       lastDataIndex: 0,
       requireGap: false,
-      curRange: range, 
+      curRange: range,
+      dataBufferIndex: index,
     }
 
+    //this.plot?.axes.
+    //this.RebuidPlot();
+    //this.plot!.setData(this.datBuf);
     this.channels.push(trace);
   }
 
@@ -350,24 +344,18 @@ export class MyUPlot
 
   private HandleClose = (channel: Channel, msg: ChannelCloseArgs) =>
   {
-      let index = this.channels.findIndex(c => c.channel == channel);
-      let traceInfo = this.channels[index];
-      traceInfo!.series.label = "";
-      traceInfo!.series.alpha  = 0;
+      let index = this.channels.findIndex(c => c.channel === channel);
+      let i = this.currentChannels!.indexOf(channel);
+      this.currentChannels?.splice(i, 1);
 
-      let seriesIndex = this.plot!.series.indexOf(traceInfo!.series);
-      //this.plot?.series.slice(seriesIndex, 1);
-      traceInfo!.axis.show = false;
-      traceInfo!.scale.range = [-10, 10];
-      //traceInfo.axis.
+      this.clearTrace(this.channels[i].dataBufferIndex);
+      this.channels.splice(index, 1); 
 
-      //let legendPannel = document.getElementsByClassName("u-legend")[0];
-      //legendPannel.
-      this.clearTrace(index);
-      this.RebuidPlot();
-      this.plot?.setLegend({
-        idx: index,
-      }, false);
+      
+      this.BuildNewPlot(this.currentChannels);
+      this.SetScale(0, this.params.screenSize);
+      
+      //this.plot?.setLegend({idx: index,}, false);
   }
 
   private HandleData = (channel: Channel, args: ChannelDataArgs) => 
@@ -412,8 +400,7 @@ export class MyUPlot
 
     function clamp(nRange: number, nMin: number, nMax: number, fRange: number, fMin: number, fMax: number, gap: number) {
       if (nMin < 0) nMin = 0;
-    
-      //if (nMax > fRange + gap) nMax = fRange + gap;
+
       return [nMin, nMax];
     }
 
@@ -542,16 +529,35 @@ export class MyUPlot
     });
   }
   
-  private RebuidPlot(dataBuff?: AlignedData)
+  private BuildNewPlot = (channels: Channel[]) =>
   {
-    if (!dataBuff) dataBuff = <AlignedData>this.datBuf;
+    //if (!dataBuff) dataBuff = <AlignedData>this.datBuf;
     if (this.plot)
       this.plot.destroy();
-      
-    this.plot = new uPlot(this.options, dataBuff, this.element);
+
+    this.channels.forEach((c, index) => {
+      //this.clearTrace(index + 1);
+      c.channel.onData.unsub(this.HandleData);
+      c.channel.onClose.unsub(this.HandleClose);
+      c.channel.onMessage.unsub(this.HandleMessage);
+    });
+    this.channels = [];
+
+    this.options = this.getOptions();
+
+    channels.forEach((c, i) => {
+      this.SetupChannel(c);
+
+      c.onData.sub(this.HandleData);
+      c.onClose.sub(this.HandleClose);
+      c.onMessage.sub(this.HandleMessage);
+      setTimeout(() => this.SetupAxis(i), 100);
+    });
+
+    this.plot = new uPlot(this.options, <any>this.datBuf, this.element);
     this.plot.setSize(this.getSize());
-    //this.SetScale(0, this.params.screenSize);
-  } 
+    this.SetScale(0, this.params.screenSize);
+  }
 
   private Init()
   {
@@ -587,9 +593,6 @@ export class MyUPlot
     return  {  
         width: 100,
         height: 100,
-        legend:{
-          
-        },
         pxAlign: true,
         plugins: [
           //this.tooltipsPlugin(this.options),
@@ -651,8 +654,9 @@ export class MyUPlot
 
 							// reset selection
 							u.setSelect(
-                {width: 0, 
-                height: 0
+                {
+                  width: 0, 
+                  height: 0
                 } as any, false);
 						}
 					]
@@ -670,10 +674,10 @@ export class MyUPlot
     return Math.floor(sensorTimeValue / this.params.gridDx ); // получаем индекс на графике по оси x (пододвигаем в меньшую сторону)
   };
 
-  private clearTrace = (index: number) =>
+  private clearTrace = (dataBufferIndex: number) =>
   {
     for (let k = 0; k < this.datBuf[0].length; k++) {
-      this.datBuf[index][k] = undefined;
+      this.datBuf[dataBufferIndex][k] = undefined;
     }
   }
 
@@ -703,15 +707,15 @@ export class MyUPlot
       initialRange[1] = this.channels[index- 1].curRange[1];
     });
 
-    divAxis.addEventListener('mouseup', (e: any) => {
+    document.addEventListener('mouseup', (e: any) => {
       dragStart = false;
     });
 
     divAxis.addEventListener('mouseleave', (e: any) => {
-      dragStart = false;
+      //dragStart = false;
     });
 
-    divAxis.addEventListener('mousemove', (e: any) => {
+    document.addEventListener('mousemove', (e: any) => {
       if (dragStart)
       {
         let curY = e.clientY;;
@@ -745,7 +749,8 @@ export class MyUPlot
       let dyBottom = channel.channel.Style.rescaleRationBottom * rangeVal;
       let newRange = [curRange[0] - dyBottom * dir, curRange[1] + dyTop * dir];
 
-      channel.curRange = newRange;
+      channel.curRange[0] = newRange[0];
+      channel.curRange[1] = newRange[1];
     });
     
   }

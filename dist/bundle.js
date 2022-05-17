@@ -29,13 +29,173 @@
 *
 * uPlot.js (μPlot)
 * A small, fast chart for time series, lines, areas, ohlc & bars
-* https://github.com/leeoniya/uPlot (v1.6.19)
+* https://github.com/leeoniya/uPlot (v1.6.20)
 */
 
 var uPlot = (function () {
 	'use strict';
 
 	const FEAT_TIME          = true;
+
+	const pre = "u-";
+
+	const UPLOT          =       "uplot";
+	const ORI_HZ         = pre + "hz";
+	const ORI_VT         = pre + "vt";
+	const TITLE          = pre + "title";
+	const WRAP           = pre + "wrap";
+	const UNDER          = pre + "under";
+	const OVER           = pre + "over";
+	const AXIS           = pre + "axis";
+	const OFF            = pre + "off";
+	const SELECT         = pre + "select";
+	const CURSOR_X       = pre + "cursor-x";
+	const CURSOR_Y       = pre + "cursor-y";
+	const CURSOR_PT      = pre + "cursor-pt";
+	const LEGEND         = pre + "legend";
+	const LEGEND_LIVE    = pre + "live";
+	const LEGEND_INLINE  = pre + "inline";
+	const LEGEND_THEAD   = pre + "thead";
+	const LEGEND_SERIES  = pre + "series";
+	const LEGEND_MARKER  = pre + "marker";
+	const LEGEND_LABEL   = pre + "label";
+	const LEGEND_VALUE   = pre + "value";
+
+	const WIDTH       = "width";
+	const HEIGHT      = "height";
+	const TOP         = "top";
+	const BOTTOM      = "bottom";
+	const LEFT        = "left";
+	const RIGHT       = "right";
+	const hexBlack    = "#000";
+	const transparent = hexBlack + "0";
+
+	const mousemove   = "mousemove";
+	const mousedown   = "mousedown";
+	const mouseup     = "mouseup";
+	const mouseenter  = "mouseenter";
+	const mouseleave  = "mouseleave";
+	const dblclick    = "dblclick";
+	const resize      = "resize";
+	const scroll      = "scroll";
+
+	const change      = "change";
+	const dppxchange  = "dppxchange";
+
+	const domEnv = typeof window != 'undefined';
+
+	const doc = domEnv ? document  : null;
+	const win = domEnv ? window    : null;
+	const nav = domEnv ? navigator : null;
+
+	let pxRatio;
+
+	let query;
+
+	function setPxRatio() {
+		let _pxRatio = devicePixelRatio;
+
+		// during print preview, Chrome fires off these dppx queries even without changes
+		if (pxRatio != _pxRatio) {
+			pxRatio = _pxRatio;
+
+			query && off(change, query, setPxRatio);
+			query = matchMedia(`(min-resolution: ${pxRatio - 0.001}dppx) and (max-resolution: ${pxRatio + 0.001}dppx)`);
+			on(change, query, setPxRatio);
+
+			win.dispatchEvent(new CustomEvent(dppxchange));
+		}
+	}
+
+	function addClass(el, c) {
+		if (c != null) {
+			let cl = el.classList;
+			!cl.contains(c) && cl.add(c);
+		}
+	}
+
+	function remClass(el, c) {
+		let cl = el.classList;
+		cl.contains(c) && cl.remove(c);
+	}
+
+	function setStylePx(el, name, value) {
+		el.style[name] = value + "px";
+	}
+
+	function placeTag(tag, cls, targ, refEl) {
+		let el = doc.createElement(tag);
+
+		if (cls != null)
+			addClass(el, cls);
+
+		if (targ != null)
+			targ.insertBefore(el, refEl);
+
+		return el;
+	}
+
+	function placeDiv(cls, targ) {
+		return placeTag("div", cls, targ);
+	}
+
+	const xformCache = new WeakMap();
+
+	function elTrans(el, xPos, yPos, xMax, yMax) {
+		let xform = "translate(" + xPos + "px," + yPos + "px)";
+		let xformOld = xformCache.get(el);
+
+		if (xform != xformOld) {
+			el.style.transform = xform;
+			xformCache.set(el, xform);
+
+			if (xPos < 0 || yPos < 0 || xPos > xMax || yPos > yMax)
+				addClass(el, OFF);
+			else
+				remClass(el, OFF);
+		}
+	}
+
+	const colorCache = new WeakMap();
+
+	function elColor(el, background, borderColor) {
+		let newColor = background + borderColor;
+		let oldColor = colorCache.get(el);
+
+		if (newColor != oldColor) {
+			colorCache.set(el, newColor);
+			el.style.background = background;
+			el.style.borderColor = borderColor;
+		}
+	}
+
+	const sizeCache = new WeakMap();
+
+	function elSize(el, newWid, newHgt, centered) {
+		let newSize = newWid + "" + newHgt;
+		let oldSize = sizeCache.get(el);
+
+		if (newSize != oldSize) {
+			sizeCache.set(el, newSize);
+			el.style.height = newHgt + "px";
+			el.style.width = newWid + "px";
+			el.style.marginLeft = centered ? -newWid/2 + "px" : 0;
+			el.style.marginTop = centered ? -newHgt/2 + "px" : 0;
+		}
+	}
+
+	const evOpts = {passive: true};
+	const evOpts2 = {...evOpts, capture: true};
+
+	function on(ev, el, cb, capt) {
+		el.addEventListener(ev, cb, capt ? evOpts2 : evOpts);
+	}
+
+	function off(ev, el, cb, capt) {
+		el.removeEventListener(ev, cb, capt ? evOpts2 : evOpts);
+	}
+
+	domEnv && setPxRatio();
 
 	// binary search for index of closest value
 	function closestIdx(num, arr, lo, hi) {
@@ -285,7 +445,8 @@ var uPlot = (function () {
 	}
 
 	// alternative: https://stackoverflow.com/a/2254896
-	const fmtNum = new Intl.NumberFormat(navigator.language).format;
+	const numFormatter = new Intl.NumberFormat(domEnv ? nav.language : 'en-US');
+	const fmtNum = val => numFormatter.format(val);
 
 	const M = Math;
 
@@ -525,162 +686,6 @@ var uPlot = (function () {
 	}
 
 	const microTask = typeof queueMicrotask == "undefined" ? fn => Promise.resolve().then(fn) : queueMicrotask;
-
-	const WIDTH       = "width";
-	const HEIGHT      = "height";
-	const TOP         = "top";
-	const BOTTOM      = "bottom";
-	const LEFT        = "left";
-	const RIGHT       = "right";
-	const hexBlack    = "#000";
-	const transparent = hexBlack + "0";
-
-	const mousemove   = "mousemove";
-	const mousedown   = "mousedown";
-	const mouseup     = "mouseup";
-	const mouseenter  = "mouseenter";
-	const mouseleave  = "mouseleave";
-	const dblclick    = "dblclick";
-	const resize      = "resize";
-	const scroll      = "scroll";
-
-	const change      = "change";
-	const dppxchange  = "dppxchange";
-
-	const pre = "u-";
-
-	const UPLOT          =       "uplot";
-	const ORI_HZ         = pre + "hz";
-	const ORI_VT         = pre + "vt";
-	const TITLE          = pre + "title";
-	const WRAP           = pre + "wrap";
-	const UNDER          = pre + "under";
-	const OVER           = pre + "over";
-	const AXIS           = pre + "axis";
-	const OFF            = pre + "off";
-	const SELECT         = pre + "select";
-	const CURSOR_X       = pre + "cursor-x";
-	const CURSOR_Y       = pre + "cursor-y";
-	const CURSOR_PT      = pre + "cursor-pt";
-	const LEGEND         = pre + "legend";
-	const LEGEND_LIVE    = pre + "live";
-	const LEGEND_INLINE  = pre + "inline";
-	const LEGEND_THEAD   = pre + "thead";
-	const LEGEND_SERIES  = pre + "series";
-	const LEGEND_MARKER  = pre + "marker";
-	const LEGEND_LABEL   = pre + "label";
-	const LEGEND_VALUE   = pre + "value";
-
-	const doc = document;
-	const win = window;
-	let pxRatio;
-
-	let query;
-
-	function setPxRatio() {
-		let _pxRatio = devicePixelRatio;
-
-		// during print preview, Chrome fires off these dppx queries even without changes
-		if (pxRatio != _pxRatio) {
-			pxRatio = _pxRatio;
-
-			query && off(change, query, setPxRatio);
-			query = matchMedia(`(min-resolution: ${pxRatio - 0.001}dppx) and (max-resolution: ${pxRatio + 0.001}dppx)`);
-			on(change, query, setPxRatio);
-
-			win.dispatchEvent(new CustomEvent(dppxchange));
-		}
-	}
-
-	function addClass(el, c) {
-		if (c != null) {
-			let cl = el.classList;
-			!cl.contains(c) && cl.add(c);
-		}
-	}
-
-	function remClass(el, c) {
-		let cl = el.classList;
-		cl.contains(c) && cl.remove(c);
-	}
-
-	function setStylePx(el, name, value) {
-		el.style[name] = value + "px";
-	}
-
-	function placeTag(tag, cls, targ, refEl) {
-		let el = doc.createElement(tag);
-
-		if (cls != null)
-			addClass(el, cls);
-
-		if (targ != null)
-			targ.insertBefore(el, refEl);
-
-		return el;
-	}
-
-	function placeDiv(cls, targ) {
-		return placeTag("div", cls, targ);
-	}
-
-	const xformCache = new WeakMap();
-
-	function elTrans(el, xPos, yPos, xMax, yMax) {
-		let xform = "translate(" + xPos + "px," + yPos + "px)";
-		let xformOld = xformCache.get(el);
-
-		if (xform != xformOld) {
-			el.style.transform = xform;
-			xformCache.set(el, xform);
-
-			if (xPos < 0 || yPos < 0 || xPos > xMax || yPos > yMax)
-				addClass(el, OFF);
-			else
-				remClass(el, OFF);
-		}
-	}
-
-	const colorCache = new WeakMap();
-
-	function elColor(el, background, borderColor) {
-		let newColor = background + borderColor;
-		let oldColor = colorCache.get(el);
-
-		if (newColor != oldColor) {
-			colorCache.set(el, newColor);
-			el.style.background = background;
-			el.style.borderColor = borderColor;
-		}
-	}
-
-	const sizeCache = new WeakMap();
-
-	function elSize(el, newWid, newHgt, centered) {
-		let newSize = newWid + "" + newHgt;
-		let oldSize = sizeCache.get(el);
-
-		if (newSize != oldSize) {
-			sizeCache.set(el, newSize);
-			el.style.height = newHgt + "px";
-			el.style.width = newWid + "px";
-			el.style.marginLeft = centered ? -newWid/2 + "px" : 0;
-			el.style.marginTop = centered ? -newHgt/2 + "px" : 0;
-		}
-	}
-
-	const evOpts = {passive: true};
-	const evOpts2 = assign({capture: true}, evOpts);
-
-	function on(ev, el, cb, capt) {
-		el.addEventListener(ev, cb, capt ? evOpts2 : evOpts);
-	}
-
-	function off(ev, el, cb, capt) {
-		el.removeEventListener(ev, cb, capt ? evOpts2 : evOpts);
-	}
-
-	setPxRatio();
 
 	const months = [
 		"January",
@@ -1732,6 +1737,49 @@ var uPlot = (function () {
 			gaps.push([fromX, toX]);
 	}
 
+	function findGaps(xs, ys, idx0, idx1, dir, pixelForX) {
+		let gaps = [];
+
+		for (let i = dir == 1 ? idx0 : idx1; i >= idx0 && i <= idx1; i += dir) {
+			let yVal = ys[i];
+
+			if (yVal === null) {
+				let fr = i, to = i;
+
+				if (dir == 1) {
+					while (++i <= idx1 && ys[i] === null)
+						to = i;
+				}
+				else {
+					while (--i >= idx0 && ys[i] === null)
+						to = i;
+				}
+
+				let frPx = pixelForX(xs[fr]);
+				let toPx = to == fr ? frPx : pixelForX(xs[to]);
+
+				// if value adjacent to edge null is same pixel, then it's partially
+				// filled and gap should start at next pixel
+				let frPx2 = pixelForX(xs[fr-dir]);
+			//	if (frPx2 == frPx)
+			//		frPx++;
+			//	else
+					frPx = frPx2;
+
+				let toPx2 = pixelForX(xs[to+dir]);
+			//	if (toPx2 == toPx)
+			//		toPx--;
+			//	else
+					toPx = toPx2;
+
+				if (toPx >= frPx)
+					gaps.push([frPx, toPx]); // addGap
+			}
+		}
+
+		return gaps;
+	}
+
 	function pxRoundGen(pxAlign) {
 		return pxAlign == 0 ? retArg0 : pxAlign == 1 ? round : v => incrRound(v, pxAlign);
 	}
@@ -1862,6 +1910,9 @@ var uPlot = (function () {
 			return orient(u, seriesIdx, (series, dataX, dataY, scaleX, scaleY, valToPosX, valToPosY, xOff, yOff, xDim, yDim) => {
 				let pxRound = series.pxRound;
 
+				let pixelForX = val => pxRound(valToPosX(val, scaleX, xDim, xOff));
+				let pixelForY = val => pxRound(valToPosY(val, scaleY, yDim, yOff));
+
 				let lineTo, drawAcc;
 
 				if (scaleX.ori == 0) {
@@ -1880,29 +1931,22 @@ var uPlot = (function () {
 
 				let minY = inf,
 					maxY = -inf,
-					inY, outY, outX, drawnAtX;
+					inY, outY, drawnAtX;
 
-				let gaps = [];
-
-				let accX = pxRound(valToPosX(dataX[dir == 1 ? idx0 : idx1], scaleX, xDim, xOff));
-				let accGaps = false;
-				let prevYNull = false;
+				let accX = pixelForX(dataX[dir == 1 ? idx0 : idx1]);
 
 				// data edges
 				let lftIdx = nonNullIdx(dataY, idx0, idx1,  1 * dir);
 				let rgtIdx = nonNullIdx(dataY, idx0, idx1, -1 * dir);
-				let lftX =  pxRound(valToPosX(dataX[lftIdx], scaleX, xDim, xOff));
-				let rgtX =  pxRound(valToPosX(dataX[rgtIdx], scaleX, xDim, xOff));
-
-				if (lftX > xOff)
-					addGap(gaps, xOff, lftX);
+				let lftX   =  pixelForX(dataX[lftIdx]);
+				let rgtX   =  pixelForX(dataX[rgtIdx]);
 
 				for (let i = dir == 1 ? idx0 : idx1; i >= idx0 && i <= idx1; i += dir) {
-					let x = pxRound(valToPosX(dataX[i], scaleX, xDim, xOff));
+					let x = pixelForX(dataX[i]);
 
 					if (x == accX) {
 						if (dataY[i] != null) {
-							outY = pxRound(valToPosY(dataY[i], scaleY, yDim, yOff));
+							outY = pixelForY(dataY[i]);
 
 							if (minY == inf) {
 								lineTo(stroke, x, outY);
@@ -1912,45 +1956,22 @@ var uPlot = (function () {
 							minY = min(outY, minY);
 							maxY = max(outY, maxY);
 						}
-						else if (dataY[i] === null)
-							accGaps = prevYNull = true;
 					}
 					else {
-						let _addGap = false;
-
 						if (minY != inf) {
 							drawAcc(stroke, accX, minY, maxY, inY, outY);
-							outX = drawnAtX = accX;
-						}
-						else if (accGaps) {
-							_addGap = true;
-							accGaps = false;
+							drawnAtX = accX;
 						}
 
 						if (dataY[i] != null) {
-							outY = pxRound(valToPosY(dataY[i], scaleY, yDim, yOff));
+							outY = pixelForY(dataY[i]);
 							lineTo(stroke, x, outY);
 							minY = maxY = inY = outY;
-
-							// prior pixel can have data but still start a gap if ends with null
-							if (prevYNull && x - accX > 1)
-								_addGap = true;
-
-							prevYNull = false;
 						}
 						else {
 							minY = inf;
 							maxY = -inf;
-
-							if (dataY[i] === null) {
-								accGaps = true;
-
-								if (x - accX > 1)
-									_addGap = true;
-							}
 						}
-
-						_addGap && addGap(gaps, outX, x);
 
 						accX = x;
 					}
@@ -1959,25 +1980,37 @@ var uPlot = (function () {
 				if (minY != inf && minY != maxY && drawnAtX != accX)
 					drawAcc(stroke, accX, minY, maxY, inY, outY);
 
-				if (rgtX < xOff + xDim)
-					addGap(gaps, rgtX, xOff + xDim);
-
 				let [ bandFillDir, bandClipDir ] = bandFillClipDirs(u, seriesIdx);
 
 				if (series.fill != null || bandFillDir != 0) {
 					let fill = _paths.fill = new Path2D(stroke);
 
 					let fillToVal = series.fillTo(u, seriesIdx, series.min, series.max, bandFillDir);
-					let fillToY = pxRound(valToPosY(fillToVal, scaleY, yDim, yOff));
+					let fillToY = pixelForY(fillToVal);
 
 					lineTo(fill, rgtX, fillToY);
 					lineTo(fill, lftX, fillToY);
 				}
 
-				_paths.gaps = gaps = series.gaps(u, seriesIdx, idx0, idx1, gaps);
+				if (!series.spanGaps) {
+				//	console.time('gaps');
+					let gaps = [];
 
-				if (!series.spanGaps)
+					if (lftX > xOff)
+						gaps.push([xOff, lftX]);
+
+					gaps.push(...findGaps(dataX, dataY, idx0, idx1, dir, pixelForX));
+
+					if (rgtX < xOff + xDim)
+						gaps.push([rgtX, xOff + xDim]);
+				//	console.timeEnd('gaps');
+
+				//	console.log('gaps', JSON.stringify(gaps));
+
+					_paths.gaps = gaps = series.gaps(u, seriesIdx, idx0, idx1, gaps);
+
 					_paths.clip = clipGaps(gaps, scaleX.ori, xOff, yOff, xDim, yDim);
+				}
 
 				if (bandClipDir != 0) {
 					_paths.band = bandClipDir == 2 ? [
@@ -2478,8 +2511,11 @@ var uPlot = (function () {
 		});
 	}
 
-	on(resize, win, invalidateRects);
-	on(scroll, win, invalidateRects, true);
+	if (domEnv) {
+		on(resize, win, invalidateRects);
+		on(scroll, win, invalidateRects, true);
+		on(dppxchange, win, () => { uPlot.pxRatio = pxRatio; });
+	}
 
 	const linearPath = linear() ;
 	const pointsPath = points() ;
@@ -3334,6 +3370,8 @@ var uPlot = (function () {
 		let viaAutoScaleX = false;
 
 		function setData(_data, _resetScales) {
+			data = _data == null ? [] : copy(_data, fastIsObj);
+
 			if (mode == 2) {
 				dataLen = 0;
 				for (let i = 1; i < series.length; i++)
@@ -3341,15 +3379,19 @@ var uPlot = (function () {
 				self.data = data = _data;
 			}
 			else {
-				data = (_data || []).slice();
-				data[0] = data[0] || [];
+				if (data[0] == null)
+					data[0] = [];
 
 				self.data = data.slice();
-				data0 = data[0];
-				dataLen = 2000;
 
-				if (xScaleDistr == 2)
-					data[0] = data0.map((v, i) => i);
+				data0 = data[0];
+				dataLen = data0.length;
+
+				if (xScaleDistr == 2) {
+					data[0] = Array(dataLen);
+					for (let i = 0; i < dataLen; i++)
+						data[0][i] = i;
+				}
 			}
 
 			self._data = data;
@@ -4221,7 +4263,7 @@ var uPlot = (function () {
 				ctxStroke = ctxFill = ctxWidth = ctxJoin = ctxCap = ctxFont = ctxAlign = ctxBaseline = ctxDash = null;
 				ctxAlpha = 1;
 
-				syncRect(false);
+				syncRect(true);
 
 				fire("setSize");
 
@@ -4405,17 +4447,19 @@ var uPlot = (function () {
 		function setSeries(i, opts, _fire, _pub) {
 		//	log("setSeries()", arguments);
 
-			let s = series[i];
-
 			if (opts.focus != null)
 				setFocus(i);
 
 			if (opts.show != null) {
-				s.show = opts.show;
-				toggleDOM(i, opts.show);
+				series.forEach((s, si) => {
+					if (si > 0 && (i == si || i == null)) {
+						s.show = opts.show;
+						toggleDOM(si, opts.show);
 
-				_setScale(mode == 2 ? s.facets[1].scale : s.scale, null, null);
-				commit();
+						_setScale(mode == 2 ? s.facets[1].scale : s.scale, null, null);
+						commit();
+					}
+				});
 			}
 
 			_fire !== false && fire("setSeries", i, opts);
@@ -4786,7 +4830,7 @@ var uPlot = (function () {
 						let matchingX = xKey != null && matchXKeys(xKey, xKeySrc);
 						let matchingY = yKey != null && matchYKeys(yKey, yKeySrc);
 
-						if (matchingX) {
+						if (matchingX && dragX) {
 							if (sori == 0) {
 								sOff = left;
 								sDim = width;
@@ -4806,7 +4850,7 @@ var uPlot = (function () {
 						else
 							setSelX(0, xDim);
 
-						if (matchingY) {
+						if (matchingY && dragY) {
 							if (sori == 1) {
 								sOff = left;
 								sDim = width;
@@ -5305,6 +5349,7 @@ var uPlot = (function () {
 	uPlot.rangeLog = rangeLog;
 	uPlot.rangeAsinh = rangeAsinh;
 	uPlot.orient   = orient;
+	uPlot.pxRatio = pxRatio;
 
 	{
 		uPlot.join = join;
@@ -5684,6 +5729,33 @@ ___CSS_LOADER_EXPORT___.push([module.id, "@charset \"UTF-8\";/*!\n * Bootstrap v
 
 /***/ }),
 
+/***/ "./node_modules/css-loader/dist/cjs.js!./css/cellStyles.css":
+/*!******************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js!./css/cellStyles.css ***!
+  \******************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/sourceMaps.js */ "./node_modules/css-loader/dist/runtime/sourceMaps.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
+// Imports
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, ".cell-speed-color {\r\n\tcolor: blue;\r\n}\r\n\r\n.cell-main-color {\r\n\tcolor: rgb(37, 172, 32);\r\n}\r\n\r\n.cell-tmp-color {\r\n\tcolor: brown;\r\n}\r\n\r\n.cell-power-color {\r\n\tcolor: coral;\r\n}\r\n\r\n/*background*/\r\n.cell-speed-style {\r\n\tbackground-color: rgb(139, 126, 255);\r\n\tborder-color: rgb(0, 0, 255);\r\n}\r\n\r\n.cell-main-style {\r\n\tbackground-color: rgb(173, 253, 170);\r\n\tborder-color: rgb(255, 0, 170);\r\n}\r\n\r\n.cell-tmp-style {\r\n\tbackground-color: rgb(247, 168, 168);\r\n\tborder-color: rgb(90, 2, 2);\r\n}\r\n\r\n.cell-power-style {\r\n\tbackground-color: rgb(218, 128, 96);\r\n\tborder-color: rgb(255, 68, 0);\r\n}\r\n\r\n/*font color*/\r\n.cell-speed-font {\r\n\tcolor: rgb(0, 0, 0);\r\n\tfont-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;\r\n}\r\n\r\n.cell-main-font {\r\n\tcolor: rgb(0, 0, 0);\r\n\tfont-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;\r\n}\r\n\r\n.cell-tmp-font {\r\n\tcolor: rgb(0, 0, 0);\r\n\tfont-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;\r\n}\r\n\r\n.cell-power-font {\r\n\tcolor: rgb(0, 0, 0);\r\n\tfont-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;\r\n}", "",{"version":3,"sources":["webpack://./css/cellStyles.css"],"names":[],"mappings":"AAAA;CACC,WAAW;AACZ;;AAEA;CACC,uBAAuB;AACxB;;AAEA;CACC,YAAY;AACb;;AAEA;CACC,YAAY;AACb;;AAEA,aAAa;AACb;CACC,oCAAoC;CACpC,4BAA4B;AAC7B;;AAEA;CACC,oCAAoC;CACpC,8BAA8B;AAC/B;;AAEA;CACC,oCAAoC;CACpC,2BAA2B;AAC5B;;AAEA;CACC,mCAAmC;CACnC,6BAA6B;AAC9B;;AAEA,aAAa;AACb;CACC,mBAAmB;CACnB,wEAAwE;AACzE;;AAEA;CACC,mBAAmB;CACnB,wEAAwE;AACzE;;AAEA;CACC,mBAAmB;CACnB,wEAAwE;AACzE;;AAEA;CACC,mBAAmB;CACnB,wEAAwE;AACzE","sourcesContent":[".cell-speed-color {\r\n\tcolor: blue;\r\n}\r\n\r\n.cell-main-color {\r\n\tcolor: rgb(37, 172, 32);\r\n}\r\n\r\n.cell-tmp-color {\r\n\tcolor: brown;\r\n}\r\n\r\n.cell-power-color {\r\n\tcolor: coral;\r\n}\r\n\r\n/*background*/\r\n.cell-speed-style {\r\n\tbackground-color: rgb(139, 126, 255);\r\n\tborder-color: rgb(0, 0, 255);\r\n}\r\n\r\n.cell-main-style {\r\n\tbackground-color: rgb(173, 253, 170);\r\n\tborder-color: rgb(255, 0, 170);\r\n}\r\n\r\n.cell-tmp-style {\r\n\tbackground-color: rgb(247, 168, 168);\r\n\tborder-color: rgb(90, 2, 2);\r\n}\r\n\r\n.cell-power-style {\r\n\tbackground-color: rgb(218, 128, 96);\r\n\tborder-color: rgb(255, 68, 0);\r\n}\r\n\r\n/*font color*/\r\n.cell-speed-font {\r\n\tcolor: rgb(0, 0, 0);\r\n\tfont-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;\r\n}\r\n\r\n.cell-main-font {\r\n\tcolor: rgb(0, 0, 0);\r\n\tfont-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;\r\n}\r\n\r\n.cell-tmp-font {\r\n\tcolor: rgb(0, 0, 0);\r\n\tfont-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;\r\n}\r\n\r\n.cell-power-font {\r\n\tcolor: rgb(0, 0, 0);\r\n\tfont-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;\r\n}"],"sourceRoot":""}]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ }),
+
 /***/ "./node_modules/css-loader/dist/cjs.js!./css/styles.css":
 /*!**************************************************************!*\
   !*** ./node_modules/css-loader/dist/cjs.js!./css/styles.css ***!
@@ -5704,7 +5776,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "/*\r\n\r\n# BEM (BLOCK, ELEMENT, MODIFIER) METHEDOLOGY\r\n\r\n<div class=\"card card--show\">\r\n  <div class=\"card__title\"></div>\r\n  <div class=\"card__container\">\r\n\r\n  </div>\r\n</div>\r\n\r\n.card - BLOCK\r\n\r\n.card__title - ELEMENT\r\n\r\n.card--show - MODIFIER\r\n\r\n*/\r\n\r\n/* RESET styles */\r\n\r\n*,\r\n*::after,\r\n*::before {\r\n\tbox-sizing: border-box;\r\n}\r\n\r\n\r\n\r\n\r\n\r\n  /* Clear floats (clearfix hack) */\r\n.btn-group:after {\r\n\tcontent: \"\";\r\n\tclear: both;\r\n\tdisplay: table;\r\n}\r\n\r\n/* Add a background color on hover */\r\n\r\n\r\na {\r\n\tcolor: #546e7a;\r\n}\r\n\r\nul,\r\nli {\r\n\tlist-style: none;\r\n\tpadding: 0;\r\n\tmargin: 0;\r\n}\r\n\r\n.no--select {\r\n\t-moz-user-select: none;\r\n\t-ms-user-select: none;\r\n\t-webkit-user-select: none;\r\n\tuser-select: none;\r\n}\r\n.cell-container {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n}\r\n\r\n.cell-info {\r\n\talign-content: stretch;\r\n\talign-items: flex-start;\r\n\tflex-wrap: nowrap;\r\n\tdisplay: flex;\r\n\tflex-direction: row;\r\n}\r\n.cell-name{\r\n\twidth: 80%;\r\n\ttext-align: center;\r\n\tbackground-color: #3e8e41;\r\n\tborder-top-left-radius: 20%;\r\n\tmargin-right: 2px;\r\n\t\r\n}\r\n\r\n.cell-units {\r\n\tborder-radius: 10%;\r\n\twidth: 20%;\r\n\ttext-align: center;\r\n\tbackground-color: rgb(50, 133, 43);\r\n}\r\n.cell-measure-content{\r\n\tfloat: right;\r\n}\r\n\r\n.cell-measure {\r\n\tmargin: 0;\r\n\tfont-size: 29px;\r\n\tcolor: rgb(39, 20, 126);\r\n\tfloat: left;\r\n\tvertical-align: bottom\r\n}\r\n\r\n.measure-box {\r\n\twidth: 100%;\r\n\tbackground-color: rgb(97, 112, 99) ;\r\n\tborder-top-right-radius: 10%;\r\n\tborder-top-left-radius: 10%;\r\n\tuser-select: none;\r\n\tborder: medium dashed rgb(73, 167, 54);\r\n\tborder-style: solid;\r\n\tborder-width: 2px;\r\n\theight: 60px;\r\n\tmargin-top: 3px;\r\n}\r\n\r\n.left-container{\r\n\theight: 100%;\r\n\twidth: 160px;\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tflex-wrap: nowrap;\r\n\tjustify-content: baseline;\r\n}\r\n\r\n.cell-container {\r\n\twidth: 100%;\r\n\theight: 80%;\r\n\tbackground-color: rgb(172, 182, 154) ;\r\n\tflex-direction: column;\r\n\tdisplay: flex;\r\n\tborder-radius: 2%;\r\n\tbackground-size: cover;\r\n\tbackground: linear-gradient(to bottom right, rgb(255, 255, 255), rgb(162, 156, 199));\r\n}\r\n\r\n.sensors-container {\r\n\twidth: 100%;\r\n\theight: 30%;\r\n\tdisplay: flex;\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: column;\r\n\tborder-radius: 2%;\r\n\tbackground-color: rgb(172, 182, 154) ;\r\n\tbackground: linear-gradient(to bottom right, rgb(235, 235, 235), rgb(165, 201, 181));\r\n}\r\n\r\n.sensor-cell {\r\n\twidth: 100%;\r\n\theight: 40px;\r\n\tdisplay: flex;\r\n\t\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: row;\r\n\talign-content: center;\r\n}\r\n\r\n.sensor-control-panel {\r\n\twidth: 50%;\r\n\t\r\n\tdisplay: flex;\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: row;\r\n}\r\n\r\n.button-flex {\r\n\twidth: 100%;\r\n\talign-items: stretch;\r\n\tpadding: 0px;\r\n\tsize: 4px;\r\n}\r\n\r\n.sensor-name {\r\n\twidth: 50%;\r\n\theight: 100%;\r\n\tfont-size: 15px;\r\n\tdisplay: flex;\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: row;\r\n\tbackground-color: rgb(144, 218, 196) ;\r\n\tborder-radius: 5%;\r\n\talign-content: center;\r\n\talign-items: center;\r\n\tpadding-left:10px;\r\n}\r\n\r\n.sensor-pannel-button{\r\n\theight: 100%;\r\n}\r\n\r\nh3 {\r\n\ttext-align: left;\r\n\tmargin-top: 20px;\r\n\tmargin-bottom: 30px;\r\n\tfont-weight: 500;\r\n}\r\n\r\n/* MAIN styles */\r\nhtml,\r\nbody {\r\n\tfont-size: 14px;\r\n\t-webkit-font-smoothing: antialiased;\r\n\t-webkit-text-size-adjust: 100%;\r\n\tscroll-behavior: smooth;\r\n\theight: 100%;\r\n\tmargin: 0; \r\n\toverflow: hidden;\t\r\n}\r\n\r\n.all{\r\n\theight: 100%;\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tflex-wrap: nowrap;\r\n\tjustify-content: start;\r\n\talign-content: stretch;\r\n}\r\n\r\n.middle-container{\r\n\tdisplay: flex;\r\n\tflex-direction: row;\r\n\tflex-wrap: nowrap;\r\n\tjustify-content: start;\r\n\theight: 97%;\r\n}\r\n\r\n.plot {\r\n\tflex-grow: 1;  \t\r\n}\r\n\r\n.control-buttons{\r\n\theight: 100%;\r\n\tdisplay: flex;\r\n    align-items: center;\r\n\tmargin-right: 100px;\r\n\tmargin-left: 5px;\r\n}\r\n\r\n#drop_zone {\r\n\tborder: 5px solid blue;\r\n\twidth:  200px;\r\n\theight: 100px;\r\n}\r\n\r\n", "",{"version":3,"sources":["webpack://./css/styles.css"],"names":[],"mappings":"AAAA;;;;;;;;;;;;;;;;;CAiBC;;AAED,iBAAiB;;AAEjB;;;CAGC,sBAAsB;AACvB;;;;;;EAME,iCAAiC;AACnC;CACC,WAAW;CACX,WAAW;CACX,cAAc;AACf;;AAEA,oCAAoC;;;AAGpC;CACC,cAAc;AACf;;AAEA;;CAEC,gBAAgB;CAChB,UAAU;CACV,SAAS;AACV;;AAEA;CACC,sBAAsB;CACtB,qBAAqB;CACrB,yBAAyB;CACzB,iBAAiB;AAClB;AACA;CACC,aAAa;CACb,sBAAsB;AACvB;;AAEA;CACC,sBAAsB;CACtB,uBAAuB;CACvB,iBAAiB;CACjB,aAAa;CACb,mBAAmB;AACpB;AACA;CACC,UAAU;CACV,kBAAkB;CAClB,yBAAyB;CACzB,2BAA2B;CAC3B,iBAAiB;;AAElB;;AAEA;CACC,kBAAkB;CAClB,UAAU;CACV,kBAAkB;CAClB,kCAAkC;AACnC;AACA;CACC,YAAY;AACb;;AAEA;CACC,SAAS;CACT,eAAe;CACf,uBAAuB;CACvB,WAAW;CACX;AACD;;AAEA;CACC,WAAW;CACX,mCAAmC;CACnC,4BAA4B;CAC5B,2BAA2B;CAC3B,iBAAiB;CACjB,sCAAsC;CACtC,mBAAmB;CACnB,iBAAiB;CACjB,YAAY;CACZ,eAAe;AAChB;;AAEA;CACC,YAAY;CACZ,YAAY;CACZ,aAAa;CACb,sBAAsB;CACtB,iBAAiB;CACjB,yBAAyB;AAC1B;;AAEA;CACC,WAAW;CACX,WAAW;CACX,qCAAqC;CACrC,sBAAsB;CACtB,aAAa;CACb,iBAAiB;CACjB,sBAAsB;CACtB,oFAAoF;AACrF;;AAEA;CACC,WAAW;CACX,WAAW;CACX,aAAa;CACb,iBAAiB;CACjB,sBAAsB;CACtB,iBAAiB;CACjB,qCAAqC;CACrC,oFAAoF;AACrF;;AAEA;CACC,WAAW;CACX,YAAY;CACZ,aAAa;;CAEb,iBAAiB;CACjB,mBAAmB;CACnB,qBAAqB;AACtB;;AAEA;CACC,UAAU;;CAEV,aAAa;CACb,iBAAiB;CACjB,mBAAmB;AACpB;;AAEA;CACC,WAAW;CACX,oBAAoB;CACpB,YAAY;CACZ,SAAS;AACV;;AAEA;CACC,UAAU;CACV,YAAY;CACZ,eAAe;CACf,aAAa;CACb,iBAAiB;CACjB,mBAAmB;CACnB,qCAAqC;CACrC,iBAAiB;CACjB,qBAAqB;CACrB,mBAAmB;CACnB,iBAAiB;AAClB;;AAEA;CACC,YAAY;AACb;;AAEA;CACC,gBAAgB;CAChB,gBAAgB;CAChB,mBAAmB;CACnB,gBAAgB;AACjB;;AAEA,gBAAgB;AAChB;;CAEC,eAAe;CACf,mCAAmC;CACnC,8BAA8B;CAC9B,uBAAuB;CACvB,YAAY;CACZ,SAAS;CACT,gBAAgB;AACjB;;AAEA;CACC,YAAY;CACZ,aAAa;CACb,sBAAsB;CACtB,iBAAiB;CACjB,sBAAsB;CACtB,sBAAsB;AACvB;;AAEA;CACC,aAAa;CACb,mBAAmB;CACnB,iBAAiB;CACjB,sBAAsB;CACtB,WAAW;AACZ;;AAEA;CACC,YAAY;AACb;;AAEA;CACC,YAAY;CACZ,aAAa;IACV,mBAAmB;CACtB,mBAAmB;CACnB,gBAAgB;AACjB;;AAEA;CACC,sBAAsB;CACtB,aAAa;CACb,aAAa;AACd","sourcesContent":["/*\r\n\r\n# BEM (BLOCK, ELEMENT, MODIFIER) METHEDOLOGY\r\n\r\n<div class=\"card card--show\">\r\n  <div class=\"card__title\"></div>\r\n  <div class=\"card__container\">\r\n\r\n  </div>\r\n</div>\r\n\r\n.card - BLOCK\r\n\r\n.card__title - ELEMENT\r\n\r\n.card--show - MODIFIER\r\n\r\n*/\r\n\r\n/* RESET styles */\r\n\r\n*,\r\n*::after,\r\n*::before {\r\n\tbox-sizing: border-box;\r\n}\r\n\r\n\r\n\r\n\r\n\r\n  /* Clear floats (clearfix hack) */\r\n.btn-group:after {\r\n\tcontent: \"\";\r\n\tclear: both;\r\n\tdisplay: table;\r\n}\r\n\r\n/* Add a background color on hover */\r\n\r\n\r\na {\r\n\tcolor: #546e7a;\r\n}\r\n\r\nul,\r\nli {\r\n\tlist-style: none;\r\n\tpadding: 0;\r\n\tmargin: 0;\r\n}\r\n\r\n.no--select {\r\n\t-moz-user-select: none;\r\n\t-ms-user-select: none;\r\n\t-webkit-user-select: none;\r\n\tuser-select: none;\r\n}\r\n.cell-container {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n}\r\n\r\n.cell-info {\r\n\talign-content: stretch;\r\n\talign-items: flex-start;\r\n\tflex-wrap: nowrap;\r\n\tdisplay: flex;\r\n\tflex-direction: row;\r\n}\r\n.cell-name{\r\n\twidth: 80%;\r\n\ttext-align: center;\r\n\tbackground-color: #3e8e41;\r\n\tborder-top-left-radius: 20%;\r\n\tmargin-right: 2px;\r\n\t\r\n}\r\n\r\n.cell-units {\r\n\tborder-radius: 10%;\r\n\twidth: 20%;\r\n\ttext-align: center;\r\n\tbackground-color: rgb(50, 133, 43);\r\n}\r\n.cell-measure-content{\r\n\tfloat: right;\r\n}\r\n\r\n.cell-measure {\r\n\tmargin: 0;\r\n\tfont-size: 29px;\r\n\tcolor: rgb(39, 20, 126);\r\n\tfloat: left;\r\n\tvertical-align: bottom\r\n}\r\n\r\n.measure-box {\r\n\twidth: 100%;\r\n\tbackground-color: rgb(97, 112, 99) ;\r\n\tborder-top-right-radius: 10%;\r\n\tborder-top-left-radius: 10%;\r\n\tuser-select: none;\r\n\tborder: medium dashed rgb(73, 167, 54);\r\n\tborder-style: solid;\r\n\tborder-width: 2px;\r\n\theight: 60px;\r\n\tmargin-top: 3px;\r\n}\r\n\r\n.left-container{\r\n\theight: 100%;\r\n\twidth: 160px;\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tflex-wrap: nowrap;\r\n\tjustify-content: baseline;\r\n}\r\n\r\n.cell-container {\r\n\twidth: 100%;\r\n\theight: 80%;\r\n\tbackground-color: rgb(172, 182, 154) ;\r\n\tflex-direction: column;\r\n\tdisplay: flex;\r\n\tborder-radius: 2%;\r\n\tbackground-size: cover;\r\n\tbackground: linear-gradient(to bottom right, rgb(255, 255, 255), rgb(162, 156, 199));\r\n}\r\n\r\n.sensors-container {\r\n\twidth: 100%;\r\n\theight: 30%;\r\n\tdisplay: flex;\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: column;\r\n\tborder-radius: 2%;\r\n\tbackground-color: rgb(172, 182, 154) ;\r\n\tbackground: linear-gradient(to bottom right, rgb(235, 235, 235), rgb(165, 201, 181));\r\n}\r\n\r\n.sensor-cell {\r\n\twidth: 100%;\r\n\theight: 40px;\r\n\tdisplay: flex;\r\n\t\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: row;\r\n\talign-content: center;\r\n}\r\n\r\n.sensor-control-panel {\r\n\twidth: 50%;\r\n\t\r\n\tdisplay: flex;\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: row;\r\n}\r\n\r\n.button-flex {\r\n\twidth: 100%;\r\n\talign-items: stretch;\r\n\tpadding: 0px;\r\n\tsize: 4px;\r\n}\r\n\r\n.sensor-name {\r\n\twidth: 50%;\r\n\theight: 100%;\r\n\tfont-size: 15px;\r\n\tdisplay: flex;\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: row;\r\n\tbackground-color: rgb(144, 218, 196) ;\r\n\tborder-radius: 5%;\r\n\talign-content: center;\r\n\talign-items: center;\r\n\tpadding-left:10px;\r\n}\r\n\r\n.sensor-pannel-button{\r\n\theight: 100%;\r\n}\r\n\r\nh3 {\r\n\ttext-align: left;\r\n\tmargin-top: 20px;\r\n\tmargin-bottom: 30px;\r\n\tfont-weight: 500;\r\n}\r\n\r\n/* MAIN styles */\r\nhtml,\r\nbody {\r\n\tfont-size: 14px;\r\n\t-webkit-font-smoothing: antialiased;\r\n\t-webkit-text-size-adjust: 100%;\r\n\tscroll-behavior: smooth;\r\n\theight: 100%;\r\n\tmargin: 0; \r\n\toverflow: hidden;\t\r\n}\r\n\r\n.all{\r\n\theight: 100%;\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tflex-wrap: nowrap;\r\n\tjustify-content: start;\r\n\talign-content: stretch;\r\n}\r\n\r\n.middle-container{\r\n\tdisplay: flex;\r\n\tflex-direction: row;\r\n\tflex-wrap: nowrap;\r\n\tjustify-content: start;\r\n\theight: 97%;\r\n}\r\n\r\n.plot {\r\n\tflex-grow: 1;  \t\r\n}\r\n\r\n.control-buttons{\r\n\theight: 100%;\r\n\tdisplay: flex;\r\n    align-items: center;\r\n\tmargin-right: 100px;\r\n\tmargin-left: 5px;\r\n}\r\n\r\n#drop_zone {\r\n\tborder: 5px solid blue;\r\n\twidth:  200px;\r\n\theight: 100px;\r\n}\r\n\r\n"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, "/*\r\n\r\n# BEM (BLOCK, ELEMENT, MODIFIER) METHEDOLOGY\r\n\r\n<div class=\"card card--show\">\r\n  <div class=\"card__title\"></div>\r\n  <div class=\"card__container\">\r\n\r\n  </div>\r\n</div>\r\n\r\n.card - BLOCK\r\n\r\n.card__title - ELEMENT\r\n\r\n.card--show - MODIFIER\r\n\r\n*/\r\n\r\n/* RESET styles */\r\n\r\n*,\r\n*::after,\r\n*::before {\r\n\tbox-sizing: border-box;\r\n}\r\n\r\n\r\n\r\n\r\n\r\n  /* Clear floats (clearfix hack) */\r\n.btn-group:after {\r\n\tcontent: \"\";\r\n\tclear: both;\r\n\tdisplay: table;\r\n}\r\n\r\n/* Add a background color on hover */\r\n\r\n\r\na {\r\n\tcolor: #546e7a;\r\n}\r\n\r\nul,\r\nli {\r\n\tlist-style: none;\r\n\tpadding: 0;\r\n\tmargin: 0;\r\n}\r\n\r\n.no--select {\r\n\t-moz-user-select: none;\r\n\t-ms-user-select: none;\r\n\t-webkit-user-select: none;\r\n\tuser-select: none;\r\n}\r\n.cell-container {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n}\r\n\r\n.cell-info {\r\n\talign-content: stretch;\r\n\talign-items: flex-start;\r\n\tflex-wrap: nowrap;\r\n\tdisplay: flex;\r\n\tflex-direction: row;\r\n}\r\n.cell-name{\r\n\twidth: 80%;\r\n\ttext-align: center;\r\n\tborder-top-left-radius: 20%;\r\n\tmargin: 1px;\r\n\tborder-style: dashed;\r\n\tborder-color: rgb(0, 0, 0);\r\n\tborder-width: 2px;\r\n\t\r\n}\r\n\r\n.cell-units {\r\n\t\r\n\tborder-top-right-radius: 30%;\r\n\tmargin: 1px;\r\n\twidth: 20%;\r\n\ttext-align: center;\r\n\tborder-style: dotted;\r\n\tborder-color: rgb(49, 45, 45);\r\n\tborder-width: 2px;\r\n}\r\n.cell-measure-content{\r\n\tfloat: right;\r\n\twidth: 100%;\r\n\t\r\n}\r\n\r\n.cell-measure {\r\n\tfont-size: 25px;\r\n\ttext-align: right;\r\n\twidth: 100%;\r\n\theight: 100%;\r\n}\r\n\r\n.measure-box {\r\n\twidth: 100%;\r\n\tborder-top-right-radius: 10%;\r\n\tborder-top-left-radius: 10%;\r\n\tuser-select: none;\r\n\tborder-style: solid;\r\n\tborder-width: 2px;\r\n\theight: 60px;\r\n\tmargin-top: 3px;\r\n}\r\n\r\n.left-container{\r\n\theight: 100%;\r\n\twidth: 160px;\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tflex-wrap: nowrap;\r\n\tjustify-content: baseline;\r\n}\r\n\r\n.cell-container {\r\n\twidth: 100%;\r\n\theight: 80%;\r\n\tbackground-color: rgb(172, 182, 154) ;\r\n\tflex-direction: column;\r\n\tdisplay: flex;\r\n\tborder-radius: 2%;\r\n\tbackground-size: cover;\r\n\tbackground: linear-gradient(to bottom right, rgb(255, 255, 255), rgb(162, 156, 199));\r\n}\r\n\r\n.sensors-container {\r\n\twidth: 100%;\r\n\theight: 30%;\r\n\tdisplay: flex;\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: column;\r\n\tborder-radius: 2%;\r\n\tbackground-color: rgb(172, 182, 154) ;\r\n\tbackground: linear-gradient(to bottom right, rgb(235, 235, 235), rgb(165, 201, 181));\r\n}\r\n\r\n.sensor-cell {\r\n\twidth: 100%;\r\n\theight: 40px;\r\n\tdisplay: flex;\r\n\t\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: row;\r\n\talign-content: center;\r\n}\r\n\r\n.sensor-control-panel {\r\n\twidth: 50%;\r\n\t\r\n\tdisplay: flex;\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: row;\r\n}\r\n\r\n.button-flex {\r\n\twidth: 100%;\r\n\talign-items: stretch;\r\n\tpadding: 0px;\r\n\tsize: 4px;\r\n}\r\n\r\n.sensor-name {\r\n\twidth: 50%;\r\n\theight: 100%;\r\n\tfont-size: 12px;\r\n\tdisplay: flex;\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: row;\r\n\tbackground-color: rgb(144, 218, 196) ;\r\n\tborder-radius: 5%;\r\n\talign-content: center;\r\n\talign-items: center;\r\n\tpadding-left:10px;\r\n}\r\n\r\n.sensor-pannel-button{\r\n\theight: 100%;\r\n}\r\n\r\nh3 {\r\n\ttext-align: left;\r\n\tmargin-top: 20px;\r\n\tmargin-bottom: 30px;\r\n\tfont-weight: 500;\r\n}\r\n\r\n/* MAIN styles */\r\nhtml,\r\nbody {\r\n\tfont-size: 14px;\r\n\t-webkit-font-smoothing: antialiased;\r\n\t-webkit-text-size-adjust: 100%;\r\n\tscroll-behavior: smooth;\r\n\theight: 100%;\r\n\tmargin: 0; \r\n\toverflow: hidden;\t\r\n}\r\n\r\n.all{\r\n\theight: 100%;\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tflex-wrap: nowrap;\r\n\tjustify-content: start;\r\n\talign-content: stretch;\r\n}\r\n\r\n.middle-container{\r\n\tdisplay: flex;\r\n\tflex-direction: row;\r\n\tflex-wrap: nowrap;\r\n\tjustify-content: start;\r\n\theight: 97%;\r\n}\r\n\r\n.plot {\r\n\tflex-grow: 1;  \t\r\n}\r\n\r\n.control-buttons{\r\n\theight: 100%;\r\n\tdisplay: flex;\r\n    align-items: center;\r\n\tmargin-right: 100px;\r\n\tmargin-left: 5px;\r\n}\r\n\r\n#drop_zone {\r\n\tborder: 5px solid blue;\r\n\twidth:  200px;\r\n\theight: 100px;\r\n}\r\n\r\n", "",{"version":3,"sources":["webpack://./css/styles.css"],"names":[],"mappings":"AAAA;;;;;;;;;;;;;;;;;CAiBC;;AAED,iBAAiB;;AAEjB;;;CAGC,sBAAsB;AACvB;;;;;;EAME,iCAAiC;AACnC;CACC,WAAW;CACX,WAAW;CACX,cAAc;AACf;;AAEA,oCAAoC;;;AAGpC;CACC,cAAc;AACf;;AAEA;;CAEC,gBAAgB;CAChB,UAAU;CACV,SAAS;AACV;;AAEA;CACC,sBAAsB;CACtB,qBAAqB;CACrB,yBAAyB;CACzB,iBAAiB;AAClB;AACA;CACC,aAAa;CACb,sBAAsB;AACvB;;AAEA;CACC,sBAAsB;CACtB,uBAAuB;CACvB,iBAAiB;CACjB,aAAa;CACb,mBAAmB;AACpB;AACA;CACC,UAAU;CACV,kBAAkB;CAClB,2BAA2B;CAC3B,WAAW;CACX,oBAAoB;CACpB,0BAA0B;CAC1B,iBAAiB;;AAElB;;AAEA;;CAEC,4BAA4B;CAC5B,WAAW;CACX,UAAU;CACV,kBAAkB;CAClB,oBAAoB;CACpB,6BAA6B;CAC7B,iBAAiB;AAClB;AACA;CACC,YAAY;CACZ,WAAW;;AAEZ;;AAEA;CACC,eAAe;CACf,iBAAiB;CACjB,WAAW;CACX,YAAY;AACb;;AAEA;CACC,WAAW;CACX,4BAA4B;CAC5B,2BAA2B;CAC3B,iBAAiB;CACjB,mBAAmB;CACnB,iBAAiB;CACjB,YAAY;CACZ,eAAe;AAChB;;AAEA;CACC,YAAY;CACZ,YAAY;CACZ,aAAa;CACb,sBAAsB;CACtB,iBAAiB;CACjB,yBAAyB;AAC1B;;AAEA;CACC,WAAW;CACX,WAAW;CACX,qCAAqC;CACrC,sBAAsB;CACtB,aAAa;CACb,iBAAiB;CACjB,sBAAsB;CACtB,oFAAoF;AACrF;;AAEA;CACC,WAAW;CACX,WAAW;CACX,aAAa;CACb,iBAAiB;CACjB,sBAAsB;CACtB,iBAAiB;CACjB,qCAAqC;CACrC,oFAAoF;AACrF;;AAEA;CACC,WAAW;CACX,YAAY;CACZ,aAAa;;CAEb,iBAAiB;CACjB,mBAAmB;CACnB,qBAAqB;AACtB;;AAEA;CACC,UAAU;;CAEV,aAAa;CACb,iBAAiB;CACjB,mBAAmB;AACpB;;AAEA;CACC,WAAW;CACX,oBAAoB;CACpB,YAAY;CACZ,SAAS;AACV;;AAEA;CACC,UAAU;CACV,YAAY;CACZ,eAAe;CACf,aAAa;CACb,iBAAiB;CACjB,mBAAmB;CACnB,qCAAqC;CACrC,iBAAiB;CACjB,qBAAqB;CACrB,mBAAmB;CACnB,iBAAiB;AAClB;;AAEA;CACC,YAAY;AACb;;AAEA;CACC,gBAAgB;CAChB,gBAAgB;CAChB,mBAAmB;CACnB,gBAAgB;AACjB;;AAEA,gBAAgB;AAChB;;CAEC,eAAe;CACf,mCAAmC;CACnC,8BAA8B;CAC9B,uBAAuB;CACvB,YAAY;CACZ,SAAS;CACT,gBAAgB;AACjB;;AAEA;CACC,YAAY;CACZ,aAAa;CACb,sBAAsB;CACtB,iBAAiB;CACjB,sBAAsB;CACtB,sBAAsB;AACvB;;AAEA;CACC,aAAa;CACb,mBAAmB;CACnB,iBAAiB;CACjB,sBAAsB;CACtB,WAAW;AACZ;;AAEA;CACC,YAAY;AACb;;AAEA;CACC,YAAY;CACZ,aAAa;IACV,mBAAmB;CACtB,mBAAmB;CACnB,gBAAgB;AACjB;;AAEA;CACC,sBAAsB;CACtB,aAAa;CACb,aAAa;AACd","sourcesContent":["/*\r\n\r\n# BEM (BLOCK, ELEMENT, MODIFIER) METHEDOLOGY\r\n\r\n<div class=\"card card--show\">\r\n  <div class=\"card__title\"></div>\r\n  <div class=\"card__container\">\r\n\r\n  </div>\r\n</div>\r\n\r\n.card - BLOCK\r\n\r\n.card__title - ELEMENT\r\n\r\n.card--show - MODIFIER\r\n\r\n*/\r\n\r\n/* RESET styles */\r\n\r\n*,\r\n*::after,\r\n*::before {\r\n\tbox-sizing: border-box;\r\n}\r\n\r\n\r\n\r\n\r\n\r\n  /* Clear floats (clearfix hack) */\r\n.btn-group:after {\r\n\tcontent: \"\";\r\n\tclear: both;\r\n\tdisplay: table;\r\n}\r\n\r\n/* Add a background color on hover */\r\n\r\n\r\na {\r\n\tcolor: #546e7a;\r\n}\r\n\r\nul,\r\nli {\r\n\tlist-style: none;\r\n\tpadding: 0;\r\n\tmargin: 0;\r\n}\r\n\r\n.no--select {\r\n\t-moz-user-select: none;\r\n\t-ms-user-select: none;\r\n\t-webkit-user-select: none;\r\n\tuser-select: none;\r\n}\r\n.cell-container {\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n}\r\n\r\n.cell-info {\r\n\talign-content: stretch;\r\n\talign-items: flex-start;\r\n\tflex-wrap: nowrap;\r\n\tdisplay: flex;\r\n\tflex-direction: row;\r\n}\r\n.cell-name{\r\n\twidth: 80%;\r\n\ttext-align: center;\r\n\tborder-top-left-radius: 20%;\r\n\tmargin: 1px;\r\n\tborder-style: dashed;\r\n\tborder-color: rgb(0, 0, 0);\r\n\tborder-width: 2px;\r\n\t\r\n}\r\n\r\n.cell-units {\r\n\t\r\n\tborder-top-right-radius: 30%;\r\n\tmargin: 1px;\r\n\twidth: 20%;\r\n\ttext-align: center;\r\n\tborder-style: dotted;\r\n\tborder-color: rgb(49, 45, 45);\r\n\tborder-width: 2px;\r\n}\r\n.cell-measure-content{\r\n\tfloat: right;\r\n\twidth: 100%;\r\n\t\r\n}\r\n\r\n.cell-measure {\r\n\tfont-size: 25px;\r\n\ttext-align: right;\r\n\twidth: 100%;\r\n\theight: 100%;\r\n}\r\n\r\n.measure-box {\r\n\twidth: 100%;\r\n\tborder-top-right-radius: 10%;\r\n\tborder-top-left-radius: 10%;\r\n\tuser-select: none;\r\n\tborder-style: solid;\r\n\tborder-width: 2px;\r\n\theight: 60px;\r\n\tmargin-top: 3px;\r\n}\r\n\r\n.left-container{\r\n\theight: 100%;\r\n\twidth: 160px;\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tflex-wrap: nowrap;\r\n\tjustify-content: baseline;\r\n}\r\n\r\n.cell-container {\r\n\twidth: 100%;\r\n\theight: 80%;\r\n\tbackground-color: rgb(172, 182, 154) ;\r\n\tflex-direction: column;\r\n\tdisplay: flex;\r\n\tborder-radius: 2%;\r\n\tbackground-size: cover;\r\n\tbackground: linear-gradient(to bottom right, rgb(255, 255, 255), rgb(162, 156, 199));\r\n}\r\n\r\n.sensors-container {\r\n\twidth: 100%;\r\n\theight: 30%;\r\n\tdisplay: flex;\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: column;\r\n\tborder-radius: 2%;\r\n\tbackground-color: rgb(172, 182, 154) ;\r\n\tbackground: linear-gradient(to bottom right, rgb(235, 235, 235), rgb(165, 201, 181));\r\n}\r\n\r\n.sensor-cell {\r\n\twidth: 100%;\r\n\theight: 40px;\r\n\tdisplay: flex;\r\n\t\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: row;\r\n\talign-content: center;\r\n}\r\n\r\n.sensor-control-panel {\r\n\twidth: 50%;\r\n\t\r\n\tdisplay: flex;\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: row;\r\n}\r\n\r\n.button-flex {\r\n\twidth: 100%;\r\n\talign-items: stretch;\r\n\tpadding: 0px;\r\n\tsize: 4px;\r\n}\r\n\r\n.sensor-name {\r\n\twidth: 50%;\r\n\theight: 100%;\r\n\tfont-size: 12px;\r\n\tdisplay: flex;\r\n\tflex-wrap: nowrap;\r\n\tflex-direction: row;\r\n\tbackground-color: rgb(144, 218, 196) ;\r\n\tborder-radius: 5%;\r\n\talign-content: center;\r\n\talign-items: center;\r\n\tpadding-left:10px;\r\n}\r\n\r\n.sensor-pannel-button{\r\n\theight: 100%;\r\n}\r\n\r\nh3 {\r\n\ttext-align: left;\r\n\tmargin-top: 20px;\r\n\tmargin-bottom: 30px;\r\n\tfont-weight: 500;\r\n}\r\n\r\n/* MAIN styles */\r\nhtml,\r\nbody {\r\n\tfont-size: 14px;\r\n\t-webkit-font-smoothing: antialiased;\r\n\t-webkit-text-size-adjust: 100%;\r\n\tscroll-behavior: smooth;\r\n\theight: 100%;\r\n\tmargin: 0; \r\n\toverflow: hidden;\t\r\n}\r\n\r\n.all{\r\n\theight: 100%;\r\n\tdisplay: flex;\r\n\tflex-direction: column;\r\n\tflex-wrap: nowrap;\r\n\tjustify-content: start;\r\n\talign-content: stretch;\r\n}\r\n\r\n.middle-container{\r\n\tdisplay: flex;\r\n\tflex-direction: row;\r\n\tflex-wrap: nowrap;\r\n\tjustify-content: start;\r\n\theight: 97%;\r\n}\r\n\r\n.plot {\r\n\tflex-grow: 1;  \t\r\n}\r\n\r\n.control-buttons{\r\n\theight: 100%;\r\n\tdisplay: flex;\r\n    align-items: center;\r\n\tmargin-right: 100px;\r\n\tmargin-left: 5px;\r\n}\r\n\r\n#drop_zone {\r\n\tborder: 5px solid blue;\r\n\twidth:  200px;\r\n\theight: 100px;\r\n}\r\n\r\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -8371,6 +8443,61 @@ var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js
 
 /***/ }),
 
+/***/ "./css/cellStyles.css":
+/*!****************************!*\
+  !*** ./css/cellStyles.css ***!
+  \****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_style_loader_dist_runtime_styleDomAPI_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !../node_modules/style-loader/dist/runtime/styleDomAPI.js */ "./node_modules/style-loader/dist/runtime/styleDomAPI.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_styleDomAPI_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_styleDomAPI_js__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _node_modules_style_loader_dist_runtime_insertBySelector_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! !../node_modules/style-loader/dist/runtime/insertBySelector.js */ "./node_modules/style-loader/dist/runtime/insertBySelector.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_insertBySelector_js__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_insertBySelector_js__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _node_modules_style_loader_dist_runtime_setAttributesWithoutAttributes_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! !../node_modules/style-loader/dist/runtime/setAttributesWithoutAttributes.js */ "./node_modules/style-loader/dist/runtime/setAttributesWithoutAttributes.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_setAttributesWithoutAttributes_js__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_setAttributesWithoutAttributes_js__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _node_modules_style_loader_dist_runtime_insertStyleElement_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! !../node_modules/style-loader/dist/runtime/insertStyleElement.js */ "./node_modules/style-loader/dist/runtime/insertStyleElement.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_insertStyleElement_js__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_insertStyleElement_js__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _node_modules_style_loader_dist_runtime_styleTagTransform_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! !../node_modules/style-loader/dist/runtime/styleTagTransform.js */ "./node_modules/style-loader/dist/runtime/styleTagTransform.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_styleTagTransform_js__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_styleTagTransform_js__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _node_modules_css_loader_dist_cjs_js_cellStyles_css__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! !!../node_modules/css-loader/dist/cjs.js!./cellStyles.css */ "./node_modules/css-loader/dist/cjs.js!./css/cellStyles.css");
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+
+var options = {};
+
+options.styleTagTransform = (_node_modules_style_loader_dist_runtime_styleTagTransform_js__WEBPACK_IMPORTED_MODULE_5___default());
+options.setAttributes = (_node_modules_style_loader_dist_runtime_setAttributesWithoutAttributes_js__WEBPACK_IMPORTED_MODULE_3___default());
+
+      options.insert = _node_modules_style_loader_dist_runtime_insertBySelector_js__WEBPACK_IMPORTED_MODULE_2___default().bind(null, "head");
+    
+options.domAPI = (_node_modules_style_loader_dist_runtime_styleDomAPI_js__WEBPACK_IMPORTED_MODULE_1___default());
+options.insertStyleElement = (_node_modules_style_loader_dist_runtime_insertStyleElement_js__WEBPACK_IMPORTED_MODULE_4___default());
+
+var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_node_modules_css_loader_dist_cjs_js_cellStyles_css__WEBPACK_IMPORTED_MODULE_6__["default"], options);
+
+
+
+
+       /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_css_loader_dist_cjs_js_cellStyles_css__WEBPACK_IMPORTED_MODULE_6__["default"] && _node_modules_css_loader_dist_cjs_js_cellStyles_css__WEBPACK_IMPORTED_MODULE_6__["default"].locals ? _node_modules_css_loader_dist_cjs_js_cellStyles_css__WEBPACK_IMPORTED_MODULE_6__["default"].locals : undefined);
+
+
+/***/ }),
+
 /***/ "./css/styles.css":
 /*!************************!*\
   !*** ./css/styles.css ***!
@@ -8857,14 +8984,13 @@ module.exports = styleTagTransform;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreatetemperatureCellStyle = exports.CreateCellSpeedStyle = exports.CreateTorqueCellStyle = exports.CreateDefaultCellStyle = void 0;
+exports.CreatePowerCellStyle = exports.CreatetemperatureCellStyle = exports.CreateCellSpeedStyle = exports.CreateTorqueCellStyle = exports.CreateDefaultCellStyle = void 0;
 function CreateDefaultCellStyle() {
     return {
         valueName: "undefined",
         unitsName: "V",
-        fontColor: "#000000",
-        backgroundColor: "#c2db74",
-        borderColor: "#a7d41c",
+        cellStyle: "",
+        fontStyle: ""
     };
 }
 exports.CreateDefaultCellStyle = CreateDefaultCellStyle;
@@ -8872,9 +8998,8 @@ function CreateTorqueCellStyle(sensorInfo) {
     return {
         valueName: sensorInfo.ValueName,
         unitsName: sensorInfo.Unitname,
-        fontColor: "#000000",
-        backgroundColor: "#7bbda1",
-        borderColor: "#11ad77",
+        cellStyle: "cell-main-style",
+        fontStyle: "cell-main-font"
     };
 }
 exports.CreateTorqueCellStyle = CreateTorqueCellStyle;
@@ -8882,9 +9007,8 @@ function CreateCellSpeedStyle(sensorInfo) {
     return {
         valueName: "Скорость вр.",
         unitsName: "rpm",
-        fontColor: "#000000",
-        backgroundColor: "#7f7ba8",
-        borderColor: "#2b1dab",
+        fontStyle: "cell-speed-font",
+        cellStyle: "cell-speed-style",
     };
 }
 exports.CreateCellSpeedStyle = CreateCellSpeedStyle;
@@ -8892,12 +9016,20 @@ function CreatetemperatureCellStyle() {
     return {
         valueName: "Температура",
         unitsName: "C",
-        fontColor: "#000000",
-        backgroundColor: "#b08696",
-        borderColor: "#782f4b",
+        fontStyle: "cell-tmp-font",
+        cellStyle: "cell-tmp-style",
     };
 }
 exports.CreatetemperatureCellStyle = CreatetemperatureCellStyle;
+function CreatePowerCellStyle(sensorInfo) {
+    return {
+        valueName: "Мощность",
+        unitsName: sensorInfo.powerUnitsName,
+        fontStyle: "cell-power-font",
+        cellStyle: "cell-power-style",
+    };
+}
+exports.CreatePowerCellStyle = CreatePowerCellStyle;
 
 
 /***/ }),
@@ -8906,12 +9038,13 @@ exports.CreatetemperatureCellStyle = CreatetemperatureCellStyle;
 /*!*********************************************************!*\
   !*** ./src/Channel/ChannelStyle/ChannelStyleFactory.ts ***!
   \*********************************************************/
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreatetemperatureStyle = exports.CreateSpeedStyle = exports.CreateTorqueStyle = exports.CreateDefaultStyle = void 0;
+exports.CreatePowerStyle = exports.CreatetemperatureStyle = exports.CreateSpeedStyle = exports.CreateTorqueStyle = exports.CreateDefaultStyle = void 0;
+const Common_1 = __webpack_require__(/*! ../../Common/Common */ "./src/Common/Common.ts");
 function CreateDefaultStyle() {
     return {
         color: "green",
@@ -8919,6 +9052,12 @@ function CreateDefaultStyle() {
         line: "solid",
         range: [100, 100],
         yTitle: "Default y Title",
+        grid: false,
+        rescaleRationBottom: rescaleRatio,
+        rescaleRationTop: rescaleRatio,
+        unitName: "Undefined",
+        valueType: "torque",
+        yAxeSide: "left"
     };
 }
 exports.CreateDefaultStyle = CreateDefaultStyle;
@@ -8933,6 +9072,8 @@ function CreateTorqueStyle(sensorInfo) {
         unitName: sensorInfo.Unitname,
         valueType: "torque",
         yAxeSide: "left",
+        rescaleRationBottom: rescaleRatio,
+        rescaleRationTop: rescaleRatio,
     };
 }
 exports.CreateTorqueStyle = CreateTorqueStyle;
@@ -8940,30 +9081,53 @@ function CreateSpeedStyle(sensorInfo) {
     return {
         grid: false,
         color: "blue",
-        legendTitle: "Speed",
+        legendTitle: sensorInfo.SensorType + "-Speed",
         line: "solid",
         range: [0, 30000],
         yTitle: "Speed",
         unitName: "hz",
         valueType: "speed",
         yAxeSide: "right",
+        rescaleRationBottom: 0,
+        rescaleRationTop: rescaleRatio,
     };
 }
 exports.CreateSpeedStyle = CreateSpeedStyle;
-function CreatetemperatureStyle() {
+function CreatetemperatureStyle(sensorInfo) {
     return {
         grid: false,
         color: "red",
         legendTitle: "Tmp",
         line: "dash",
         range: [-60, 60],
-        yTitle: "Tmp",
+        yTitle: sensorInfo.SensorType + " Tmp",
         unitName: "Dg",
         valueType: "tmp",
         yAxeSide: "right",
+        rescaleRationBottom: rescaleRatio,
+        rescaleRationTop: rescaleRatio,
     };
 }
 exports.CreatetemperatureStyle = CreatetemperatureStyle;
+function CreatePowerStyle(sensorInfo) {
+    let minPower = (0, Common_1.CalculatePower)(sensorInfo.MaxSpeed + 0.1 * sensorInfo.MaxSpeed, sensorInfo.MinValue + 0.1 * sensorInfo.MinValue);
+    let maxPower = -minPower;
+    return {
+        grid: false,
+        color: "darkRed",
+        legendTitle: "Power",
+        line: "dash",
+        range: [minPower, maxPower],
+        yTitle: sensorInfo.SensorType + " Power",
+        unitName: sensorInfo.powerUnitsName,
+        valueType: "power",
+        yAxeSide: "left",
+        rescaleRationBottom: rescaleRatio,
+        rescaleRationTop: rescaleRatio,
+    };
+}
+exports.CreatePowerStyle = CreatePowerStyle;
+let rescaleRatio = 0.2;
 
 
 /***/ }),
@@ -8990,15 +9154,21 @@ class CellChannel {
         this.style = style;
         (_a = dataSourсe.onData) === null || _a === void 0 ? void 0 : _a.sub((sensor, args) => {
             this._onData.dispatch(this, {
-                data: args.data,
-                time: args.time,
+                data: args,
+                sensor: sensor,
             });
         });
         (_b = dataSourсe.onClose) === null || _b === void 0 ? void 0 : _b.sub((sensor, args) => {
-            this._onClose.dispatch(this, args);
+            this._onClose.dispatch(this, {
+                msg: args,
+                sensor: sensor,
+            });
         });
         (_c = dataSourсe.onMessage) === null || _c === void 0 ? void 0 : _c.sub((sensor, args) => {
-            this._onMessage.dispatch(this, args);
+            this._onMessage.dispatch(this, {
+                sensor: sensor,
+                sensorMsgArgs: args,
+            });
         });
     }
     get Style() {
@@ -9028,8 +9198,9 @@ const DataSourceFactory_1 = __webpack_require__(/*! ../SensorDataProveder/DataSo
 const CellChannel_1 = __webpack_require__(/*! ./CellChannel */ "./src/Channel/Channel/CellChannel.ts");
 const CellChannelStyleFactory_1 = __webpack_require__(/*! ../ChannelStyle/CellChannelStyleFactory */ "./src/Channel/ChannelStyle/CellChannelStyleFactory.ts");
 function CreateMainValueCellChannel(sensor, fullSensorInfo) {
-    var dataSource = (0, DataSourceFactory_1.CreateAverageValueDataSource)(sensor, 100);
-    return new CellChannel_1.CellChannel(dataSource, (0, CellChannelStyleFactory_1.CreateTorqueCellStyle)(fullSensorInfo));
+    let baseMainValueSource = (0, DataSourceFactory_1.CreateMainValueDataSource)(sensor);
+    //var dataSource = CreateAverageValueDataSource(baseMainValueSource, 1);
+    return new CellChannel_1.CellChannel(baseMainValueSource, (0, CellChannelStyleFactory_1.CreateTorqueCellStyle)(fullSensorInfo));
 }
 function CreateSpeedCellChannel(sensor, fullSensorInfo) {
     var dataSource = (0, DataSourceFactory_1.CreateSpeedValueDataSource)(sensor);
@@ -9039,12 +9210,17 @@ function CreateTemperatureCellChannel(sensor, fullSensorInfo) {
     var dataSource = (0, DataSourceFactory_1.CreateTemperatureValueDataSource)(sensor);
     return new CellChannel_1.CellChannel(dataSource, (0, CellChannelStyleFactory_1.CreatetemperatureCellStyle)());
 }
+function CreatePowerCellChannel(sensor, fullSensorInfo) {
+    var dataSource = (0, DataSourceFactory_1.CreatePowerDataSource)(sensor);
+    return new CellChannel_1.CellChannel(dataSource, (0, CellChannelStyleFactory_1.CreatePowerCellStyle)(fullSensorInfo));
+}
 function CreateAllSensorCellChannels(sensor, fullSensorInfo) {
     var channels = [];
     var ch = CreateMainValueCellChannel(sensor, fullSensorInfo);
     channels.push(ch);
     channels.push(CreateTemperatureCellChannel(sensor, fullSensorInfo));
     if (fullSensorInfo.isRotative != 0) {
+        channels.push(CreatePowerCellChannel(sensor, fullSensorInfo));
         channels.push(CreateSpeedCellChannel(sensor, fullSensorInfo));
     }
     return channels;
@@ -9066,6 +9242,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.Channel = void 0;
 const ChannelStyleFactory_1 = __webpack_require__(/*! ../ChannelStyle/ChannelStyleFactory */ "./src/Channel/ChannelStyle/ChannelStyleFactory.ts");
 const strongly_typed_events_1 = __webpack_require__(/*! strongly-typed-events */ "./node_modules/strongly-typed-events/dist/index.js");
+// Содержит информацию для отображения на графике. подает данные на график
 class Channel {
     constructor(dataSource, style = (0, ChannelStyleFactory_1.CreateDefaultStyle)()) {
         var _a, _b, _c;
@@ -9084,13 +9261,13 @@ class Channel {
         });
         (_b = dataSource.onClose) === null || _b === void 0 ? void 0 : _b.sub((sensor, args) => {
             this._onClose.dispatch(this, {
-                message: args,
                 sensor: sensor,
+                msg: args,
             });
         });
         (_c = dataSource.onMessage) === null || _c === void 0 ? void 0 : _c.sub((sensor, args) => {
             this._onMessage.dispatch(this, {
-                message: args,
+                sensorMsgArgs: args,
                 sensor: sensor,
             });
         });
@@ -9100,7 +9277,6 @@ class Channel {
     }
     get onData() { return this._onData.asEvent(); }
     get onMessage() { return this._onMessage.asEvent(); }
-    get onError() { return this._onClose.asEvent(); }
     get onClose() { return this._onClose.asEvent(); }
 }
 exports.Channel = Channel;
@@ -9123,7 +9299,8 @@ const ChannelStyleFactory_1 = __webpack_require__(/*! ../ChannelStyle/ChannelSty
 const DataSourceFactory_1 = __webpack_require__(/*! ../SensorDataProveder/DataSourceFactory */ "./src/Channel/SensorDataProveder/DataSourceFactory.ts");
 function CreateMainValueChannel(sensor, fullSensorInfo) {
     var dataSource = (0, DataSourceFactory_1.CreateMainValueDataSource)(sensor);
-    return new Channel_1.Channel(dataSource, (0, ChannelStyleFactory_1.CreateTorqueStyle)(fullSensorInfo));
+    let avgSrc = (0, DataSourceFactory_1.CreateAverageValueDataSource)(dataSource, 1);
+    return new Channel_1.Channel(avgSrc, (0, ChannelStyleFactory_1.CreateTorqueStyle)(fullSensorInfo));
 }
 function CreateSpeedChannel(sensor, fullSensorInfo) {
     var dataSource = (0, DataSourceFactory_1.CreateSpeedValueDataSource)(sensor);
@@ -9131,15 +9308,19 @@ function CreateSpeedChannel(sensor, fullSensorInfo) {
 }
 function CreateTemperatureChannel(sensor, fullSensorInfo) {
     var dataSource = (0, DataSourceFactory_1.CreateTemperatureValueDataSource)(sensor);
-    return new Channel_1.Channel(dataSource, (0, ChannelStyleFactory_1.CreatetemperatureStyle)());
+    return new Channel_1.Channel(dataSource, (0, ChannelStyleFactory_1.CreatetemperatureStyle)(fullSensorInfo));
+}
+function CreatePowerChannel(sensor, fullSensorInfo) {
+    var dataSource = (0, DataSourceFactory_1.CreatePowerDataSource)(sensor);
+    return new Channel_1.Channel(dataSource, (0, ChannelStyleFactory_1.CreatePowerStyle)(fullSensorInfo));
 }
 function CreateAllSensorChannels(sensor, fullSensorInfo) {
     var channels = [];
-    var ch = CreateMainValueChannel(sensor, fullSensorInfo);
-    channels.push(ch);
+    channels.push(CreateMainValueChannel(sensor, fullSensorInfo));
     channels.push(CreateTemperatureChannel(sensor, fullSensorInfo));
     if (fullSensorInfo.isRotative != 0) {
         channels.push(CreateSpeedChannel(sensor, fullSensorInfo));
+        channels.push(CreatePowerChannel(sensor, fullSensorInfo));
     }
     return channels;
 }
@@ -9159,9 +9340,10 @@ exports.CreateAllSensorChannels = CreateAllSensorChannels;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.AverageSensorDataProvider = void 0;
 const strongly_typed_events_1 = __webpack_require__(/*! strongly-typed-events */ "./node_modules/strongly-typed-events/dist/index.js");
+const SensorDefinitions_1 = __webpack_require__(/*! ../../Sensor/SingleComponentSensor.ts/SensorDefinitions */ "./src/Sensor/SingleComponentSensor.ts/SensorDefinitions.ts");
 //буферизирует данные
 class AverageSensorDataProvider {
-    constructor(dataSource, messageSource, closeSource, averageRatio) {
+    constructor(baseSource, averageRatio) {
         this._onData = new strongly_typed_events_1.EventDispatcher();
         this._onMessage = new strongly_typed_events_1.EventDispatcher();
         this._onClose = new strongly_typed_events_1.EventDispatcher();
@@ -9169,100 +9351,50 @@ class AverageSensorDataProvider {
         this.averageValue = 0;
         this.t0 = 0;
         this.th = 0;
+        this.reset = () => {
+            this.averageCount = 0;
+            this.averageValue = 0;
+        };
         this.averageRatio = averageRatio;
-        closeSource === null || closeSource === void 0 ? void 0 : closeSource.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
-        messageSource === null || messageSource === void 0 ? void 0 : messageSource.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
-        dataSource === null || dataSource === void 0 ? void 0 : dataSource.sub((sensor, data) => {
-            if (this.averageCount == 0)
-                this.t0 = data.time[0];
+        baseSource.onClose.sub((sender, args) => {
+            this._onClose.dispatch(sender, args);
+        });
+        baseSource.onMessage.sub((sender, args) => {
+            if (args.msgType == SensorDefinitions_1.SensorMessage.StopStreaming)
+                this.reset();
+            this._onMessage.dispatch(sender, args);
+        });
+        baseSource.onData.sub((sensor, data) => {
             data.data.forEach((v, i) => {
+                if (this.averageCount == 0)
+                    this.t0 = data.time[0];
                 this.averageValue += v;
                 this.averageCount++;
                 if (this.averageCount == this.averageRatio) {
                     this.th = data.time[i];
                     var curVal = this.averageValue / this.averageCount;
-                    var curTime = (this.th + this.t0) / 2;
+                    let dt = ((this.th - this.t0) / 2);
+                    var curTime = this.th - dt; //  + ((this.th - this.t0) / 2);
                     this._onData.dispatch(sensor, {
                         data: [curVal],
                         time: [curTime],
                     });
-                    this.averageCount = 0;
-                    this.averageValue = 0;
+                    this.reset();
                 }
             });
         });
     }
     get onData() {
-        return this._onData;
+        return this._onData.asEvent();
     }
     get onClose() {
-        return this._onClose;
+        return this._onClose.asEvent();
     }
     get onMessage() {
-        return this._onMessage;
+        return this._onMessage.asEvent();
     }
 }
 exports.AverageSensorDataProvider = AverageSensorDataProvider;
-
-
-/***/ }),
-
-/***/ "./src/Channel/SensorDataProveder/BufferedDataProvider.ts":
-/*!****************************************************************!*\
-  !*** ./src/Channel/SensorDataProveder/BufferedDataProvider.ts ***!
-  \****************************************************************/
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.BufferedSensorDataProvider = void 0;
-const strongly_typed_events_1 = __webpack_require__(/*! strongly-typed-events */ "./node_modules/strongly-typed-events/dist/index.js");
-//буферизирует данные
-class BufferedSensorDataProvider {
-    constructor(dataSource, messageSource, closeSource, clearBufferTrigger, bufferSize) {
-        this._onData = new strongly_typed_events_1.EventDispatcher();
-        this._onMessage = new strongly_typed_events_1.EventDispatcher();
-        this._onClose = new strongly_typed_events_1.EventDispatcher();
-        this.dataCount = 0;
-        this.bufferSize = bufferSize;
-        this.dataBuffer = new Array(this.bufferSize);
-        this.timeBuffer = new Array(this.bufferSize);
-        closeSource === null || closeSource === void 0 ? void 0 : closeSource.sub((sensor, msg) => {
-            this._onClose.dispatch(sensor, msg);
-            this.dataCount = 0;
-        });
-        clearBufferTrigger === null || clearBufferTrigger === void 0 ? void 0 : clearBufferTrigger.sub((sensor, msg) => {
-            this.dataCount = 0;
-        });
-        //messageSource?.onError?.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
-        dataSource === null || dataSource === void 0 ? void 0 : dataSource.sub((sensor, data) => {
-            for (let i = 0; i < data.time.length; i++) {
-                this.dataBuffer[this.dataCount] = data.data[i];
-                this.timeBuffer[this.dataCount] = data.time[i];
-                this.dataCount++;
-                if (this.dataCount == this.bufferSize) {
-                    var args = {
-                        data: this.dataBuffer,
-                        time: this.timeBuffer,
-                    };
-                    this._onData.dispatch(sensor, args);
-                    this.dataCount = 0;
-                }
-            }
-        });
-    }
-    get onData() {
-        return this._onData;
-    }
-    get onClose() {
-        return this._onClose;
-    }
-    get onMessage() {
-        return this._onMessage;
-    }
-}
-exports.BufferedSensorDataProvider = BufferedSensorDataProvider;
 
 
 /***/ }),
@@ -9276,26 +9408,99 @@ exports.BufferedSensorDataProvider = BufferedSensorDataProvider;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CreateAverageValueDataSource = exports.CreateTemperatureValueDataSource = exports.CreateSpeedValueDataSource = exports.CreateMainValueDataSource = void 0;
+exports.CreatePowerDataSource = exports.CreateAverageValueDataSource = exports.CreateTemperatureValueDataSource = exports.CreateSpeedValueDataSource = exports.CreateMainValueDataSource = void 0;
 const AverageDataProvider_1 = __webpack_require__(/*! ./AverageDataProvider */ "./src/Channel/SensorDataProveder/AverageDataProvider.ts");
-const BufferedDataProvider_1 = __webpack_require__(/*! ./BufferedDataProvider */ "./src/Channel/SensorDataProveder/BufferedDataProvider.ts");
+const ISensorDataProvider_1 = __webpack_require__(/*! ./ISensorDataProvider */ "./src/Channel/SensorDataProveder/ISensorDataProvider.ts");
+const PowerDataProveder_1 = __webpack_require__(/*! ./PowerDataProveder */ "./src/Channel/SensorDataProveder/PowerDataProveder.ts");
 const SensorDataProvider_1 = __webpack_require__(/*! ./SensorDataProvider */ "./src/Channel/SensorDataProveder/SensorDataProvider.ts");
 function CreateMainValueDataSource(sensor) {
-    return new BufferedDataProvider_1.BufferedSensorDataProvider(sensor.onData, null, sensor.onClose, sensor.onStopStreaming, 100);
+    return new SensorDataProvider_1.SensorDataProvider(sensor, ISensorDataProvider_1.DataSourseType.MainValue);
 }
 exports.CreateMainValueDataSource = CreateMainValueDataSource;
 function CreateSpeedValueDataSource(sensor) {
-    return new SensorDataProvider_1.SensorDataProvider(sensor.onSpeed, null, sensor.onClose);
+    return new SensorDataProvider_1.SensorDataProvider(sensor, ISensorDataProvider_1.DataSourseType.Speed);
 }
 exports.CreateSpeedValueDataSource = CreateSpeedValueDataSource;
 function CreateTemperatureValueDataSource(sensor) {
-    return new SensorDataProvider_1.SensorDataProvider(sensor.onTmp, null, sensor.onClose);
+    return new SensorDataProvider_1.SensorDataProvider(sensor, ISensorDataProvider_1.DataSourseType.Temperature);
 }
 exports.CreateTemperatureValueDataSource = CreateTemperatureValueDataSource;
-function CreateAverageValueDataSource(sensor, avgFactor) {
-    return new AverageDataProvider_1.AverageSensorDataProvider(sensor.onData, null, sensor.onClose, avgFactor);
+function CreateAverageValueDataSource(baseSource, avgFactor) {
+    return new AverageDataProvider_1.AverageSensorDataProvider(baseSource, avgFactor);
 }
 exports.CreateAverageValueDataSource = CreateAverageValueDataSource;
+function CreatePowerDataSource(sensor) {
+    return new PowerDataProveder_1.PowerDataProvider(sensor);
+}
+exports.CreatePowerDataSource = CreatePowerDataSource;
+
+
+/***/ }),
+
+/***/ "./src/Channel/SensorDataProveder/ISensorDataProvider.ts":
+/*!***************************************************************!*\
+  !*** ./src/Channel/SensorDataProveder/ISensorDataProvider.ts ***!
+  \***************************************************************/
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DataSourseType = void 0;
+var DataSourseType;
+(function (DataSourseType) {
+    DataSourseType[DataSourseType["MainValue"] = 0] = "MainValue";
+    DataSourseType[DataSourseType["Temperature"] = 1] = "Temperature";
+    DataSourseType[DataSourseType["Speed"] = 2] = "Speed";
+})(DataSourseType = exports.DataSourseType || (exports.DataSourseType = {}));
+
+
+/***/ }),
+
+/***/ "./src/Channel/SensorDataProveder/PowerDataProveder.ts":
+/*!*************************************************************!*\
+  !*** ./src/Channel/SensorDataProveder/PowerDataProveder.ts ***!
+  \*************************************************************/
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.PowerDataProvider = void 0;
+const strongly_typed_events_1 = __webpack_require__(/*! strongly-typed-events */ "./node_modules/strongly-typed-events/dist/index.js");
+const Common_1 = __webpack_require__(/*! ../../Common/Common */ "./src/Common/Common.ts");
+class PowerDataProvider {
+    constructor(sensor) {
+        this._onData = new strongly_typed_events_1.EventDispatcher();
+        this._onMessage = new strongly_typed_events_1.EventDispatcher();
+        this._onClose = new strongly_typed_events_1.EventDispatcher();
+        sensor.onClose.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
+        sensor.onMessage.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
+        sensor.onData.sub((sensor, args) => {
+            this.lastMainValue = args.data[args.data.length - 1];
+            this.lastMainTime = args.time[args.time.length - 1];
+        });
+        sensor.onSpeed.sub((sensor, args) => {
+            if (this.lastMainValue && this.lastMainTime) {
+                let power = (0, Common_1.CalculatePower)(args.data[0], this.lastMainValue);
+                this._onData.dispatch(sensor, {
+                    data: [power],
+                    time: [args.time[0]],
+                });
+            }
+        });
+    }
+    get onData() {
+        return this._onData;
+    }
+    get onClose() {
+        return this._onClose;
+    }
+    get onMessage() {
+        return this._onMessage;
+    }
+}
+exports.PowerDataProvider = PowerDataProvider;
 
 
 /***/ }),
@@ -9311,14 +9516,31 @@ exports.CreateAverageValueDataSource = CreateAverageValueDataSource;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SensorDataProvider = void 0;
 const strongly_typed_events_1 = __webpack_require__(/*! strongly-typed-events */ "./node_modules/strongly-typed-events/dist/index.js");
+const ISensorDataProvider_1 = __webpack_require__(/*! ./ISensorDataProvider */ "./src/Channel/SensorDataProveder/ISensorDataProvider.ts");
 class SensorDataProvider {
-    constructor(dataSource, messageSource, closeSource) {
+    constructor(sensor, sensorDataType) {
         this._onData = new strongly_typed_events_1.EventDispatcher();
         this._onMessage = new strongly_typed_events_1.EventDispatcher();
         this._onClose = new strongly_typed_events_1.EventDispatcher();
-        closeSource === null || closeSource === void 0 ? void 0 : closeSource.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
-        dataSource === null || dataSource === void 0 ? void 0 : dataSource.sub((sensor, data) => this._onData.dispatch(sensor, data));
-        messageSource === null || messageSource === void 0 ? void 0 : messageSource.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
+        sensor.onClose.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
+        sensor.onMessage.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
+        switch (sensorDataType) {
+            case ISensorDataProvider_1.DataSourseType.MainValue:
+                sensor.onData.sub((sensor, data) => {
+                    this._onData.dispatch(sensor, data);
+                });
+                break;
+            case ISensorDataProvider_1.DataSourseType.Speed:
+                sensor.onSpeed.sub((sensor, data) => {
+                    this._onData.dispatch(sensor, data);
+                });
+                break;
+            case ISensorDataProvider_1.DataSourseType.Temperature:
+                sensor.onTmp.sub((sensor, data) => {
+                    this._onData.dispatch(sensor, data);
+                });
+                break;
+        }
     }
     get onData() {
         return this._onData;
@@ -9331,6 +9553,39 @@ class SensorDataProvider {
     }
 }
 exports.SensorDataProvider = SensorDataProvider;
+
+
+/***/ }),
+
+/***/ "./src/Common/Common.ts":
+/*!******************************!*\
+  !*** ./src/Common/Common.ts ***!
+  \******************************/
+/***/ (function(__unused_webpack_module, exports) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CalculatePower = exports.sleep = void 0;
+function sleep(ms) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    });
+}
+exports.sleep = sleep;
+function CalculatePower(speed, torque) {
+    return torque * 2 * Math.PI * speed / 60;
+}
+exports.CalculatePower = CalculatePower;
 
 
 /***/ }),
@@ -9429,7 +9684,6 @@ class SerialWorker {
             (_a = this.reader) === null || _a === void 0 ? void 0 : _a.cancel();
             (_b = this.reader) === null || _b === void 0 ? void 0 : _b.releaseLock();
             (_c = this.writer) === null || _c === void 0 ? void 0 : _c.releaseLock();
-            //await this.port.writable?.cancel();
             yield this.port.close();
         });
     }
@@ -9764,13 +10018,34 @@ class SensorController {
             }
         });
     }
+    SetT0() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.sensors.length == 0)
+                return false;
+            this.sensors.forEach((node) => __awaiter(this, void 0, void 0, function* () {
+                if (node.worker.IsStreaming) {
+                    yield node.worker.StopStreaming();
+                    yield node.worker.StopReading();
+                    yield node.worker.SetT0();
+                    yield node.worker.StartReading();
+                    yield node.worker.StartStreaming();
+                }
+                if (node.worker.IsReading) {
+                    yield node.worker.StopReading();
+                    yield node.worker.SetT0();
+                    yield node.worker.StartReading();
+                }
+                //await node.worker.StartReading();
+            }));
+        });
+    }
     StartAll() {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.sensors.length == 0)
                 return false;
             this.sensors.forEach((node) => __awaiter(this, void 0, void 0, function* () {
-                yield node.worker.SetT0();
-                yield node.worker.StartReading();
+                if (!node.worker.IsReading)
+                    yield node.worker.StartReading();
                 yield node.worker.StartStreaming();
             }));
             return true;
@@ -9780,7 +10055,7 @@ class SensorController {
         return __awaiter(this, void 0, void 0, function* () {
             this.sensors.forEach((node) => __awaiter(this, void 0, void 0, function* () {
                 yield node.worker.StopStreaming();
-                yield node.worker.StopReading();
+                //await node.worker.StopReading();
             }));
         });
     }
@@ -10360,49 +10635,49 @@ function CreateFullSensorInfo(serviceInfo, holdingRegisters) {
         //PFBaseChannel->EstID = true;
         //................... Сделать видимыми панели скорости и мощности
         //PFBaseChannel->SetSpeedVisible(PDecoderParametrs->IsRotative);
-        /*
-          switch (fullInfo.isRotative) {
+        switch (fullInfo.isRotative) {
             case 0: break;
             case 1:
-              PSensorDescriptor = &PDecoderParametrs->SensorDescriptors[6];
-              PSensorDescriptor->ThereIs = true;
-              if (PSensorDescriptor->MaxValue) {
-                PSensorDescriptor->MaxValue = PFBaseChannel->MaxSkorVr;
-              }
-              else {
-                PSensorDescriptor->MaxValue = 1000;
-              }
-              //................. Формирование названия скорости
-              AS = Ures_RotationAngle;
-              strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
-              strcpy(PSensorDescriptor->NaimValue, AS.c_str());
-              strcpy(PSensorDescriptor->NaimEdIzm, "degree");
-              break;
+                /*
+                  PSensorDescriptor = &PDecoderParametrs->SensorDescriptors[6];
+                  PSensorDescriptor->ThereIs = true;
+                  if (PSensorDescriptor->MaxValue) {
+                    PSensorDescriptor->MaxValue = PFBaseChannel->MaxSkorVr;
+                  }
+                  else {
+                    PSensorDescriptor->MaxValue = 1000;
+                  }
+                  //................. Формирование названия скорости
+                  AS = Ures_RotationAngle;
+                  
+                  strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
+                  strcpy(PSensorDescriptor->NaimValue, AS.c_str());
+                  strcpy(PSensorDescriptor->NaimEdIzm, "degree");
+                  */
+                break;
             case 2:
-              PSensorDescriptor = &PDecoderParametrs->SensorDescriptors[6];
-              PSensorDescriptor->ThereIs = true;
-              PSensorDescriptor->MaxValue = PFBaseChannel->MaxSkorVr;
-              //................. Формирование названия скорости
-              AS = Ures_Speed;
-              strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
-              strcpy(PSensorDescriptor->NaimValue, AS.c_str());
-              strcpy(PSensorDescriptor->NaimEdIzm, "rpm");
-          
-              PSensorDescriptor = &PDecoderParametrs->SensorDescriptors[7];
-              PSensorDescriptor->ThereIs = true;
-              TempFloat = (PFBaseChannel->MaxSkorVr * PFBaseChannel->MaxDopustBase[0] * M_PI)/30;
-              PSensorDescriptor->MaxValue = TempFloat;
-              PSensorDescriptor->MinValue = -TempFloat;
-              //................. Формирование названия мощности
-              AS = Ures_Power;
-              strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
-              strcpy(PSensorDescriptor->NaimValue, AS.c_str());
-              PDecoderParametrs->IndexRazmPowerIsx = IndexRazmPowerIsx;
-              AS = Stroka + L"W";   // единица измерения мощности
-              strcpy(PSensorDescriptor->NaimEdIzm, AS.c_str());
-              break;
-            }
-        */
+                //PSensorDescriptor = &PDecoderParametrs->SensorDescriptors[6];
+                //PSensorDescriptor->ThereIs = true;
+                //PSensorDescriptor->MaxValue = PFBaseChannel->MaxSkorVr;
+                //................. Формирование названия скорости
+                //AS = Ures_Speed;  
+                //strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
+                //strcpy(PSensorDescriptor->NaimValue, AS.c_str());
+                fullInfo.speedUnitsName = "rpm";
+                //PSensorDescriptor = &PDecoderParametrs->SensorDescriptors[7];
+                //PSensorDescriptor->ThereIs = true;
+                //TempFloat = (PFBaseChannel->MaxSkorVr * PFBaseChannel->MaxDopustBase[0] * M_PI)/30;
+                //PSensorDescriptor->MaxValue = TempFloat;
+                //PSensorDescriptor->MinValue = -TempFloat;
+                //................. Формирование названия мощности
+                fullInfo.powerName = "Мощность";
+                //strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
+                //strcpy(PSensorDescriptor->NaimValue, AS.c_str());
+                //PDecoderParametrs->IndexRazmPowerIsx = IndexRazmPowerIsx;
+                fullInfo.powerUnitsName = "W"; // единица измерения мощности
+                //strcpy(PSensorDescriptor->NaimEdIzm, AS.c_str());
+                break;
+        }
         return fullInfo;
     });
 }
@@ -10438,6 +10713,15 @@ class SensorWorker {
         this.isStreaming = false;
         this.isInit = alreadyInit;
         this.sensor = sensor;
+    }
+    get IsInit() {
+        return this.isInit;
+    }
+    get IsReading() {
+        return this.isReading;
+    }
+    get IsStreaming() {
+        return this.isStreaming;
     }
     Initialize() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -10500,6 +10784,7 @@ class SensorWorker {
                 throw "Sersor is not initialized";
             if (this.isStreaming) {
                 yield this.sensor.StopStreaming();
+                yield this.sensor.StopStreaming();
                 this.isStreaming = false;
             }
         });
@@ -10547,9 +10832,8 @@ class Facker {
         this._onTorqueData = new strongly_typed_events_1.EventDispatcher();
         this._onSpeedData = new strongly_typed_events_1.EventDispatcher();
         this._onTmpData = new strongly_typed_events_1.EventDispatcher();
-        this._onReadingError = new strongly_typed_events_1.EventDispatcher();
         this._onClose = new strongly_typed_events_1.EventDispatcher();
-        this._onStreamingStop = new strongly_typed_events_1.EventDispatcher();
+        this._onMessage = new strongly_typed_events_1.EventDispatcher();
         this.isStreaming = false;
         this.timeBase = Date.now();
     }
@@ -10565,9 +10849,6 @@ class Facker {
     }
     //private currentTime: number;
     //private currentTime: number;
-    get onStopStreaming() {
-        return this._onStreamingStop.asEvent();
-    }
     get onData() {
         return this._onTorqueData.asEvent();
     }
@@ -10577,8 +10858,8 @@ class Facker {
     get onSpeed() {
         return this._onSpeedData.asEvent();
     }
-    get onError() {
-        return this._onReadingError.asEvent();
+    get onMessage() {
+        return this._onMessage.asEvent();
     }
     get onClose() {
         return this._onClose.asEvent();
@@ -10601,7 +10882,7 @@ class Facker {
         }));
     }
     GetSkInfo() {
-        var data = new Uint8Array([5, 70, 1, 53, 128, 1, 0, 100, 1, 2, 21, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48]);
+        var data = new Uint8Array([0, 70, 1, 53, 128, 1, 0, 100, 1, 2, 21, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48]);
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             var idView = new DataView(data.buffer);
             var sk = new SensorDefinitions_1.SensorSK();
@@ -10648,13 +10929,18 @@ class Facker {
                 };
                 this._onSpeedData.dispatch(this, speedArgs);
             });
+            this._onMessage.dispatch(this, {
+                msgType: SensorDefinitions_1.SensorMessage.StartStreaming
+            });
             resolve();
         }));
     }
     StopStreaming() {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             this.ClearIntervals();
-            this._onStreamingStop.dispatch(this, "Stop streaming");
+            this._onMessage.dispatch(this, {
+                msgType: SensorDefinitions_1.SensorMessage.StopStreaming
+            });
             resolve();
         }));
     }
@@ -10709,7 +10995,7 @@ exports.Facker = Facker;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.FullSensorInfo = exports.SensorSK = exports.Flags = exports.HoldingRegisters = exports.packageType = exports.COIL_OFF_VALUE = exports.COIL_ON_VALUE = exports.TIME_HIGH = exports.TIME_LOW = exports.SPEED_PERIOD = exports.AVG_RATIO = exports.FLAGS = exports.COMPUTER_CONNECTION = exports.RESERVED = exports.IS_FLOAT_USING = exports.EXTERNAL_SPEED_SENSOR = exports.START_STREAMING = exports.START_MEASURING = exports.REPORT_SLAVE_ID = exports.PRESET_MULTIPLE_REGISTERS = exports.PRESET_SINGLE_REGISTER = exports.FORCE_SINGLE_COIL = exports.READ_INPUT_REGISTERS = exports.READ_HOLDING_REGISTERS = void 0;
+exports.FullSensorInfo = exports.SensorSK = exports.Flags = exports.HoldingRegisters = exports.SensorMessage = exports.packageType = exports.COIL_OFF_VALUE = exports.COIL_ON_VALUE = exports.TIME_HIGH = exports.TIME_LOW = exports.SPEED_PERIOD = exports.AVG_RATIO = exports.FLAGS = exports.COMPUTER_CONNECTION = exports.RESERVED = exports.IS_FLOAT_USING = exports.EXTERNAL_SPEED_SENSOR = exports.START_STREAMING = exports.START_MEASURING = exports.REPORT_SLAVE_ID = exports.PRESET_MULTIPLE_REGISTERS = exports.PRESET_SINGLE_REGISTER = exports.FORCE_SINGLE_COIL = exports.READ_INPUT_REGISTERS = exports.READ_HOLDING_REGISTERS = void 0;
 exports.READ_HOLDING_REGISTERS = 3; // чтение значений из нескольких регистров хранения;
 exports.READ_INPUT_REGISTERS = 4; // чтение значений из нескольких регистров ввода;
 exports.FORCE_SINGLE_COIL = 5; // запись значения одного флага;
@@ -10739,6 +11025,12 @@ var packageType;
     packageType[packageType["msg"] = 103] = "msg";
 })(packageType = exports.packageType || (exports.packageType = {}));
 ;
+var SensorMessage;
+(function (SensorMessage) {
+    SensorMessage[SensorMessage["StartStreaming"] = 0] = "StartStreaming";
+    SensorMessage[SensorMessage["StopStreaming"] = 1] = "StopStreaming";
+    SensorMessage[SensorMessage["StopReading"] = 2] = "StopReading";
+})(SensorMessage = exports.SensorMessage || (exports.SensorMessage = {}));
 class HoldingRegisters {
     constructor(registers) {
         if (registers == null || registers.length != 5)
@@ -10794,7 +11086,6 @@ class FullSensorInfo {
     constructor() {
         this.Razmernost = 0;
         this.Mnogitel = 0;
-        //public IsRotative : boolean = false;
         this.SensorType = "";
         this.Name = "";
         this.Unitname = "";
@@ -10807,6 +11098,9 @@ class FullSensorInfo {
         this.MaxValue = 0;
         this.MinValue = 0;
         this.isRotative = 0;
+        this.speedUnitsName = "";
+        this.powerName = "";
+        this.powerUnitsName = "";
     }
 }
 exports.FullSensorInfo = FullSensorInfo;
@@ -10867,14 +11161,18 @@ class SensorComponentSensor {
         this._onTorqueData = new strongly_typed_events_1.EventDispatcher();
         this._onSpeedData = new strongly_typed_events_1.EventDispatcher();
         this._onTmpData = new strongly_typed_events_1.EventDispatcher();
-        this._onReadingError = new strongly_typed_events_1.EventDispatcher();
+        this._onMessage = new strongly_typed_events_1.EventDispatcher();
         this._onClose = new strongly_typed_events_1.EventDispatcher();
-        this._onStreamingStop = new strongly_typed_events_1.EventDispatcher();
         this.baseTime = undefined;
         this.commandHandlers = new Map();
         this.timeout = 5000; // Максимальное время ожидание ответа на командуж
         this.dt = 12.5; // тиков часов декодера между 2 соседними измерениями осню изм вел.
-        this.StartStreaming = () => __awaiter(this, void 0, void 0, function* () { return yield this.SendRequesAndWaitResponse(new SensorCommand_1.DefaultCommand(Defs.FORCE_SINGLE_COIL, Defs.START_STREAMING, Defs.COIL_ON_VALUE)); });
+        this.StartStreaming = () => __awaiter(this, void 0, void 0, function* () {
+            yield this.SendRequesAndWaitResponse(new SensorCommand_1.DefaultCommand(Defs.FORCE_SINGLE_COIL, Defs.START_STREAMING, Defs.COIL_ON_VALUE));
+            this._onMessage.dispatch(this, {
+                msgType: SensorDefinitions_1.SensorMessage.StartStreaming
+            });
+        });
         this.SetAvgRatio = (avgRatio) => __awaiter(this, void 0, void 0, function* () { return yield this.SendRequesAndWaitResponse(new SensorCommand_1.DefaultCommand(Defs.PRESET_SINGLE_REGISTER, Defs.AVG_RATIO, 1)); });
         this.SetComputerConnection = () => __awaiter(this, void 0, void 0, function* () { return yield this.SendRequesAndWaitResponse(new SensorCommand_1.DefaultCommand(Defs.FORCE_SINGLE_COIL, Defs.COMPUTER_CONNECTION, Defs.COIL_ON_VALUE)); });
         this.UnsetComputerConnection = () => __awaiter(this, void 0, void 0, function* () { return this.SendRequesAndWaitResponse(new SensorCommand_1.DefaultCommand(Defs.FORCE_SINGLE_COIL, Defs.COMPUTER_CONNECTION, Defs.COIL_OFF_VALUE)); });
@@ -10892,9 +11190,8 @@ class SensorComponentSensor {
     get onData() { return this._onTorqueData.asEvent(); }
     get onTmp() { return this._onTmpData.asEvent(); }
     get onSpeed() { return this._onSpeedData.asEvent(); }
-    get onError() { return this._onReadingError.asEvent(); }
     get onClose() { return this._onClose.asEvent(); }
-    get onStopStreaming() { return this._onStreamingStop.asEvent(); }
+    get onMessage() { return this._onMessage.asEvent(); }
     Initialize() {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.serialWorker.baseWorker.IsConnected)
@@ -10951,7 +11248,9 @@ class SensorComponentSensor {
                 yield this.SendRequesAndWaitResponse(command);
             else
                 this.SendMessage(command);
-            this._onStreamingStop.dispatch(this, "Stop streaming");
+            this._onMessage.dispatch(this, {
+                msgType: SensorDefinitions_1.SensorMessage.StopStreaming
+            });
         });
     }
     ProcessDecoderCommands(command) {
@@ -11121,7 +11420,6 @@ class SensorComponentSensor {
     }
     ReadingErrorHandler() {
         console.log('Sensor reading error');
-        this._onReadingError.dispatch(this, "Reading error");
         this._onClose.dispatch(this, "Reading error");
     }
     SendMessage(command) {
@@ -11156,6 +11454,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DataCellsController = void 0;
 class DataCellsController {
     constructor(container) {
+        this.Clear = () => {
+            let vals = this.container.getElementsByClassName("cell-measure");
+        };
         this.container = container;
     }
     PushChannels(channels) {
@@ -11173,11 +11474,14 @@ class DataCellsController {
         var cellMeasure = document.createElement("div");
         var p = document.createElement("p");
         box.classList.add("measure-box");
+        box.classList.add(channel.Style.cellStyle);
         cellInfo.classList.add("cell-info");
         cellName.classList.add("cell-name");
         cellUnits.classList.add("cell-units");
         cellMeasure.classList.add("cell-measure-content");
+        p.id = "value";
         p.classList.add("cell-measure");
+        p.classList.add(channel.Style.fontStyle);
         box.append(cellInfo);
         box.append(cellMeasure);
         cellMeasure.append(p);
@@ -11187,8 +11491,8 @@ class DataCellsController {
         cellName.innerText = channel.Style.valueName;
         cellUnits.innerText = channel.Style.unitsName;
         p.innerText = "";
-        let dataHandler = (sensor, args) => {
-            p.innerText = args.data[0].toFixed(1);
+        let dataHandler = (channel, args) => {
+            p.innerText = args.data.data[0].toFixed(1);
         };
         channel.onData.sub(dataHandler);
         channel.onClose.sub((c, args) => {
@@ -11226,38 +11530,23 @@ class ViewController {
         this.channels = [];
         this.plot = plot;
         var container = document.getElementById("cell-container");
-        //sensorService.onDispatch.addListener("Add", async (args : SensorControllerArgs) => {
-        // await this.AddSensorHandler(args.sensor);
-        //});
-        // TODO remove handler
     }
     AddSensorHandler(channels) {
         return __awaiter(this, void 0, void 0, function* () {
-            //var sensorWOrker = new SensorWorker(sensor);
-            //this.sensors.push([sensor, sensorWOrker]);    
-            //await sensorWOrker.Initialize();
-            //await sensorWOrker.SetT0();
-            //await sensorWOrker.SetT0();
-            //var fullSensorInfo = await GetFullSensorInfo(sensor);
-            //var chartChannels = CreateAllSensorPlotChannels(sensor, fullSensorInfo);
-            //var cellChannels = CreateAllSensorCellChannels(sensor, fullSensorInfo);
             channels.forEach(ch => this.channels.push(ch));
             this.plot.Reset();
-            this.plot.StartListening();
-            this.plot.SetChannels(channels);
-            //chartChannels.forEach(ch => {
-            //    this.channels.push(ch)
-            //});
-            //await sensorWOrker.StartReading();
-            //await sensorWOrker.StartStreaming();
+            this.plot.SetChannels(this.channels);
         });
     }
     GetExistsChannels() {
         return this.channels;
     }
     UploadSnapshot(snapshot) {
-        this.plot.StopListening();
+        this.plot.Reset();
         this.plot.FromSnapshot(snapshot);
+    }
+    Reset() {
+        this.plot.Reset();
     }
     Clear() {
         this.plot.Clear();
@@ -11288,7 +11577,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SensorPanelControllers = void 0;
 const strongly_typed_events_1 = __webpack_require__(/*! strongly-typed-events */ "./node_modules/strongly-typed-events/dist/index.js");
-let sensorCount = 1;
 class SensorPanelControllers {
     constructor(container) {
         this._onRemoveSensor = new strongly_typed_events_1.EventDispatcher();
@@ -11326,7 +11614,7 @@ class SensorPanelControllers {
             playSpan.classList.add("glyphicon-play");
             disconnectButton.classList.add("glyphicon");
             disconnectButton.classList.add("glyphicon-remove");
-            name.innerText = "Датчик-" + (sensorCount++).toString();
+            name.innerText = args.info.SensorType;
             playButton.onclick = () => {
             };
             let closeHandler = (sensor, msg) => {
@@ -11336,8 +11624,14 @@ class SensorPanelControllers {
             disconnectButton.onclick = () => __awaiter(this, void 0, void 0, function* () {
                 args.sensor.onClose.unsub(closeHandler);
                 removeButton();
-                this._onRemoveSensor.dispatch(this, args.sensor);
+                this._onRemoveSensor.dispatch(this, {
+                    sensor: args.sensor,
+                });
             });
+        };
+        this.OffButtons = () => {
+        };
+        this.OnButtons = () => {
         };
         this.container = container;
         //sensorController.onDispatch.addListener("Remove", this.RemoveHandler);
@@ -11366,18 +11660,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var _a, _b, _c, _d;
+var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const main_1 = __webpack_require__(/*! ../main */ "./src/main.ts");
 const Snapshot_1 = __webpack_require__(/*! ../ReportListener/Snapshot */ "./src/ReportListener/Snapshot.ts");
 const FackerSensor_1 = __webpack_require__(/*! ../Sensor/SingleComponentSensor.ts/FackerSensor */ "./src/Sensor/SingleComponentSensor.ts/FackerSensor.ts");
 const SensorFactory_1 = __webpack_require__(/*! ../SensorFactory */ "./src/SensorFactory.ts");
+//state
 var startStop = false;
 var recording = false;
+var firstStart = true;
+//ControlPanel
+var clearButton = document.getElementById('clear');
 var startStopButton = document.getElementById('Start');
 var startRecordingButton = document.getElementById('StartRec');
-var fileInput = document.getElementById('file-input');
+//menu
+var fackerButton = document.getElementById('Facker');
 var fileInputButton = document.getElementById('file-input-button');
+clearButton.addEventListener('click', () => {
+    main_1.plotViewController.Clear();
+    main_1.cellsDataController.Clear();
+    firstStart = true;
+});
 fileInputButton.addEventListener('click', function () {
     let input = document.createElement('input');
     input.type = 'file';
@@ -11393,39 +11697,6 @@ fileInputButton.addEventListener('click', function () {
         main_1.plotViewController.UploadSnapshot(snapshot);
     });
     input.click();
-});
-var starthandler = () => __awaiter(void 0, void 0, void 0, function* () {
-    var _e, _f;
-    let started = yield main_1.sensorService.StartAll();
-    if (!started)
-        return;
-    (_e = document.getElementById("StartStopSpan")) === null || _e === void 0 ? void 0 : _e.classList.remove('glyphicon-play');
-    (_f = document.getElementById("StartStopSpan")) === null || _f === void 0 ? void 0 : _f.classList.add('glyphicon-stop');
-    //document.getElementById("MyElement").classList.remove('MyClass');
-    startStop = true;
-});
-var stophandler = () => __awaiter(void 0, void 0, void 0, function* () {
-    var _g, _h;
-    (_g = document.getElementById("StartStopSpan")) === null || _g === void 0 ? void 0 : _g.classList.remove('glyphicon-stop');
-    (_h = document.getElementById("StartStopSpan")) === null || _h === void 0 ? void 0 : _h.classList.add('glyphicon-play');
-    yield main_1.sensorService.StopAll();
-    setTimeout(() => __awaiter(void 0, void 0, void 0, function* () { main_1.plotViewController.Clear(); }), 500);
-    startStop = false;
-});
-var startRecordingHandler = () => {
-    let channels = main_1.plotViewController.GetExistsChannels();
-    main_1.recordController.StartListening(channels);
-    startRecordingButton.classList.remove("text-primary");
-    startRecordingButton.classList.add("text-danger");
-    recording = true;
-};
-var stopRecordingHandler = () => __awaiter(void 0, void 0, void 0, function* () {
-    var snapshot = main_1.recordController.StopListening();
-    startRecordingButton.classList.remove("text-danger");
-    startRecordingButton.classList.add("text-primary");
-    recording = false;
-    snapshot.ToFile();
-    //saveStaticDataToFile(snapshot);
 });
 (_a = document.getElementById('open')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -11446,9 +11717,9 @@ var stopRecordingHandler = () => __awaiter(void 0, void 0, void 0, function* () 
     ev.preventDefault();
 }));
 (_c = document.getElementById('drop_zone')) === null || _c === void 0 ? void 0 : _c.addEventListener('drop', (event) => __awaiter(void 0, void 0, void 0, function* () {
-    var _j;
+    var _d;
     event.preventDefault();
-    if (((_j = event.dataTransfer) === null || _j === void 0 ? void 0 : _j.items) && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === 'file') {
+    if (((_d = event.dataTransfer) === null || _d === void 0 ? void 0 : _d.items) && event.dataTransfer.items.length && event.dataTransfer.items[0].kind === 'file') {
         var file = event.dataTransfer.items[0].getAsFile();
         if (file) {
             var snapshot = new Snapshot_1.Snapshot();
@@ -11459,7 +11730,7 @@ var stopRecordingHandler = () => __awaiter(void 0, void 0, void 0, function* () 
     // Prevent default behavior (Prevent file from being opened)
     event.preventDefault();
 }));
-(_d = document.getElementById('Facker')) === null || _d === void 0 ? void 0 : _d.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
+fackerButton.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
     let facker = new FackerSensor_1.Facker();
     yield main_1.sensorService.AddSensor(facker);
 }));
@@ -11469,6 +11740,45 @@ startRecordingButton.addEventListener('click', (event) => __awaiter(void 0, void
 startStopButton.addEventListener('click', (event) => __awaiter(void 0, void 0, void 0, function* () {
     startStop ? yield stophandler() : yield starthandler();
 }));
+var starthandler = () => __awaiter(void 0, void 0, void 0, function* () {
+    var _e, _f;
+    let started = yield main_1.sensorService.StartAll();
+    if (!started)
+        return;
+    (_e = document.getElementById("StartStopSpan")) === null || _e === void 0 ? void 0 : _e.classList.remove('glyphicon-play');
+    (_f = document.getElementById("StartStopSpan")) === null || _f === void 0 ? void 0 : _f.classList.add('glyphicon-pause');
+    clearButton.disabled = true;
+    if (firstStart) {
+        firstStart = false;
+        yield main_1.sensorService.SetT0();
+    }
+    //document.getElementById("MyElement").classList.remove('MyClass');
+    startStop = true;
+});
+var stophandler = () => __awaiter(void 0, void 0, void 0, function* () {
+    var _g, _h;
+    (_g = document.getElementById("StartStopSpan")) === null || _g === void 0 ? void 0 : _g.classList.remove('glyphicon-pause');
+    (_h = document.getElementById("StartStopSpan")) === null || _h === void 0 ? void 0 : _h.classList.add('glyphicon-play');
+    clearButton.disabled = false;
+    yield main_1.sensorService.StopAll();
+    //setTimeout(async () =>{plotViewController.Clear()}, 500);
+    startStop = false;
+});
+var startRecordingHandler = () => {
+    let channels = main_1.plotViewController.GetExistsChannels();
+    main_1.recordController.StartListening(channels);
+    startRecordingButton.classList.remove("text-primary");
+    startRecordingButton.classList.add("text-danger");
+    recording = true;
+};
+var stopRecordingHandler = () => __awaiter(void 0, void 0, void 0, function* () {
+    var snapshot = main_1.recordController.StopListening();
+    startRecordingButton.classList.remove("text-danger");
+    startRecordingButton.classList.add("text-primary");
+    recording = false;
+    snapshot.ToFile();
+    //saveStaticDataToFile(snapshot);
+});
 
 
 /***/ }),
@@ -11493,6 +11803,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.recordController = exports.cellsDataController = exports.sensorPanelController = exports.plotViewController = exports.sensorService = void 0;
 __webpack_require__(/*! ../css/styles.css */ "./css/styles.css");
+__webpack_require__(/*! ../css/cellStyles.css */ "./css/cellStyles.css");
 __webpack_require__(/*! ../bootstrap-5/css/bootstrap.min.css */ "./bootstrap-5/css/bootstrap.min.css");
 __webpack_require__(/*! ../bootstrap-5/js/bootstrap.bundle.min.js */ "./bootstrap-5/js/bootstrap.bundle.min.js");
 __webpack_require__(/*! ./ViewsControllers/UIHandlers */ "./src/ViewsControllers/UIHandlers.ts");
@@ -11523,12 +11834,15 @@ window.onload = function () {
         exports.sensorService.onDispatch.addListener("Add", (args) => __awaiter(this, void 0, void 0, function* () {
             let plotChannels = (0, ChannelFactory_1.CreateAllSensorChannels)(args.sensor, args.fullSensorInfo);
             let cellChannels = (0, CellChannelFactory_1.CreateAllSensorCellChannels)(args.sensor, args.fullSensorInfo);
-            exports.sensorPanelController.AddSensorHandler(args);
+            exports.sensorPanelController.AddSensorHandler({
+                sensor: args.sensor,
+                info: args.fullSensorInfo,
+            });
             exports.cellsDataController.PushChannels(cellChannels);
             exports.plotViewController.AddSensorHandler(plotChannels);
         }));
-        exports.sensorPanelController.onSensorClose.sub((panel, sensor) => {
-            exports.sensorService.RemoveSensor(sensor);
+        exports.sensorPanelController.onSensorClose.sub((panel, args) => {
+            exports.sensorService.RemoveSensor(args.sensor);
         });
     });
 };
@@ -11545,7 +11859,7 @@ window.onload = function () {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.GetOptions = exports.GetScale = exports.GetAxe = exports.GetXAxe = exports.GetSeries = void 0;
+exports.GetAxe = exports.GetXAxe = exports.GetSeries = void 0;
 var ii = 1;
 function GetSeries(scale) {
     return {
@@ -11570,7 +11884,7 @@ function GetAxe(scale, side) {
             show: false,
         },
         scale: scale,
-        show: true,
+        show: false,
         gap: ii++ * 1,
         ticks: 10,
         space: 20,
@@ -11578,49 +11892,6 @@ function GetAxe(scale, side) {
     };
 }
 exports.GetAxe = GetAxe;
-function GetScale() {
-    return {
-        auto: true,
-        //range: [-100, 100],
-        //space: 10,
-    };
-}
-exports.GetScale = GetScale;
-function GetOptions() {
-    const opts = {
-        title: "Transducer",
-        width: 2450,
-        height: 600,
-        pxAlign: true,
-        scales: {
-            x: {
-                auto: false,
-                time: false,
-                //range: [0, 30],
-            },
-            y1: GetScale(),
-            y2: GetScale(),
-            y3: GetScale(),
-        },
-        axes: [
-            {
-                show: true,
-                space: 100,
-                //side: 0,
-            },
-            GetAxe("y1", 1),
-            GetAxe("y2", 1),
-            GetAxe("y3", 3),
-        ],
-        series: [
-            {
-                auto: false,
-            }, // x series
-        ],
-    };
-    return opts;
-}
-exports.GetOptions = GetOptions;
 
 
 /***/ }),
@@ -11639,79 +11910,173 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.MyUPlot = void 0;
 const uplot_1 = __importDefault(__webpack_require__(/*! uplot */ "./node_modules/uplot/dist/uPlot.esm.js"));
+const SensorDefinitions_1 = __webpack_require__(/*! ../Sensor/SingleComponentSensor.ts/SensorDefinitions */ "./src/Sensor/SingleComponentSensor.ts/SensorDefinitions.ts");
 const ComponentFactory_1 = __webpack_require__(/*! ./ComponetFactory/ComponentFactory */ "./src/uPlot/ComponetFactory/ComponentFactory.ts");
 class MyUPlot {
     constructor(element) {
         this.index = 1;
         this.datBuf = [
-            new Array(250000),
-            new Array(250000),
-            new Array(250000),
-            new Array(250000),
-            new Array(250000),
-            new Array(250000),
+            new Array(200000),
+            new Array(200000),
+            new Array(200000),
+            new Array(200000),
+            new Array(200000),
+            new Array(200000),
+            new Array(200000),
+            new Array(200000),
+            new Array(200000),
+            new Array(200000),
+            new Array(200000),
+            new Array(200000),
+            new Array(200000),
         ];
         this.channels = [];
         this.listening = false;
         this.isInit = false;
-        this.totalChannels = 3;
         this.params = {
             gridTicks: 50,
             gridDx: 0,
             screenSize: 5,
             streaming: true,
             screenRollingGap: 2,
-            //screenRollingStep: 4,
-            //rangeX: [0, 3],
-            rightGap: 3,
+            rightGap: 5,
             sh: 0,
             th: 0,
             t0: 0,
         };
+        this.HandleMessage = (channel, args) => {
+            if (args.sensorMsgArgs.msgType === SensorDefinitions_1.SensorMessage.StopStreaming)
+                this.handleStopStreaming(channel);
+            if (args.sensorMsgArgs.msgType === SensorDefinitions_1.SensorMessage.StartStreaming)
+                this.handleStartStreaming(channel);
+        };
+        this.handleStopStreaming = (channel) => {
+            let index = this.channels.findIndex(t => t.channel === channel);
+            let lastIndex = this.channels[index].lastDataIndex;
+        };
+        this.handleStartStreaming = (channel) => {
+            let index = this.channels.findIndex(t => t.channel === channel);
+            if (this.channels[index].lastDataIndex != 0)
+                this.channels[index].requireGap = true;
+        };
         this.HandleClose = (channel, msg) => {
-            let index = this.channels.findIndex(c => c.channel == channel);
+            var _a;
+            let index = this.channels.findIndex(c => c.channel === channel);
             let traceInfo = this.channels[index];
-            traceInfo.axis.show = false;
-            traceInfo.scale.range = [-10, 10];
+            //traceInfo!.series.alpha  = 0;
+            let seriesIndex = this.plot.series.findIndex(s => traceInfo.series.label === s.label);
+            (_a = this.plot) === null || _a === void 0 ? void 0 : _a.delSeries(2);
+            //this.plot?.series.slice(seriesIndex, 1);
+            let channelsForAxe = this.channels.filter(c => c.axis === traceInfo.axis).length;
+            if (channelsForAxe <= 1)
+                traceInfo.axis.show = false;
+            //traceInfo!.scale.range = [-10, 10];
+            //traceInfo.axis.
+            //let legendPannel = document.getElementsByClassName("u-legend")[0];
+            //legendPannel.
+            //this.plot?.setData(<any>this.datBuf);
+            this.clearTrace(traceInfo.dataBufferIndex);
+            this.channels.splice(index, 1);
             this.RebuidPlot();
-            this.clearTrace(index);
-            //traceInfo?.series.stroke = "black"
+            //this.plot?.setLegend({idx: index,}, false);
         };
         this.HandleData = (channel, args) => {
-            var _a;
-            if (this.listening) {
-                var curIndex = this.channels.findIndex(c => c.channel == channel) + 1;
-                var lastTicksValue = args.data.time[args.data.time.length - 1];
-                var xIndex = this.tickToGridIndex(lastTicksValue); //вычисляем индекс последнего значения данных
-                if (this.params.th < xIndex) {
-                    this.params.th = xIndex;
-                    this.params.sh = lastTicksValue;
+            var curIndex = this.channels.findIndex(c => c.channel == channel);
+            var lastTicksValue = args.data.time[args.data.time.length - 1];
+            var xIndex = this.tickToGridIndex(lastTicksValue); //вычисляем индекс последнего значения данных
+            let firstTickVal = args.data.time[0];
+            let firstIndex = this.tickToGridIndex(firstTickVal);
+            //if(args.data.data.length > 2)
+            //console.log(firstIndex);
+            if (this.channels[curIndex].requireGap) {
+                //if(args.data.data.length > 2)
+                //console.log("gap from", this.channels[curIndex].lastDataIndex, "to", firstIndex);
+                this.channels[curIndex].requireGap = false;
+                for (let i = this.channels[curIndex].lastDataIndex + 1; i < firstIndex; i++) {
+                    this.datBuf[curIndex + 1][i] = null;
                 }
-                for (let k = 0; k < args.data.time.length; k++) //проставляем данные
-                 {
-                    var currentIndex = this.tickToGridIndex(args.data.time[k]);
-                    this.datBuf[curIndex][currentIndex] = args.data.data[k];
-                }
-                //this.SetScale(0, 1000);
-                (_a = this.plot) === null || _a === void 0 ? void 0 : _a.redraw();
-                this.ScaleHandler();
             }
-            else {
-                console.log();
+            if (this.params.th < xIndex) {
+                this.params.th = xIndex;
+                this.params.sh = lastTicksValue;
+            }
+            for (let k = 0; k < args.data.time.length; k++) //проставляем данные
+             {
+                var currentIndex = this.tickToGridIndex(args.data.time[k]);
+                this.datBuf[curIndex + 1][currentIndex] = args.data.data[k];
+            }
+            this.channels[curIndex].lastDataIndex = xIndex;
+            this.ScaleHandler();
+            //this.plot?.redraw();
+        };
+        this.ScaleHandler = () => {
+            var _a;
+            var max = (_a = this.plot) === null || _a === void 0 ? void 0 : _a.scales["x"].max;
+            if (max == null) {
+                max = 0;
+            }
+            ;
+            if (this.params.sh > max - (this.params.screenSize / 2) + 0.05 && this.params.streaming) {
+                this.SetCurrentScale();
             }
         };
-        this.clearTrace = (index) => {
+        this.clearTrace = (dataBufferIndex) => {
             for (let k = 0; k < this.datBuf[0].length; k++) {
-                this.datBuf[index][k] = undefined;
+                this.datBuf[dataBufferIndex][k] = undefined;
             }
+        };
+        this.SetupAxis = (i) => {
+            let axisDivs = this.element.getElementsByClassName("u-axis");
+            let divAxis = axisDivs[i];
+            let dragStart = false;
+            let yCoord = 0;
+            let initialRange = new Array(2);
+            divAxis.addEventListener('mousedown', (e) => {
+                dragStart = true;
+                yCoord = e.clientY;
+                initialRange[0] = this.channels[index - 1].curRange[0];
+                initialRange[1] = this.channels[index - 1].curRange[1];
+            });
+            divAxis.addEventListener('mouseup', (e) => {
+                dragStart = false;
+            });
+            divAxis.addEventListener('mouseleave', (e) => {
+                dragStart = false;
+            });
+            divAxis.addEventListener('mousemove', (e) => {
+                if (dragStart) {
+                    let curY = e.clientY;
+                    ;
+                    let divHeigh = divAxis.clientHeight;
+                    let channel = this.channels[index - 1];
+                    let range = this.channels[index - 1].curRange;
+                    let curRangeVal = range[1] - range[0];
+                    //вычисляем относительное смещение 
+                    let cursorDy = curY - yCoord;
+                    let l = cursorDy / divHeigh;
+                    let dVal = curRangeVal * l;
+                    channel.curRange[0] = initialRange[0] + dVal;
+                    channel.curRange[1] = initialRange[1] + dVal;
+                }
+            });
+            let index = i;
+            divAxis.addEventListener('mousewheel', (e) => {
+                e.preventDefault();
+                let dir = e.deltaY > 0 ? 1 : -1;
+                let channel = this.channels[index - 1];
+                let curRange = channel.curRange;
+                let rangeVal = curRange[1] - curRange[0];
+                let dyTop = channel.channel.Style.rescaleRationTop * rangeVal;
+                let dyBottom = channel.channel.Style.rescaleRationBottom * rangeVal;
+                let newRange = [curRange[0] - dyBottom * dir, curRange[1] + dyTop * dir];
+                channel.curRange = newRange;
+            });
         };
         this.Init();
         this.element = element;
         this.options = this.getOptions();
         this.RebuidPlot();
-        //this.plot = new uPlot(this.options, <AlignedData>this.datBuf, element);
-        //this.SetScale(0, 3);
-        //this.plot.setData(<AlignedData>this.datBuf);
+        this.SetScale(0, this.params.screenSize);
         window.addEventListener("resize", e => {
             var _a;
             (_a = this.plot) === null || _a === void 0 ? void 0 : _a.setSize(this.getSize());
@@ -11720,12 +12085,10 @@ class MyUPlot {
             var _a;
             (_a = this.plot) === null || _a === void 0 ? void 0 : _a.setSize(this.getSize());
         });
-        //var setCommonView = () => {
-        //  this.plot.redraw();
-        //  this.SetScale(0, this.params.sh + this.params.rightGap);
-        //}
-        //this.plot.root.querySelector(".over")?.addEventListener('dblclick', setCommonView);
-        //this.plot.redraw()
+        setInterval(() => {
+            var _a;
+            (_a = this.plot) === null || _a === void 0 ? void 0 : _a.redraw(true, true);
+        }, 100);
     }
     FromSnapshot(snapshot) {
         if (this.listening)
@@ -11779,85 +12142,142 @@ class MyUPlot {
         }
         var styles = snapshot.GetTrackData().map(t => t.style);
         this.SetStyles(styles);
-        //this.SetDafaultStyles();
         this.RebuidPlot(buff);
         this.params.th = maxTimeIndex;
         this.params.sh = maxTimeValue;
-        //this.RebuidPlot();
-        //this.plot?.setData(<any>buff, true);
-        //this.SetScale(0, maxTimeValue);
-        //this.plot?.redraw();
-    }
-    StartListening() {
-        this.Init();
-        this.RebuidPlot();
-        this.listening = true;
-    }
-    StopListening() {
-        this.listening = false;
     }
     Reset() {
         this.isInit = false;
-        this.channels.forEach(c => {
+        this.channels.forEach((c, index) => {
+            //this.clearTrace(index + 1);
             c.channel.onData.unsub(this.HandleData);
             c.channel.onClose.unsub(this.HandleClose);
+            c.channel.onMessage.unsub(this.HandleMessage);
         });
+        //let legend = <HTMLTableElement><unknown>(document.getElementsByClassName("u-legend"));
+        //legend.deleteRow(1);
+        while (this.plot.series.length > 1)
+            this.plot.delSeries(1);
         this.channels = [];
+        this.RebuidPlot();
+        this.SetScale(0, this.params.screenSize);
     }
     Clear() {
         // чистим данный графика
         this.Init();
-        this.SetScale(0, this.params.screenRollingGap);
         this.RebuidPlot();
+        this.SetScale(0, this.params.screenSize);
+        //this.params.sh;
     }
     SetChannels(channels) {
         if (this.isInit)
             throw "Already Init";
         if (channels.length == 0)
             "There are no channels";
-        var styles = channels.map(c => c.Style);
-        //var traceInfo = this.SetStyles(styles);
         channels.forEach((c, i) => {
+            this.SetupChannel(c);
             c.onData.sub(this.HandleData);
             c.onClose.sub(this.HandleClose);
-            let traceInfo = this.SetStyleFor(i + 1, c.Style);
-            this.channels.push({
-                axis: traceInfo.axis,
-                channel: c,
-                scale: traceInfo.scale,
-                series: traceInfo.series
-            });
+            c.onMessage.sub(this.HandleMessage);
         });
-        this.totalChannels = channels.length;
+        this.RebuidPlot();
         this.isInit = true;
+        this.SetScale(0, this.params.screenSize);
+        //this.SetupAxis()
     }
     SetStyles(styles) {
         styles.forEach((s, i) => this.SetStyleFor(i + 1, s));
+    }
+    SetupChannel(channel) {
+        var _a;
+        let style = channel.Style;
+        let axis;
+        let scale;
+        let range;
+        let series;
+        let index = this.channels.length + 1;
+        let sameTypeChannel = this.channels.find(c => c.channel.Style.valueType == style.valueType);
+        if (sameTypeChannel) {
+            let scaleName = sameTypeChannel.axis.scale;
+            series = (0, ComponentFactory_1.GetSeries)(scaleName);
+            this.options.series.push(series);
+            axis = sameTypeChannel.axis;
+            scale = sameTypeChannel.scale;
+            range = sameTypeChannel.curRange;
+        }
+        else {
+            let scaleName = "y" + index.toString(); //for scale
+            series = (0, ComponentFactory_1.GetSeries)(scaleName);
+            series.scale = scaleName;
+            this.options.series[index] = series;
+            axis = this.options.axes[index];
+            scale = this.options.scales[scaleName];
+            axis.show = true;
+            //scale.auto = false;
+            range = [style.range[0], style.range[1]];
+            //scale.range = () => {return [style.range[0], style.range[1]]};
+            //axis.grid!.stroke = style.color;
+            axis.side = style.yAxeSide == "left" ? 1 : 3;
+            axis.stroke = style.color;
+            axis.show = true;
+            axis.stroke = style.color;
+            axis.label = style.legendTitle;
+            axis.grid.show = style.grid;
+            setInterval(() => { this.SetupAxis(index - 1); }, 100);
+            scale.range = () => { return [range[0], range[1]]; };
+        }
+        series.stroke = style.color;
+        series.label = style.legendTitle;
+        (_a = this.plot) === null || _a === void 0 ? void 0 : _a.addSeries(series, 1);
+        //this.plot?.addSeries(series, index);
+        let trace = {
+            axis: axis,
+            channel: channel,
+            scale: scale,
+            series: series,
+            lastDataIndex: 0,
+            requireGap: false,
+            curRange: range,
+            dataBufferIndex: index,
+        };
+        this.channels.push(trace);
     }
     SetStyleFor(index, style) {
         let scaleName = "y" + index.toString(); //for scale
         let series = (0, ComponentFactory_1.GetSeries)(scaleName);
         series.scale = scaleName;
         this.options.series[index] = series;
-        let axis = this.options.axes[index];
-        let scale = this.options.scales[scaleName];
-        axis.show = true;
-        scale.auto = false;
-        scale.range = style.range;
-        series.stroke = style.color;
-        axis.stroke = style.color;
-        axis.label = style.legendTitle;
-        series.label = style.legendTitle;
-        axis.grid.show = style.grid;
-        //axis.grid!.stroke = style.color;
-        axis.side = style.yAxeSide == "left" ? 1 : 3;
-        axis.stroke = style.color;
-        axis.show = true;
-        this.RebuidPlot();
+        let axis;
+        let scale;
+        let range;
+        let sameTypeChannel = this.channels.find(c => c.channel.Style.valueType == style.valueType);
+        if (sameTypeChannel) {
+            axis = sameTypeChannel.axis;
+            scale = sameTypeChannel.scale;
+            range = sameTypeChannel.curRange;
+        }
+        else {
+            axis = this.options.axes[index];
+            scale = this.options.scales[scaleName];
+            axis.show = true;
+            //scale.auto = false;
+            range = [-50, 50];
+            //scale.range = () => {return [style.range[0], style.range[1]]};
+            series.stroke = style.color;
+            series.label = style.legendTitle;
+            //axis.grid!.stroke = style.color;
+            axis.side = style.yAxeSide == "left" ? 1 : 3;
+            axis.stroke = style.color;
+            axis.show = true;
+            axis.stroke = style.color;
+            axis.label = style.legendTitle;
+            axis.grid.show = style.grid;
+        }
         let traceInfo = {
             axis: axis,
             scale: scale,
             series: series,
+            range: range,
         };
         return traceInfo;
     }
@@ -11884,8 +12304,8 @@ class MyUPlot {
                     over.addEventListener("dblclick", (e) => {
                         if (e.button == 0) {
                             e.preventDefault();
-                            this.params.streaming = true;
-                            this.SetScale(0, this.params.sh + this.params.rightGap);
+                            this.params.streaming = !this.params.streaming;
+                            this.SetCurrentScale();
                         }
                     });
                     // wheel drag pan
@@ -11921,7 +12341,13 @@ class MyUPlot {
                     // wheel scroll zoom
                     over.addEventListener("wheel", (e) => {
                         e.preventDefault();
-                        this.params.streaming = false;
+                        if (this.params.streaming) {
+                            let dw = ((e.deltaY < 0) ? -1 : 1);
+                            let newSize = this.params.screenSize + dw;
+                            this.params.screenSize = newSize < 0.1 ? 0.1 : newSize;
+                            this.SetCurrentScale();
+                            return;
+                        }
                         xMin = u.scales.x.min;
                         xMax = this.params.sh; //u.scales.x.max;
                         yMin = u.scales.y1.min;
@@ -11949,19 +12375,6 @@ class MyUPlot {
             }
         };
     }
-    ScaleHandler() {
-        var _a;
-        var max = (_a = this.plot) === null || _a === void 0 ? void 0 : _a.scales["x"].max;
-        if (max == null) {
-            max = 0;
-        }
-        ;
-        if (this.params.sh > max && this.params.streaming) {
-            //this.params.rangeX[0] = this.params.sh - this.params.screenSize;
-            //this.params.rangeX[1] = this.params.sh;
-            this.SetScale(0, this.params.sh + this.params.rightGap);
-        }
-    }
     SetScale(min, max) {
         var _a;
         (_a = this.plot) === null || _a === void 0 ? void 0 : _a.setScale('x', {
@@ -11976,7 +12389,7 @@ class MyUPlot {
             this.plot.destroy();
         this.plot = new uplot_1.default(this.options, dataBuff, this.element);
         this.plot.setSize(this.getSize());
-        this.SetScale(0, this.params.screenSize);
+        //this.SetScale(0, this.params.screenSize);
     }
     Init() {
         this.params.gridDx = 1 / this.params.gridTicks;
@@ -11990,22 +12403,45 @@ class MyUPlot {
             this.datBuf[0][k] = k * this.params.gridDx;
         }
     }
+    GetScale() {
+        return {
+            auto: false,
+            distr: 1,
+            time: false,
+            //range: (self, min, max) => [-44, 44]
+            //range: [-100, 100],
+            //space: 10,
+        };
+    }
     getOptions() {
         return {
             width: 100,
             height: 100,
+            legend: {},
             pxAlign: true,
             plugins: [
+                //this.tooltipsPlugin(this.options),
                 this.wheelZoomPlugin({ factor: 0.75 })
             ],
             scales: {
                 x: {
+                    distr: 1,
                     time: false,
                     auto: false,
                 },
-                y1: (0, ComponentFactory_1.GetScale)(),
-                y2: (0, ComponentFactory_1.GetScale)(),
-                y3: (0, ComponentFactory_1.GetScale)(),
+                y1: this.GetScale(),
+                y2: this.GetScale(),
+                y3: this.GetScale(),
+                y4: this.GetScale(),
+                y5: this.GetScale(),
+                y6: this.GetScale(),
+                y7: this.GetScale(),
+                y8: this.GetScale(),
+                y9: this.GetScale(),
+                y10: this.GetScale(),
+                y11: this.GetScale(),
+                y12: this.GetScale(),
+                y13: this.GetScale(),
             },
             axes: [
                 {
@@ -12016,6 +12452,15 @@ class MyUPlot {
                 (0, ComponentFactory_1.GetAxe)("y1", 1),
                 (0, ComponentFactory_1.GetAxe)("y2", 1),
                 (0, ComponentFactory_1.GetAxe)("y3", 3),
+                (0, ComponentFactory_1.GetAxe)("y4", 1),
+                (0, ComponentFactory_1.GetAxe)("y6", 3),
+                (0, ComponentFactory_1.GetAxe)("y7", 3),
+                (0, ComponentFactory_1.GetAxe)("y8", 3),
+                (0, ComponentFactory_1.GetAxe)("y9", 3),
+                (0, ComponentFactory_1.GetAxe)("y10", 3),
+                (0, ComponentFactory_1.GetAxe)("y11", 3),
+                (0, ComponentFactory_1.GetAxe)("y12", 3),
+                (0, ComponentFactory_1.GetAxe)("y13", 3),
             ],
             hooks: {
                 setSelect: [
@@ -12023,7 +12468,6 @@ class MyUPlot {
                         this.params.streaming = false;
                         let min = u.posToVal(u.select.left, 'x');
                         let max = u.posToVal(u.select.left + u.select.width, 'x');
-                        //console.log("Fetching data for range...", {min, max});
                         // zoom to selection
                         u.setScale('x', { min, max });
                         // reset selection
@@ -12035,8 +12479,9 @@ class MyUPlot {
             },
             series: [
                 {
+                    // x series
                     auto: false,
-                }, // x series
+                },
             ],
         };
     }
@@ -12045,11 +12490,67 @@ class MyUPlot {
     }
     ;
     getSize() {
-        //var d = document.getElementById("gd")?
         return {
             width: this.element.clientWidth - 100,
             height: this.element.clientHeight - 100,
         };
+    }
+    SetCurrentScale() {
+        let newMax = this.params.sh + this.params.screenSize / 2;
+        this.SetScale(this.params.sh - this.params.screenSize, newMax);
+    }
+    tooltipsPlugin(opts) {
+        function init(u, opts, data) {
+            let over = u.over;
+            let ttc = u.cursortt = document.createElement("div");
+            ttc.className = "tooltip";
+            ttc.textContent = "(x,y)";
+            ttc.style.pointerEvents = "none";
+            ttc.style.position = "absolute";
+            ttc.style.background = "rgba(0,0,255,0.1)";
+            over.appendChild(ttc);
+            u.seriestt = opts.series.map((s, i) => {
+                if (i == 0)
+                    return;
+                let tt = document.createElement("div");
+                tt.className = "tooltip";
+                tt.textContent = "Tooltip!";
+                tt.style.pointerEvents = "none";
+                tt.style.position = "absolute";
+                tt.style.background = "rgba(0,0,0,0.1)";
+                tt.style.color = s.color;
+                //tt.style.display = s.show ? null : "none";
+                over.appendChild(tt);
+                return tt;
+            });
+            function hideTips() {
+                ttc.style.display = "none";
+                u.seriestt.forEach((tt, i) => {
+                    if (i == 0)
+                        return;
+                    tt.style.display = "none";
+                });
+            }
+            function showTips() {
+                ttc.style.display = "";
+                u.seriestt.forEach((tt, i) => {
+                    if (i == 0)
+                        return;
+                    let s = u.series[i];
+                    tt.style.display = s.show ? null : "none";
+                });
+            }
+            over.addEventListener("mouseleave", () => {
+                if (!u.cursor._lock) {
+                    //	u.setCursor({left: -10, top: -10});
+                    hideTips();
+                }
+            });
+            over.addEventListener("mouseenter", () => {
+                showTips();
+            });
+            hideTips();
+        }
     }
 }
 exports.MyUPlot = MyUPlot;

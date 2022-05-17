@@ -13,7 +13,6 @@ export function CreateDefaultCellStyle() : CellChannelStyle{
     } 
 }
 
-
 export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo) : CellChannelStyle{
     return {
         valueName: sensorInfo.ValueName,

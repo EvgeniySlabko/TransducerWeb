@@ -96,6 +96,13 @@ export class SensorPanelControllers
         }
     }
 
-    
+    public OffButtons = () => {
+
+    }
+
+    public OnButtons = () => {
+
+    }
+
     public get onSensorClose() {return this._onRemoveSensor.asEvent();}
 }

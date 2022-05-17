@@ -30,7 +30,7 @@ export function GetAxe(scale: string, side: number)
         },
         scale: scale,
         show: false,
-        gap: ii++ * 1,
+        
         ticks: 10,
         space: 20,
         side: side,

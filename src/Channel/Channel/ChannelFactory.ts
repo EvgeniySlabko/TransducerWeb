@@ -21,7 +21,7 @@ function CreateSpeedChannel(sensor: ISingleComponentSensor, fullSensorInfo: Full
 function CreateTemperatureChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : Channel
 {
     var dataSource = CreateTemperatureValueDataSource(sensor);
-    return new Channel(dataSource, CreatetemperatureStyle());
+    return new Channel(dataSource, CreatetemperatureStyle(fullSensorInfo));
 }
 
 function CreatePowerChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : Channel
