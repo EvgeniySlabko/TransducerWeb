@@ -20,7 +20,7 @@ export class ViewController
 
     private plot: MyUPlot | MyUPlotViewer;
 
-    constructor(element: HTMLElement)
+    constructor(element: any)
     {
         this.element = element;
         this.plot = new MyUPlot(element);

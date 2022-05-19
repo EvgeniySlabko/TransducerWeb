@@ -6,6 +6,7 @@ import { sleep } from "../Common/Common";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { SensorMessage } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { GetAxe, GetScale, GetSeries } from "./ComponetFactory/ComponentFactory";
+import { AxeRangeChangeHandler } from "./PlotCommon";
 import { MyUPlotBase } from "./uPlotBase";
 
 
@@ -25,22 +26,17 @@ export class MyUPlot extends MyUPlotBase
 {
   private datBuf : (number | null | undefined)[][] = 
   [
-    new Array(200000),
+    new Array(250000),
 
-    new Array(200000),
-    new Array(200000),
-    new Array(200000),
-    new Array(200000),
+    new Array(250000),
+    new Array(250000),
+    new Array(250000),
+    new Array(250000),
 
-    new Array(200000),
-    new Array(200000),
-    new Array(200000),
-    new Array(200000),
-
-    new Array(200000),
-    new Array(200000),
-    new Array(200000),
-    new Array(200000),
+    new Array(250000),
+    new Array(250000),
+    new Array(250000),
+    new Array(250000),
   ];
   
   private currentChannels: Channel[] = [];
@@ -73,9 +69,13 @@ export class MyUPlot extends MyUPlotBase
       this.plot?.setSize(this.getSize());
     });
 
-    window.addEventListener("fullscreenchange", () => {
-      this.plot?.setSize(this.getSize());
-    });
+    document.addEventListener('fullscreenchange', ()=>{
+      if (document.fullscreenElement) {
+          console.log('Fullscreen');
+      } else {
+          console.log('Normal');
+      }
+  });
 
     setInterval(() => {
       this.plot?.redraw(true, true)
@@ -96,9 +96,10 @@ export class MyUPlot extends MyUPlotBase
     this.channels = [];
 
     this.Init();
-    this.SetScale(0, this.params.screenSize);
     this.params.th = 0;
     this.params.sh = 0;
+    this.params.screenSize = 5;
+    this.SetScale(0, this.params.screenSize);
   }
   
   public Clear()
@@ -340,7 +341,8 @@ export class MyUPlot extends MyUPlotBase
   private SetCurrentScale()
   {
     let newMax = this.params.sh + this.params.screenSize / 2;
-    this.SetScale(this.params.sh - this.params.screenSize, newMax);
+    let newMin = this.params.sh - this.params.screenSize / 2;
+    this.SetScale(newMin, newMax);
   }
 
   protected SelectCommited(){
@@ -371,16 +373,7 @@ export class MyUPlot extends MyUPlotBase
 
   protected AxisRangeChanged(index: number, dy: number)
   {
-    
-    let channel = this.channels[index- 1];
-    let range = this.channels[index- 1].curRange;
-    let curRangeVal = range[1] - range[0];
-
-    //вычисляем относительное смещение 
-    let dVal = curRangeVal * dy;
-
-    channel.curRange[0] += dVal;
-    channel.curRange[1] += dVal;
+    AxeRangeChangeHandler(this.channels[index- 1].curRange, dy);
   }
 }
 

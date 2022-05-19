@@ -20,12 +20,11 @@ export function CreateDefaultStyle() : ChannelStyle{
     } 
 }
 
-
 export function CreateTorqueStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
     return {
         grid: true,
         color: "green",
-        legendTitle: "Torque",
+        legendTitle: sensorInfo.SensorType + "Torque",
         line: "solid",
         range: [sensorInfo.MinValue - 0.2 * sensorInfo.MaxValue, sensorInfo.MaxValue + 0.2 * sensorInfo.MaxValue],
         yTitle: "Torque",
@@ -75,7 +74,7 @@ export function CreatePowerStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
     return {
         grid: false,
         color: "darkRed",
-        legendTitle: "Power",
+        legendTitle: sensorInfo.SensorType + "Power",
         line: "dash",
         range: [minPower, maxPower],
         yTitle: sensorInfo.SensorType + " Power",

@@ -23,8 +23,6 @@ export class DataCellsController
     public Clear = () =>
     {
         let vals = this.container.getElementsByClassName("cell-measure");
-
-          
     }
 
     private pushChannel(channel: CellChannel) 

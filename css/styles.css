@@ -25,9 +25,10 @@
 	box-sizing: border-box;
 }
 
-
-
-
+.u-legend.u-inline .u-value { 
+	width: 40px; 
+	text-align: left; 
+} 
 
   /* Clear floats (clearfix hack) */
 .btn-group:after {
@@ -68,6 +69,7 @@ li {
 	display: flex;
 	flex-direction: row;
 }
+
 .cell-name{
 	width: 80%;
 	text-align: center;
@@ -96,7 +98,7 @@ li {
 }
 
 .cell-measure {
-	font-size: 25px;
+	font-size: 23px;
 	text-align: right;
 	width: 100%;
 	height: 100%;

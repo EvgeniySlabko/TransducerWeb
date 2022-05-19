@@ -33,7 +33,7 @@ export class MyUPlotBase
 
     protected getSize() {    
         return {
-            width: this.element.clientWidth - 100,
+            width: document.body.clientWidth - 200,
             height: this.element.clientHeight - 100,
         }
     }
@@ -219,6 +219,11 @@ export class MyUPlotBase
             //this.tooltipsPlugin(this.options),
             this.wheelZoomPlugin({factor: 0.75})
           ],
+          legend:{
+            markers:{
+              
+            }
+          },
           scales: {
               x: {
                 distr: 1,
@@ -310,6 +315,11 @@ export class MyUPlotBase
             this.plot.destroy();
     }
 
+    protected Redraw()
+    {
+        this.plot?.redraw();
+    }
+    
     protected SelectCommited(){}
     
     protected DbClick(e: any){}
@@ -320,7 +330,7 @@ export class MyUPlotBase
     
     protected AxisRangeChanged(index: number, dy: number){}
     
-    protected Wheel(e: any) : boolean
+    protected Wheel(e: number) : boolean
     {
         return false;
     }

@@ -10,8 +10,8 @@ import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/IS
 function CreateMainValueCellChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : CellChannel
 {
     let baseMainValueSource = CreateMainValueDataSource(sensor);
-    //var dataSource = CreateAverageValueDataSource(baseMainValueSource, 1);
-    return new CellChannel(baseMainValueSource, CreateTorqueCellStyle(fullSensorInfo));
+    var dataSource = CreateAverageValueDataSource(baseMainValueSource, 100);
+    return new CellChannel(dataSource, CreateTorqueCellStyle(fullSensorInfo));
 }
 
 function CreateSpeedCellChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : CellChannel
@@ -23,7 +23,7 @@ function CreateSpeedCellChannel(sensor: ISingleComponentSensor, fullSensorInfo: 
 function CreateTemperatureCellChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : CellChannel
 {
     var dataSource = CreateTemperatureValueDataSource(sensor);
-    return new CellChannel(dataSource, CreatetemperatureCellStyle());
+    return new CellChannel(dataSource, CreatetemperatureCellStyle(fullSensorInfo));
 }
 
 function CreatePowerCellChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : CellChannel

@@ -27,7 +27,7 @@ export class SensorController
     
     private sensors: SensorNode[] = new Array();
 
-    public _dispatcher = new EventDispatcher<SensorControllerArgs>();
+    private _dispatcher = new EventDispatcher<SensorControllerArgs>();
 
     constructor()
     {

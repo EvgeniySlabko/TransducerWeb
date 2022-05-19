@@ -8,9 +8,9 @@ import { GetAxe, GetScale, GetSeries } from "./ComponetFactory/ComponentFactory"
 import { MyUPlotBase } from "./uPlotBase";
 
 
-export type TraceInfo =
+type TraceInfo =
 {
-    channel: Channel;
+    style: ChannelStyle
     axis: Axis;
     series: Series;
     scale: Scale;
@@ -35,7 +35,6 @@ export class MyUPlotViewer extends MyUPlotBase
     gridTicks: 50,      //делений графика в секунду.
     gridDx: 0,          // 
     screenSize: 5,      // текущий размер зума по оси x
-    streaming: true,    // режим автопрокрутки
 
     sh: 0,      // Самое большое значение времени на текущий момент
     th: 0,      // Самый большой индекс бубера оси x с данными на текущий момент
@@ -140,6 +139,8 @@ export class MyUPlotViewer extends MyUPlotBase
       this.SetupChannel(s);
     });
 
+    setTimeout(() => this.InitAxes(), 100);
+
     this.BuildPlot(this.options, this.buff);
     this.plot!.setSize(this.getSize());
     this.SetScale(0, this.params.screenSize);
@@ -154,7 +155,7 @@ export class MyUPlotViewer extends MyUPlotBase
     let series: uPlot.Series;
     let index = this.count++;
     
-    let sameTypeChannel = this.channels.find(c => c.channel.Style.valueType == style.valueType);
+    let sameTypeChannel = this.channels.find(c => c.style.valueType == style.valueType);
     if (sameTypeChannel)
     {
       let scaleName = <string>sameTypeChannel.axis.scale;
@@ -197,6 +198,7 @@ export class MyUPlotViewer extends MyUPlotBase
     //this.plot?.addSeries(series, index);
 
     let trace = {
+      style: style,
       axis: axis,
       scale: scale,
       series: series,
@@ -206,10 +208,8 @@ export class MyUPlotViewer extends MyUPlotBase
       dataBufferIndex: index,
     }
 
-    //this.plot?.axes.
-    //this.RebuidPlot();
-    //this.plot!.setData(this.datBuf);
-    //this.channels.push(trace);
+    
+    this.channels.push(trace);
   }
 
  // Base plot callbacks
@@ -220,49 +220,35 @@ export class MyUPlotViewer extends MyUPlotBase
     let curRange = channel.curRange;
     
     let rangeVal = curRange[1] - curRange[0];
-    let dyTop = channel.channel.Style.rescaleRationTop * rangeVal;
-    let dyBottom = channel.channel.Style.rescaleRationBottom * rangeVal;
+    let dyTop = channel.style.rescaleRationTop * rangeVal;
+    let dyBottom = channel.style.rescaleRationBottom * rangeVal;
     let newRange = [curRange[0] - dyBottom * dir, curRange[1] + dyTop * dir];
 
     channel.curRange[0] = newRange[0];
     channel.curRange[1] = newRange[1];
-  }
-  
-  private SetCurrentScale()
-  {
-    let newMax = this.params.sh + this.params.screenSize / 2;
-    this.SetScale(this.params.sh - this.params.screenSize, newMax);
-  }
-
-  protected SelectCommited(){
-    this.params.streaming = false;
+    this.Redraw();
   }
 
   protected DbClick(e: any) {
     
       if (e.button == 0) {
         e.preventDefault();
-        this.params.streaming = !this.params.streaming;
-        this.SetCurrentScale();
+        this.SetScale(0, this.params.sh);
       }
   }
 
-  protected Wheel(e: any): boolean {
-    if (this.params.streaming)
-    {
-      let dw = ((e.deltaY < 0) ? -1 : 1);
-      let newSize = this.params.screenSize + dw;
-      this.params.screenSize = newSize < 0.1 ? 0.1 : newSize;
-      this.SetCurrentScale();
-      return true;
-    }
+  private SetCurrentScale()
+  {
+    let newMax = this.params.sh + this.params.screenSize / 2;
+    this.SetScale(this.params.sh - this.params.screenSize, newMax);
+  }
 
-    return false;
+  protected Wheel(e: any): boolean {
+      return false;
   }
 
   protected AxisRangeChanged(index: number, dy: number)
   {
-    
     let channel = this.channels[index- 1];
     let range = this.channels[index- 1].curRange;
     let curRangeVal = range[1] - range[0];
@@ -272,6 +258,7 @@ export class MyUPlotViewer extends MyUPlotBase
 
     channel.curRange[0] += dVal;
     channel.curRange[1] += dVal;
+    this.Redraw();
   }
 }
 

@@ -4,7 +4,7 @@ const path = require('path');
 
 module.exports = {
   devtool: 'source-map',      //создает map файл для отладки
-  entry: './src/main.ts',
+  entry: './src/main.tsx',
   mode: 'development',
   //mode: 'production',
   
@@ -32,7 +32,7 @@ module.exports = {
       {
         test: /\.css$/i,
         use: ["style-loader", "css-loader"],
-      },
+      }, 
     ],
   },
   plugins: 
@@ -40,6 +40,9 @@ module.exports = {
     new HtmlWebpackPlugin({ template: './index.html' }),
     new webpack.ProvidePlugin({
       process: 'process/browser',
+      filename: "index.html", //Name of file in ./dist/
+      template: "index.html", //Name of template in ./src
+      hash: true,
     }),
     require('precss'),
     require('autoprefixer'),
@@ -47,7 +50,6 @@ module.exports = {
   
   resolve: {
     extensions: [ ".tsx", ".ts", ".js" ],
-    
   },
   
 };
