@@ -5,14 +5,10 @@ import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Chann
 
   export interface Props {
    channel: CellChannel;
-   cellCloseHandler: (channel: CellChannel) => void
   }
 
-  
    interface IState {
     value: string,
-    channel: CellChannel,
-    cellCloseHandler: (channel: CellChannel) => void,
    }
 
   export class Cell extends React.Component<Props, IState>{
@@ -23,8 +19,6 @@ import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Chann
 
       this.state = {
         value: "",
-        cellCloseHandler: this.props.cellCloseHandler,
-        channel: this.props.channel
       }
       
       this.props.channel.onClose.sub(this.closeHandler);
@@ -37,9 +31,8 @@ import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Chann
           value: ""
         }));
 
-        this.state.channel.onClose.unsub(this.closeHandler);
-        this.state.channel.onData.unsub(this.dataHandler);
-        this.state.cellCloseHandler(this.state.channel);
+        this.props.channel.onClose.unsub(this.closeHandler);
+        this.props.channel.onData.unsub(this.dataHandler);
     }
 
     dataHandler = (channel: CellChannel, args: ChannelDataArgs) =>
@@ -51,22 +44,26 @@ import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Chann
 
     render(){
       return (
-        <div id="cell-container" className={`measure-box ${this.state.channel.Style.cellStyle}`}>
+        <div id="cell-container" className={`measure-box grow ${this.props.channel.Style.cellStyle}`}>
           <div className='cell-info'>
             <div className="cell-name">
             {
-              this.state.channel.Style.valueName
+              this.props.channel.Style.valueName
             } 
             </div>
             <div className="cell-units">
-                {this.state.channel.Style.unitsName} 
+                {this.props.channel.Style.unitsName} 
             </div>
           </div>
 
           <div className="cell-measure-content">
-            <p id="value" className={`cell-measure ${this.state.channel.Style.fontStyle}`}>
+            <p id="value" className={`cell-measure ${this.props.channel.Style.fontStyle}`}>
                 {this.state.value}
             </p>
+            <p>
+                Дополнительная информация
+            </p>
+
           </div>
         </div>
       )

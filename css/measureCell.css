@@ -1,0 +1,65 @@
+
+.cell-container {
+	display: flex;
+	flex-direction: column;
+}
+
+.cell-info {
+	font-size: 17px;
+	font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+	align-content: stretch;
+	align-items: flex-start;
+	flex-wrap: nowrap;
+	display: flex;
+	flex-direction: row;
+}
+
+.cell-name{
+	width: 80%;
+	text-align: center;
+	border-top-left-radius: 20%;
+	margin: 1px;
+}
+
+.cell-units {
+	border-top-right-radius: 30%;
+	margin: 1px;
+	width: 20%;
+}
+
+.cell-measure-content{
+	float: right;
+	width: 100%;
+	display:flex;
+	justify-content: flex-start;
+	flex-direction: column;
+	height: 84px;
+}
+
+.cell-measure {
+	font-size: 25px;
+	text-align: right;
+	width: 100%;
+	height: 100%;
+}
+
+.measure-box {
+	width: 100%;
+	border-top-right-radius: 10%;
+	border-top-left-radius: 10%;
+	user-select: none;
+	border-style: solid;
+	border-width: 2px;
+	height: 60px;
+	margin-top: 3px;
+}
+
+.sensor-cell {
+	width: 100%;
+	height: 40px;
+	display: flex;
+	
+	flex-wrap: nowrap;
+	flex-direction: row;
+	align-content: center;
+}

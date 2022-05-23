@@ -1,30 +1,36 @@
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
 import { AverageSensorDataProvider } from "./AverageDataProvider";
 import { DataSourseType, ISensorDataProvider } from "./ISensorDataProvider";
+import { OffsetDataProvider } from "./OffseDataProveder";
 import { PowerDataProvider } from "./PowerDataProveder";
 import { SensorDataProvider } from "./SensorDataProvider";
 
-export function CreateMainValueDataSource(sensor: ISingleComponentSensor) : ISensorDataProvider
+export function CreateMainValueDataSource(sensor: ISingleComponentSensor) : SensorDataProvider
 {
     return new SensorDataProvider(sensor, DataSourseType.MainValue);
 }
 
-export function CreateSpeedValueDataSource(sensor: ISingleComponentSensor) : ISensorDataProvider
+export function CreateSpeedValueDataSource(sensor: ISingleComponentSensor) : SensorDataProvider
 {
     return new SensorDataProvider(sensor, DataSourseType.Speed);
 }
 
-export function CreateTemperatureValueDataSource(sensor: ISingleComponentSensor) : ISensorDataProvider
+export function CreateTemperatureValueDataSource(sensor: ISingleComponentSensor) : SensorDataProvider
 {
     return new SensorDataProvider(sensor, DataSourseType.Temperature);
 }
 
-export function CreateAverageValueDataSource(baseSource: ISensorDataProvider, avgFactor: number) : ISensorDataProvider
+export function CreateAverageValueDataSource(baseSource: ISensorDataProvider, avgFactor: number) : AverageSensorDataProvider
 {
     return new AverageSensorDataProvider(baseSource, avgFactor);
 }
 
-export function CreatePowerDataSource(sensor: ISingleComponentSensor) : ISensorDataProvider
+export function CreateOffsetDataSource(baseSource: ISensorDataProvider, offset: number) : OffsetDataProvider
 {
-    return new PowerDataProvider(sensor);
+    return new OffsetDataProvider(baseSource, 0);
+}
+
+export function CreatePowerDataSource(toqueDataSourse: ISensorDataProvider, speedDataSourse: ISensorDataProvider) : PowerDataProvider
+{
+    return new PowerDataProvider(toqueDataSourse, speedDataSourse);
 }

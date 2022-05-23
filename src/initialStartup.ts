@@ -2,7 +2,7 @@ import { ViewController as PlotViewController } from "./ViewsControllers/PlotVie
 import { RecordController } from "./RecordController";
 import { SensorController, SensorControllerArgs } from "./SensorController";
 import { SensorPanelControllers as SensorPanelViewControllers } from './ViewsControllers/SensorsPannelController';
-import { DataCellsController } from './ViewsControllers/CellsPannelController';
+import { DataCells } from './ViewsControllers/DataCells';
 
 
 // Хронить сернсоры. Дает себытия подключения отключения

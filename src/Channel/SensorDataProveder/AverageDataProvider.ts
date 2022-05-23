@@ -61,6 +61,13 @@ export class AverageSensorDataProvider implements ISensorDataProvider
         this.averageValue = 0;
     }
 
+    public SetAverage = (averageRatio: number) =>
+    {
+        if (averageRatio < 1) throw "Average value must be higher then zero"
+
+        this.averageRatio = averageRatio;
+    }
+
     get onData(): IEvent<ISingleComponentSensor, dataEventArgs> {
         return this._onData.asEvent();
     }

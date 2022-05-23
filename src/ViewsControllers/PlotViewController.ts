@@ -1,7 +1,7 @@
 import { MyUPlot } from "../uPlot/uPlot";
 import { GetFullSensorInfo } from "../Sensor/SensorInfoParser/SensorInfoCreator";
 import { SensorWorker } from "../Sensor/SensorWorker";
-import { DataCellsController } from "./CellsPannelController";
+import { DataCells } from "./DataCells";
 import { CreateAllSensorCellChannels } from "../Channel/Channel/CellChannelFactory";
 import { SensorController, SensorControllerArgs } from "../SensorController";
 import { Channel } from "../Channel/Channel/Channel";

@@ -10,6 +10,7 @@ export type SensorControllerArgs =
     sender: SensorController,
     sensor: ISingleComponentSensor,
     fullSensorInfo: FullSensorInfo
+    worker: SensorWorker,
 }
 
 type SensorNode =
@@ -62,7 +63,7 @@ export class SensorController
         var node: SensorNode = {
           sensor: sensor,
           worker: sensorWOrker,
-          fullSensorInfo: fullSensorInfo
+          fullSensorInfo: fullSensorInfo,
         };
 
         this.sensors.push(node);
@@ -71,6 +72,7 @@ export class SensorController
             sender: this,
             sensor: sensor,
             fullSensorInfo: fullSensorInfo,
+            worker: sensorWOrker,
         });
     }   
     

@@ -81,22 +81,13 @@ export class Plot{
         var axename= this.yAxies.pop();
         if (axename == undefined) throw "Нелязя больше добавить";
 
-        var style = channel.Style;
         var index = this.id_index_map.size;
         var id =  this.currentTraceId++;
 
-        var axe = this.getAxeById(axename);
-        //this.Copy(style.yAxeStyle, axe);
-        //axe = style.yAxeStyle;
-
         var trace = createTrace(axename);
-        //this.Copy(style.traceStyle, trace);
 
         await Plotly.addTraces(this.element, trace);
         this.id_index_map.set(id, [index, axename]);
-
-        //$(this.element).
-        //<>this.loyout.xaxis?.domain
 
         var newId = id;
         channel.onData.sub(async (data, args) => 

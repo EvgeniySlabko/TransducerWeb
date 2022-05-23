@@ -5,17 +5,14 @@ import { Cell } from './Cell';
 import { SensorController, SensorControllerArgs } from '../SensorController';
 import { CreateAllSensorCellChannels } from '../Channel/Channel/CellChannelFactory';
 import { hashCode } from '../Common/Common';
+import { DataCells } from '../ViewsControllers/DataCells';
 
 
   export interface Props {
-    sensorController: SensorController
+    dataCells: CellChannel[],
   }
 
-  interface IState {
-    channels: CellChannel[],
-   }
-
-  export class CellContainer extends React.Component<Props, IState>{
+  export class CellContainer extends React.Component<Props>{
     
     constructor(prop: Props)
     {
@@ -24,33 +21,16 @@ import { hashCode } from '../Common/Common';
       this.state = {
         channels: [],
       };
-
-      prop.sensorController.onDispatch.addListener("Add", (args: SensorControllerArgs) =>{
-      let cellChannels = CreateAllSensorCellChannels(args.sensor, args.fullSensorInfo);
-
-      this.setState((prev, props) => ({
-          channels: this.state.channels.concat(cellChannels),
-        }));
-      });
-    }
-
-    cellCloseHandler = (channel: CellChannel)=>
-    {
-      let index = this.state.channels.findIndex(c => c === channel);
-      this.state.channels.splice(index, 1);
-      this.setState((prev, props) => ({
-      }));
     }
 
     private counter: number = 1
-    render(){
+    render() {
         return (
             <div id="cell-container" className="cell-container">
               {
                 
-                this.state.channels.map((item, i) => {
-                  let k = hashCode(JSON.stringify(item));
-                  return <Cell key={item.Style.id} channel={item} cellCloseHandler = {this.cellCloseHandler}/>
+                this.props.dataCells.map((item, i) => {
+                  return <Cell key={item.Style.id} channel={item}/>
                 })
               }
             </div>

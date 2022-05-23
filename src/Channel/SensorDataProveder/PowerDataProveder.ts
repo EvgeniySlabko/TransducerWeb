@@ -14,16 +14,21 @@ export class PowerDataProvider implements ISensorDataProvider
     private lastMainValue: number | undefined;
     private lastMainTime: number | undefined;
 
-    constructor(sensor: ISingleComponentSensor)
+    constructor(toqueDataSourse: ISensorDataProvider, speedDataSourse: ISensorDataProvider)
     {
-        sensor.onClose.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
-        sensor.onMessage.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
-        sensor.onData.sub((sensor, args) =>{
+        //toqueDataSourse.onClose.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
+        //toqueDataSourse.onMessage.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
+
+        speedDataSourse.onClose.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
+        speedDataSourse.onMessage.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
+
+
+        toqueDataSourse.onData.sub((sensor, args) =>{
             this.lastMainValue = args.data[args.data.length - 1];
             this.lastMainTime = args.time[args.time.length - 1];
         });
 
-        sensor.onSpeed.sub((sensor, args) =>{
+        speedDataSourse.onData.sub((sensor, args) =>{
             if (this.lastMainValue && this.lastMainTime)
             {
                 let power = CalculatePower(args.data[0], this.lastMainValue); 

@@ -85,12 +85,12 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
     public SetComputerConnection = async () => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_ON_VALUE));
     public UnsetComputerConnection = async () => this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_OFF_VALUE));
     public SetT0 = async () => await this.SendRequesAndWaitResponse<void>(new MultipleCommand(Defs.PRESET_MULTIPLE_REGISTERS, 3, new Uint8Array([0, 0])));
+    public SetM0 = async () => await this.SendRequesAndWaitResponse<void>(new MultipleCommand(Defs.PRESET_MULTIPLE_REGISTERS, 3, new Uint8Array([0, 0])));
     public CloseConnection = async () => 
     {
         await this.serialWorker.Close(); 
         //this._onClose.dispatch(this, "Соединение закрыто");
     }
-    
     
     public async StopMeasuring(waitAnswer: boolean = true)
     {

@@ -95,15 +95,7 @@ export interface Props {
 
 	async startRecordingHandler()
 	{
-		let channels =  new Array<Channel>(0);
-		let allSensorsWithInfo = this.state.sensorService.GetAllSensors();
-
-		for (let i = 0; i < allSensorsWithInfo.length; i++) {
-			let channelsForSensor = CreateAllSensorChannelsSaving(allSensorsWithInfo[i].sensor, allSensorsWithInfo[i].info);
-			channelsForSensor.forEach(c => channels.push(c));
-		}
-
-		this.state.recordController.StartListening(channels);
+		this.state.recordController.StartListening();
 
 		this.setState((prev, props) => ({
 			recordButtonStyle: "text-danger",

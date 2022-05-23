@@ -10,10 +10,14 @@ export class RecordController
         this.listener = new ReportListener();
     }
 
-    public StartListening(channels: Channel[])
+    public SetChannels(channels: Channel[])
     {
         this.listener.Reset();
         this.listener.SetChannels(channels);
+    }
+
+    public StartListening()
+    {
         this.listener.StartListening();
     }
 

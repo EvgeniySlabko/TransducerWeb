@@ -1,26 +1,76 @@
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { Channel } from "./Channel";
 import { CreateDefaultStyle, CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "../ChannelStyle/ChannelStyleFactory";
-import { CreateAverageValueDataSource, CreateMainValueDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "../SensorDataProveder/DataSourceFactory";
+import { CreateAverageValueDataSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "../SensorDataProveder/DataSourceFactory";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
+import { PlotCellChannelsInfo, SavingPlotChannelsInfo } from "../SensorDataProveder/ISensorDataProvider";
 
-function CreateMainValueChannelWithAveraging(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : Channel
+declare interface ComplexSavingInfo
 {
-    var dataSource = CreateMainValueDataSource(sensor);
-    let avgSrc = CreateAverageValueDataSource(dataSource, 1);
-    return new Channel(avgSrc, CreateTorqueStyle(fullSensorInfo));
+    mainChannel: Channel;
+    speedCahannel: Channel;
+    powerChannel: Channel;
+
+    offsetSetter: (offset: number) => void,
+    currentValueOffsetSetter: () => void,
 }
 
-function CreateMainValueChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : Channel
+declare interface ComplexPlotInfo
 {
-    var dataSource = CreateMainValueDataSource(sensor);
-    return new Channel(dataSource, CreateTorqueStyle(fullSensorInfo));
+    mainChannel: Channel;
+    speedCahannel: Channel;
+    powerChannel: Channel;
+
+    avgSetter: (offset: number) => void,
+    offsetSetter: (offset: number) => void,
+    currentValueOffsetSetter: () => void,
 }
 
-function CreateSpeedChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : Channel
+function CreatePlotComlex(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : ComplexPlotInfo
 {
-    var dataSource = CreateSpeedValueDataSource(sensor);
-    return new Channel(dataSource, CreateSpeedStyle(fullSensorInfo));
+    let mainSource = CreateMainValueDataSource(sensor);
+    let mainOffsetSource = CreateOffsetDataSource(mainSource, 0);
+    let mainAvgSrc = CreateAverageValueDataSource(mainOffsetSource, 1);
+
+    let mainChannel = new Channel(mainAvgSrc, CreateTorqueStyle(fullSensorInfo));
+
+    let speedSource = CreateSpeedValueDataSource(sensor);
+    let speedChannel = new Channel(speedSource, CreateSpeedStyle(fullSensorInfo));
+
+    let powerSource = CreatePowerDataSource(mainOffsetSource, speedSource);
+    let powerChannel = new Channel(powerSource, CreatePowerStyle(fullSensorInfo));
+
+    return{
+        currentValueOffsetSetter: () => mainOffsetSource.SetCurrentOffset(),
+        offsetSetter: (offset: number) => mainOffsetSource.SetOffset(offset),
+        avgSetter: (avg: number) => mainAvgSrc.SetAverage(avg),
+        mainChannel: mainChannel,
+        powerChannel: powerChannel,
+        speedCahannel: speedChannel,
+    }
+}
+
+function CreateSavingComlex(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : ComplexSavingInfo
+{
+    let mainSource = CreateMainValueDataSource(sensor);
+    let mainOffsetSource = CreateOffsetDataSource(mainSource, 0);
+    //let mainAvgSrc = CreateAverageValueDataSource(mainOffsetSource, 1);
+
+    let mainChannel = new Channel(mainOffsetSource, CreateTorqueStyle(fullSensorInfo));
+
+    let speedSource = CreateSpeedValueDataSource(sensor);
+    let speedChannel = new Channel(speedSource, CreateSpeedStyle(fullSensorInfo));
+
+    let powerSource = CreatePowerDataSource(mainOffsetSource, speedSource);
+    let powerChannel = new Channel(powerSource, CreatePowerStyle(fullSensorInfo));
+
+    return{
+        currentValueOffsetSetter: () => mainOffsetSource.SetCurrentOffset(),
+        offsetSetter: (offset: number) => mainOffsetSource.SetOffset(offset),
+        mainChannel: mainChannel,
+        powerChannel: powerChannel,
+        speedCahannel: speedChannel,
+    }
 }
 
 function CreateTemperatureChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : Channel
@@ -29,38 +79,42 @@ function CreateTemperatureChannel(sensor: ISingleComponentSensor, fullSensorInfo
     return new Channel(dataSource, CreatetemperatureStyle(fullSensorInfo));
 }
 
-function CreatePowerChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : Channel
-{
-    var dataSource = CreatePowerDataSource(sensor);
-    return new Channel(dataSource, CreatePowerStyle(fullSensorInfo));
-}
-
-export function CreateAllSensorChannelsForPlot(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : Channel[]
+// для графика делаем канал осн. изм величины с офсетером и авгсетером
+export function CreateAllSensorChannelsForPlot(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : PlotCellChannelsInfo
 {
     var channels: Channel[] = []; 
-    channels.push(CreateMainValueChannelWithAveraging(sensor, fullSensorInfo));
-    channels.push(CreateTemperatureChannel(sensor, fullSensorInfo));
-    if (fullSensorInfo.isRotative != 0)
-    {
-        channels.push(CreateSpeedChannel(sensor, fullSensorInfo));
-        channels.push(CreatePowerChannel(sensor, fullSensorInfo));
-    }    
-    
-    return channels;
+
+    let temperatureChannel = CreateTemperatureChannel(sensor, fullSensorInfo);
+    let channelsInfo = CreatePlotComlex(sensor, fullSensorInfo);
+    channels.push(channelsInfo.mainChannel);
+    channels.push(channelsInfo.speedCahannel);
+    channels.push(temperatureChannel);
+    channels.push(channelsInfo.powerChannel);
+
+    return {
+        avgSetter: channelsInfo.avgSetter,
+        currentValueOffsetSetter: channelsInfo.currentValueOffsetSetter,
+        offsetSetter: channelsInfo.offsetSetter,
+        plotChannels: channels
+    }
 }
 
-export function CreateAllSensorChannelsSaving(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : Channel[]
+// для записи в файл делаем каналы осн. изм величины с офсетером
+export function CreateAllSensorChannelsSaving(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : SavingPlotChannelsInfo
 {
     var channels: Channel[] = []; 
-    channels.push(CreateMainValueChannel(sensor, fullSensorInfo));
 
-    channels.push(CreateTemperatureChannel(sensor, fullSensorInfo));
-    if (fullSensorInfo.isRotative != 0)
-    {
-        channels.push(CreateSpeedChannel(sensor, fullSensorInfo));
-        channels.push(CreatePowerChannel(sensor, fullSensorInfo));
-    }    
-    
-    return channels;
+    let temperatureChannel = CreateTemperatureChannel(sensor, fullSensorInfo);
+    let channelsInfo = CreateSavingComlex(sensor, fullSensorInfo);
+    channels.push(channelsInfo.mainChannel);
+    channels.push(channelsInfo.speedCahannel);
+    channels.push(temperatureChannel);
+    channels.push(channelsInfo.powerChannel);
+
+    return {
+        currentValueOffsetSetter: channelsInfo.currentValueOffsetSetter,
+        offsetSetter: channelsInfo.offsetSetter,
+        plotChannels: channels
+    }
 }
 
