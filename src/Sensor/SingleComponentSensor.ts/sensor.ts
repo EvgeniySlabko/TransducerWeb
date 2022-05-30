@@ -22,7 +22,7 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
 
     private commandHandlers : Map<number, any> = new Map();
 
-    private timeout: number = 5000; // Максимальное время ожидание ответа на командуж
+    private timeout: number = 200; // Максимальное время ожидание ответа на командуж
     constructor(worker: SerialBufferedWorker) {
         if (worker == null) throw "Worker is null";
         this.serialWorker = worker;
@@ -187,7 +187,7 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
             });
 
             var interval = setTimeout(function() {
-                reject("Timeout Error. There is no data from sensor!");
+                reject("Timeout Error. There is no data from sensor! Command: " + command.Command.toString());
                 }, this.timeout);
 
                 try

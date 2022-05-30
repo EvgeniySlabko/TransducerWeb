@@ -79,7 +79,6 @@ export interface Props {
 			await this.state.sensorService.SetT0();
 		}
 
-		await this.state.sensorService.StartAll();
 		this.setState((prev, props) => ({
 			startStop: true,
 		}));
