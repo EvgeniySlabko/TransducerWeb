@@ -1,8 +1,7 @@
 import React from 'react';
 import { Navbar } from './navbar';
-import { CellContainer } from './CellContainer';
+import { GroupsContainer } from './GroupsContainer';
 import { SensorController, SensorControllerArgs } from '../SensorController';
-import { SensorContainer } from './SensorContainer';
 import { RecordController } from '../RecordController';
 import { ViewController } from '../ViewsControllers/PlotViewController';
 import { CreateAllChannels } from '../Channel/AllChannelsFactory';
@@ -11,12 +10,18 @@ import { Channel } from '../Channel/Channel/Channel';
 import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISensor';
 import { FullSensorInfo } from '../Sensor/SingleComponentSensor.ts/SensorDefinitions';
 import { SensorWorker } from '../Sensor/SensorWorker';
+import { notification } from 'antd';
 
 
 export interface Props {
     sensorService: SensorController;
     recordController: RecordController;
 }
+
+export interface Group{
+    node: SensorNode;
+    channels: CellChannel[],
+  }
 
 export interface SensorNode{
     sensor: ISingleComponentSensor,
@@ -27,11 +32,10 @@ export interface SensorNode{
 }
 
 interface IState {
+    groups: Group[],
     plotViewController: ViewController | null;
-    cellChannels: CellChannel[];
     savingChannels: Channel[];
     plotChannels: Channel[];
-    sensorsNodes: SensorNode[];
 }
 
 export class App extends React.Component<Props, IState>
@@ -43,12 +47,10 @@ export class App extends React.Component<Props, IState>
         super(props);
 
         this.state = {
-
             plotViewController: null,
-            cellChannels: [],
             plotChannels: [],
             savingChannels: [],
-            sensorsNodes: []
+            groups: [],
         }
         //this.plotViewController = new ViewController(document.getElementById('gd'));
         this.sensorManualCloseHandler = this.sensorManualCloseHandler.bind(this);
@@ -61,14 +63,18 @@ export class App extends React.Component<Props, IState>
         }));
       }
 
+      /*
     cellChannelCloseHandler = (channel: CellChannel, channelCloseArgs: ChannelCloseArgs)=>
     {
-      let index = this.state.cellChannels.findIndex(c => c === channel);
-      this.state.cellChannels.splice(index, 1);
-      this.setState((prev, props) => ({
-      }));
-    }
+        for (let i = 0; i < this.state.groups.length; i++) {
 
+            let index = this.state..findIndex(c => c === channel);
+            this.state.groups[i][1].splice(index, 1);
+            this.setState((prev, props) => ({
+            }));   
+        }
+    }
+    */
     plotChannelCloseHandler = (channel: Channel, channelCloseArgs: ChannelCloseArgs)=>
     {
       let index = this.state.plotChannels.findIndex(c => c === channel);
@@ -85,10 +91,10 @@ export class App extends React.Component<Props, IState>
       }));
     }
 
-    sensorCloseHandler = (channel: ISingleComponentSensor, args: string) =>
+    sensorCloseHandler = (sensor: ISingleComponentSensor, args: string) =>
     {
-      let index = this.state.sensorsNodes.findIndex(c => c.sensor == channel);
-      this.state.sensorsNodes.splice(index, 1);
+      let index = this.state.groups.findIndex(c => c.node.sensor == sensor);
+      this.state.groups.splice(index, 1);
       this.setState((prev, props) => ({
       }));
     }
@@ -97,8 +103,8 @@ export class App extends React.Component<Props, IState>
     {
         sensor.onClose.unsub(this.sensorCloseHandler);
         await sensor.CloseConnection()
-        let index = this.state.sensorsNodes.findIndex(c => c.sensor == sensor);
-        this.state.sensorsNodes.splice(index, 1);
+        let index = this.state.groups.findIndex(c => c.node.sensor == sensor);
+        this.state.groups.splice(index, 1);
         this.setState((prev, props) => ({
         }));
     }
@@ -110,18 +116,19 @@ export class App extends React.Component<Props, IState>
             let allChannelsInfo = CreateAllChannels(args.sensor, args.fullSensorInfo);
             //let plotChannels = CreateAllSensorChannelsForPlot(args.sensor, args.fullSensorInfo);
             this.setState((prev, props) => ({
-                cellChannels: this.state.cellChannels.concat(allChannelsInfo.cellChannels),
                 plotChannels: this.state.plotChannels.concat(allChannelsInfo.plotChannels),
                 savingChannels: this.state.savingChannels.concat(allChannelsInfo.savingChannels),
-                sensorsNodes: this.state.sensorsNodes.concat(
-                    {
+                groups: this.state.groups.concat([{
+                    channels: allChannelsInfo.cellChannels,
+                    node: {
                         fullSensorInfo: args.fullSensorInfo,
                         sensor: args.sensor,
                         worker: args.worker,
                         setCurrentOffsetValue: allChannelsInfo.currentValueOffsetSetter,
                         setOffset: allChannelsInfo.offsetSetter
                     }
-                ),
+                    
+                }])
             }));
 
             this.state.plotViewController.AddChannels(allChannelsInfo.plotChannels);
@@ -130,11 +137,16 @@ export class App extends React.Component<Props, IState>
 
             allChannelsInfo.plotChannels.forEach(channel =>  { channel.onClose.sub(this.plotChannelCloseHandler);});
             allChannelsInfo.savingChannels.forEach(channel =>  { channel.onClose.sub(this.savingChannelCloseHandler) ;});
-            allChannelsInfo.cellChannels.forEach(channel =>  { channel.onClose.sub(this.cellChannelCloseHandler);});
+            //allChannelsInfo.cellChannels.forEach(channel =>  { channel.onClose.sub(this.cellChannelCloseHandler);});
             
             args.sensor.onClose.sub(this.sensorCloseHandler);
 
             this.props.recordController.SetChannels(this.state.savingChannels);
+
+            notification.success({
+                message: `Добавлен датчик ${args.fullSensorInfo.SensorType}`,
+                duration: 2,
+            });
         }
     }
     
@@ -147,9 +159,9 @@ export class App extends React.Component<Props, IState>
             <div key = {2} className = "all">
                 <div className="middle-container">
                     <div className="left-container">
-                        <CellContainer dataCells={this.state.cellChannels} />
-                        <SensorContainer sensorsNodes={this.state.sensorsNodes} 
-                                         RemoveSensor={this.sensorManualCloseHandler}></SensorContainer>
+                        <GroupsContainer groups={ this.state.groups}
+                        sensorRemove = {this.sensorManualCloseHandler}
+                        />
                     </div>
                     <div id="gd" className="plot"></div>
                 </div>

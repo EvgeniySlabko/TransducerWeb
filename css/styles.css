@@ -45,6 +45,7 @@ a {
 }
 
 ul,
+
 li {
 	list-style: none;
 	padding: 0;
@@ -58,76 +59,11 @@ li {
 	user-select: none;
 }
 
-
 .left-container{
 	height: 100%;
 	width: 200px;
 	display: flex;
 	flex-direction: column;
-	justify-content: center;
-}
-
-.cell-container {
-	width: 100%;
-	height: 80%;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	border-radius: 2%;
-	background-size: cover;
-	background: linear-gradient(to bottom right,  rgb(183, 180, 192),rgb(255, 255, 255));
-	margin-bottom: 10px;
-}
-
-.sensors-container {
-	width: 100%;
-	height: 30%;
-	display: flex;
-	flex-wrap: nowrap;
-	flex-direction: column;
-	border-radius: 2%;
-	background-color: rgb(172, 182, 154) ;
-	background: linear-gradient(to bottom right, rgb(235, 235, 235), rgb(165, 201, 181));
-}
-
-.sensor-control-panel {
-	width: 50%;
-	
-	display: flex;
-	flex-wrap: nowrap;
-	flex-direction: row;
-}
-
-.button-flex {
-	width: 100%;
-	align-items: stretch;
-	padding: 0px;
-	size: 4px;
-}
-
-.sensor-name {
-	width: 50%;
-	height: 100%;
-	font-size: 12px;
-	display: flex;
-	flex-wrap: nowrap;
-	flex-direction: row;
-	background-color: rgb(144, 218, 196) ;
-	border-radius: 5%;
-	align-content: center;
-	align-items: center;
-	padding-left:10px;
-}
-
-.sensor-pannel-button{
-	height: 100%;
-}
-
-h3 {
-	text-align: left;
-	margin-top: 20px;
-	margin-bottom: 30px;
-	font-weight: 500;
 }
 
 /* MAIN styles */
@@ -164,8 +100,12 @@ body {
 	margin-left: 5px;
 }
 
-#drop_zone {
-	border: 5px solid blue;
-	width:  200px;
-	height: 100px;
+legend{
+    padding: 2px; 
+	font-size: 5px;   
+}
+
+.ant-collapse-content-box
+{
+	padding: 0px !important;
 }

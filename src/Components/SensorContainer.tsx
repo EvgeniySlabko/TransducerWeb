@@ -32,6 +32,28 @@ export class SensorContainer extends React.Component<Props>{
   {
     return(
       <div className='sensors-container'>
+      <div className='sensor-cell grow-width'>
+          <div className='sensor-name'>
+            Name
+          </div >
+    
+          <div className="sensor-control-panel">
+              <button className='btn btn-outline-primary sensor-pannel-button'>
+                <span className='glyphicon glyphicon-remove'>
+                </span>
+              </button>
+              <button  className='btn btn-outline-primary sensor-pannel-button'>
+              {"{0}"}
+            </button>
+          </div >
+        </div>
+        </div>
+    ) 
+  }
+ }
+
+ /*
+ <div className='sensors-container'>
         {
            this.props.sensorsNodes.map((item, i) => {
             return <SensorCell key={item.fullSensorInfo.SensorType} 
@@ -39,6 +61,4 @@ export class SensorContainer extends React.Component<Props>{
             sensorRemoveHandle ={this.RemoveCellHandle}/>})
         }
       </div>
-    ) 
-  }
- }
+ */

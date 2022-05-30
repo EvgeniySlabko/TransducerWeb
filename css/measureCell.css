@@ -2,9 +2,11 @@
 .cell-container {
 	display: flex;
 	flex-direction: column;
+	height: 100%;
 }
 
 .cell-info {
+	height: 20px;
 	font-size: 17px;
 	font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 	align-content: stretch;
@@ -15,51 +17,76 @@
 }
 
 .cell-name{
-	width: 80%;
+	font-size: 13px;
+	width: 100%;
+	height: auto;
 	text-align: center;
-	border-top-left-radius: 20%;
-	margin: 1px;
+}
+
+.cell-name-p{
+	margin: 0;
 }
 
 .cell-units {
 	border-top-right-radius: 30%;
-	margin: 1px;
 	width: 20%;
+	margin-right: 2px;
 }
 
 .cell-measure-content{
-	float: right;
+	font-size: 30px;
+	height: auto;
 	width: 100%;
 	display:flex;
-	justify-content: flex-start;
-	flex-direction: column;
-	height: 84px;
-}
-
-.cell-measure {
-	font-size: 25px;
-	text-align: right;
-	width: 100%;
-	height: 100%;
+	flex-direction: end;
+	flex-flow: row-reverse wrap-reverse;
 }
 
 .measure-box {
-	width: 100%;
+	width: 80%;
 	border-top-right-radius: 10%;
 	border-top-left-radius: 10%;
 	user-select: none;
 	border-style: solid;
 	border-width: 2px;
-	height: 60px;
 	margin-top: 3px;
 }
 
-.sensor-cell {
-	width: 100%;
-	height: 40px;
-	display: flex;
-	
+.cells-box{
+	align-items: center;
 	flex-wrap: nowrap;
-	flex-direction: row;
-	align-content: center;
+	flex-direction: column;
+	display: flex;
+	width: 100%;
+	height: 100%;
+}
+
+.right-column{
+	text-align: right;
+}
+
+.table{
+	margin-bottom: 0px !important;
+	margin-top: 10px !important;
+	height: auto;
+}
+
+th{
+	padding-bottom: 1em;
+	padding: 2px !important;
+}
+
+.table{
+	height: auto;
+	table-layout: fixed;
+	font-size: 20px;
+}
+
+thead{
+	border-bottom: 0px !important;
+}
+
+.width-auto{
+	white-space: nowrap;
+	width: auto;
 }

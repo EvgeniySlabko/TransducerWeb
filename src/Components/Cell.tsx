@@ -44,28 +44,15 @@ import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Chann
 
     render(){
       return (
-        <div id="cell-container" className={`measure-box grow ${this.props.channel.Style.cellStyle}`}>
-          <div className='cell-info'>
-            <div className="cell-name">
-            {
-              this.props.channel.Style.valueName
-            } 
-            </div>
-            <div className="cell-units">
-                {this.props.channel.Style.unitsName} 
-            </div>
-          </div>
 
-          <div className="cell-measure-content">
-            <p id="value" className={`cell-measure ${this.props.channel.Style.fontStyle}`}>
-                {this.state.value}
-            </p>
-            <p>
-                Дополнительная информация
-            </p>
-
-          </div>
-        </div>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>{this.props.channel.Style.unitsName}</th>
+                <th className='right-column'>{this.state.value}</th>
+              </tr>
+            </thead>
+          </table>
       )
     }
   }

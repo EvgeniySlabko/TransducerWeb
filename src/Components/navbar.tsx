@@ -9,6 +9,8 @@ import { CreateAllSensorChannelsSaving } from '../Channel/Channel/ChannelFactory
 import { RecordController } from '../RecordController';
 import { ViewController } from '../ViewsControllers/PlotViewController';
 import { Snapshot } from '../ReportListener/Snapshot';
+import { Button, notification } from 'antd';
+import { CaretRightFilled, CaretRightOutlined, DownloadOutlined } from '@ant-design/icons';
 
 export interface Props {
     sensorService: SensorController,
@@ -117,6 +119,7 @@ export interface Props {
 	}
 
 	handleOpenFile = async () =>{
+		
 		let input = document.createElement('input');
 		input.type = 'file';
 		input.onchange = async () => {
@@ -127,9 +130,9 @@ export interface Props {
 			var snapshot = new Snapshot();
 			await snapshot.FromFile(file);
 			this.state.plotViewController()?.UploadSnapshot(snapshot);   
-  };
+		};
 
-  input.click();
+		input.click();
 	}
 
 	handleStartClick = async () => {
@@ -137,6 +140,7 @@ export interface Props {
 	}
 
 	handleClearClick() {
+
 		this.state.plotViewController()?.Clear();
 		this.setState((prev, props) => ({
 			firstStart: true,
@@ -150,9 +154,16 @@ export interface Props {
 			var sensor = await CreateSerialSensor(port);
 			await this.state.sensorService.AddSensor(sensor);
 		}
-		catch(error)
+		catch(e: any)
 		{
-			console.log(error)  
+			if (e instanceof DOMException){
+				//console.log('out of range');
+			} else { 
+				notification.error({
+					message: e,
+					duration: 2,
+				});
+			}		
 		}
 	}
 

@@ -215,6 +215,8 @@ export class MyUPlot extends MyUPlotBase
       let index = this.channels.findIndex(c => c.channel === channel);
       let i = this.currentChannels!.indexOf(channel);
       this.currentChannels?.splice(i, 1);
+      channel.onData.unsub(this.HandleData);
+      channel.onMessage.unsub(this.HandleMessage);
 
       this.clearTrace(this.channels[i].dataBufferIndex);
       this.channels.splice(index, 1); 
