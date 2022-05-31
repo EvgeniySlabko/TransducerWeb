@@ -367,7 +367,7 @@ export class MyUPlot extends MyUPlotBase
     if (this.params.streaming)
     {
       let dw = ((e.deltaY < 0) ? -1 : 1);
-      let newSize = this.params.screenSize + dw;
+      let newSize =this.params.screenSize + (this.params.screenSize * dw * 0.1);
       this.params.screenSize = newSize < 0.1 ? 0.1 : newSize;
       this.SetCurrentScale();
       return true;
