@@ -3,7 +3,7 @@ import React from 'react';
 import { ChannelStyle } from '../Channel/ChannelStyle/ChannelStyle';
 import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Channel/CellChannel';
 import { CellMenu } from './CellMenu';
-import { Col, Collapse, Row, Slider } from 'antd';
+import { Checkbox, Col, Collapse, Row, Slider } from 'antd';
 const { Panel } = Collapse;
 
   export interface Props {
@@ -13,6 +13,7 @@ const { Panel } = Collapse;
    interface IState {
     value: string,
     fontSize: number,
+    hide: boolean,
    }
 
   export class Cell extends React.Component<Props, IState>{
@@ -22,6 +23,7 @@ const { Panel } = Collapse;
       super(prop);
 
       this.state = {
+        hide: false,
         value: "",
         fontSize: this.props.channel.Style.fontSize,
       }
@@ -72,7 +74,7 @@ const { Panel } = Collapse;
               <h6 style={{margin: "2px", float: "right"}}>Шрифт</h6>
               </div>
               
-            
+              
           </Row>
             </Panel>
           </Collapse>
@@ -80,10 +82,11 @@ const { Panel } = Collapse;
           <div style={
             {
               display: "flex",
+              height: this.state.hide ? "0px" : "auto"
             }
           }>
             <div className={`${this.props.channel.Style.fontStyle}`}>{this.props.channel.Style.unitsName}</div>
-            <div className='right-column' style={{fontSize: `${this.state.fontSize.toString()}px` }}>{this.state.value}</div>
+            <div className='right-column' style={{fontSize: `${this.state.fontSize.toString()}px`}}>{this.state.value}</div>
           </div>
         </div>
       )

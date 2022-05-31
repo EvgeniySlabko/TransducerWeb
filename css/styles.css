@@ -60,7 +60,8 @@ li {
 }
 
 .left-container{
-	height: 100%;
+	overflow-y: auto;
+	height: 100vh;
 	width: 200px;
 	display: flex;
 	flex-direction: column;
