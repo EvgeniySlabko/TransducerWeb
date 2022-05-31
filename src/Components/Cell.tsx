@@ -2,6 +2,9 @@ import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISens
 import React from 'react';
 import { ChannelStyle } from '../Channel/ChannelStyle/ChannelStyle';
 import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Channel/CellChannel';
+import { CellMenu } from './CellMenu';
+import { Col, Collapse, Row, Slider } from 'antd';
+const { Panel } = Collapse;
 
   export interface Props {
    channel: CellChannel;
@@ -9,6 +12,7 @@ import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Chann
 
    interface IState {
     value: string,
+    fontSize: number,
    }
 
   export class Cell extends React.Component<Props, IState>{
@@ -19,6 +23,7 @@ import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Chann
 
       this.state = {
         value: "",
+        fontSize: this.props.channel.Style.fontSize,
       }
       
       this.props.channel.onClose.sub(this.closeHandler);
@@ -38,24 +43,49 @@ import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Chann
     dataHandler = (channel: CellChannel, args: ChannelDataArgs) =>
     {
       this.setState((prev, props) => ({
-        value: args.data.data[0].toFixed(2),
+        value: args.data.data[0].toFixed(this.props.channel.Style.accurency),
       }));
     }
 
     render(){
       return (
         <div className='measure-box'>
-          <div className={`cell-name ${this.props.channel.Style.fontStyle}`}>{this.props.channel.Style.valueName}</div>
-          <table className="table">
-            <thead>
-              <tr>
-                <th className={`${this.props.channel.Style.fontStyle}`}>{this.props.channel.Style.unitsName}</th>
-                <th className='right-column'>{this.state.value}</th>
-              </tr>
-            </thead>
-          </table>
+
+          <Collapse defaultActiveKey={['0']}>
+            <Panel header=
+            {
+              <div className={`cell-name ${this.props.channel.Style.fontStyle}`}>
+                <p>
+                  {this.props.channel.Style.valueName}
+                </p>
+              </div>
+            } key="1">
+            <Row>
+            
+              <div style={{display: "flex", width: "100%", alignItems: "center" }}>
+              <Slider style={{width: "60%"}} defaultValue={this.state.fontSize} disabled={false} min = {10} max = {50} onChange = {(e) => 
+                {
+                  this.setState((prev, props) => ({
+                    fontSize: e,
+                  }));
+                }} />
+              <h6 style={{margin: "2px", float: "right"}}>Шрифт</h6>
+              </div>
+              
+            
+          </Row>
+            </Panel>
+          </Collapse>
+
+          <div style={
+            {
+              display: "flex",
+            }
+          }>
+            <div className={`${this.props.channel.Style.fontStyle}`}>{this.props.channel.Style.unitsName}</div>
+            <div className='right-column' style={{fontSize: `${this.state.fontSize.toString()}px` }}>{this.state.value}</div>
+          </div>
         </div>
-        
       )
     }
   }

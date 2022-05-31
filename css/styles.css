@@ -109,3 +109,7 @@ legend{
 {
 	padding: 0px !important;
 }
+
+.ant-collapse-header{
+	padding: 0px !important;
+}

@@ -238,7 +238,7 @@ export class MyUPlot extends MyUPlotBase
     var curIndex = this.channels.find(c => c.channel == channel)!.dataBufferIndex - 1;
     var lastTicksValue = args.data.time[args.data.time.length - 1];
     var xIndex = this.tickToGridIndex(lastTicksValue);        //вычисляем индекс последнего значения данных
-    console.log(curIndex);
+  
     let firstTickVal = args.data.time[0];
     let firstIndex = this.tickToGridIndex(firstTickVal);
 
