@@ -1,5 +1,3 @@
-
-import { ColorsDefs } from "../../Common/Colors";
 import { CalculatePower } from "../../Common/Common";
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ChannelStyle } from "./ChannelStyle";
@@ -24,7 +22,7 @@ export function CreateTorqueStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
     return {
         grid: true,
         color: "green",
-        legendTitle: sensorInfo.SensorType + "Torque",
+        legendTitle: sensorInfo.SensorType + " Torque",
         line: "solid",
         range: [sensorInfo.MinValue - 0.2 * sensorInfo.MaxValue, sensorInfo.MaxValue + 0.2 * sensorInfo.MaxValue],
         yTitle: "Torque",
@@ -56,10 +54,10 @@ export function CreatetemperatureStyle(sensorInfo: FullSensorInfo) : ChannelStyl
     return {
         grid: false,
         color: "red",
-        legendTitle: "Tmp",
+        legendTitle: sensorInfo.SensorType + " Tmp",
         line: "dash",
         range: [-60, 60],
-        yTitle: sensorInfo.SensorType + " Tmp",
+        yTitle: " Tmp",
         unitName: "Dg",
         valueType: "tmp",
         yAxeSide: "right",
@@ -73,11 +71,11 @@ export function CreatePowerStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
         let maxPower = -minPower;
     return {
         grid: false,
-        color: "darkRed",
+        color: "#bab406",
         legendTitle: sensorInfo.SensorType + "Power",
         line: "dash",
         range: [minPower, maxPower],
-        yTitle: sensorInfo.SensorType + " Power",
+        yTitle: " Power",
         unitName: sensorInfo.powerUnitsName,
         valueType: "power",
         yAxeSide: "left",

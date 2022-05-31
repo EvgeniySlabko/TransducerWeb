@@ -1,17 +1,16 @@
 import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISensor';
 import React from 'react';
 import { CellChannel, ChannelDataArgs } from '../Channel/Channel/CellChannel';
-import { Button, Card, Collapse, Dropdown, Menu, Radio, Space } from 'antd';
+import { Button, Card, Collapse, Dropdown, Menu, notification, Radio, Space } from 'antd';
 import { DownOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
 import { Cell } from './Cell';
 import { FullSensorInfo } from '../Sensor/SingleComponentSensor.ts/SensorDefinitions';
+import { Group } from './GroupsContainer';
 const { Panel } = Collapse;
 
 
   export interface Props {
-    dataCells: CellChannel[],
-    sensorInfo: FullSensorInfo,
-    sensor: ISingleComponentSensor,
+    group: Group 
     sensorRemove: (sensor: ISingleComponentSensor) => void,
   }
 
@@ -33,8 +32,7 @@ const { Panel } = Collapse;
                     onClick: (e) => 
                     {
                       e.domEvent.stopPropagation();
-                      this.props.sensorRemove(this.props.sensor);
-
+                      this.props.sensorRemove(this.props.group.node.sensor);
                     },
                     label: (
                       <a target="_blank" rel="noopener noreferrer">
@@ -44,7 +42,14 @@ const { Panel } = Collapse;
                   },
                   {
                     key: '2',
-                    onClick: (e) => e.domEvent.preventDefault(),
+                    onClick: (e) => {
+                      e.domEvent.stopPropagation();
+                      let currentOffset = this.props.group.node.setCurrentOffsetValue();
+                      notification.success({
+                        message: `Смещение установлено для датчика ${this.props.group.node.fullSensorInfo.SensorType} - ${currentOffset.toFixed(2)}${this.props.group.node.fullSensorInfo.UnitValueName}`,
+                        duration: 2,
+                      });
+                    },
                     label: (
                       <a target="_blank" rel="noopener noreferrer">
                         {"{0}"}
@@ -53,11 +58,11 @@ const { Panel } = Collapse;
                   }
                 ]}
               />} placement="bottom" icon={<SettingOutlined onClick={event => event.stopPropagation()}/>}>
-              {this.props.sensorInfo.SensorType}
+              {this.props.group.node.fullSensorInfo.SensorType}
             </Dropdown.Button>
             } key="1">        
             {
-              this.props.dataCells.map(c => <Cell key={c.Style.id} channel={c}></Cell>)
+              this.props.group.channels.map(c => <Cell key={c.Style.id} channel={c}></Cell>)
             }
           </Panel>
         </Collapse>

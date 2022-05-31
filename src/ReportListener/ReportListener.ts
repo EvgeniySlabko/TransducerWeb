@@ -3,6 +3,7 @@ import { dataEventArgs } from "../Sensor/SingleComponentSensor.ts/SensorDefiniti
 import { ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
 import { Channel, ChannelDataArgs } from "../Channel/Channel/Channel";
 import { Snapshot, TrackData } from "./Snapshot";
+import { ChannelCloseArgs } from "../Channel/Channel/CellChannel";
 
 export class ReportListener
 {
@@ -23,6 +24,7 @@ export class ReportListener
         channels.forEach(channel => {
             this.channelMap.set(channel, new Array());
             channel.onData.sub(this.DataHandler);
+            channel.onClose.sub(this.CloseHandler);
         })
 
         this.isInit = true;
@@ -88,7 +90,7 @@ export class ReportListener
         {
             if (this.channelMap.has(channel))
             {
-                var buff = this.channelMap.get(channel);
+                let buff = this.channelMap.get(channel);
                 var copy = {
                     data: args.data.data.slice(),
                     time: args.data.time.slice(),
@@ -97,6 +99,19 @@ export class ReportListener
             }
             else
                 throw "Не удалось найти ключ";
+        }
+    }
+
+
+    private CloseHandler = (channel: Channel, args: ChannelCloseArgs) =>
+    {
+        if (this.channelMap.has(channel))
+        {
+            channel.onData.unsub(this.DataHandler);
+            channel.onClose.unsub(this.CloseHandler);
+            this.channelMap.delete(channel);
+            if (this.channelMap.size == 0)
+                this.isInit = false;
         }
     }
 }

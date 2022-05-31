@@ -202,7 +202,7 @@ export interface Props {
 							<span id = "StartStopSpan" className={`glyphicon ${this.state.playButtonStyle}`}></span></button>
 						<button type="button" title="Очистить результаты" disabled = {!this.state.clearBtnOn} className="btn btn-outline-primary" id="clear" onClick={this.handleClearClick}>
 							<span id = "StartStopSpan" className= "glyphicon glyphicon-stop"></span></button>
-						<button type="button" title="Добавить датчик" className="btn btn-outline-primary" id="open" onClick={this.handleAddClick}>
+						<button type="button" title="Добавить датчик" disabled = {!this.state.clearBtnOn} className="btn btn-outline-primary" id="open" onClick={this.handleAddClick}>
 							<span id = "StartStopSpan" className="glyphicon glyphicon-plus"></span></button>
 						<button type="button" title="Начать запись в файл" className="btn btn-outline-primary" id="StartRec" onClick={this.handleRecClick}>
 							<span id = "StartStopSpan" className={`glyphicon glyphicon-record ${this.state.recordButtonStyle}`}></span></button>

@@ -28,7 +28,7 @@ export interface SensorNode{
     fullSensorInfo: FullSensorInfo
     worker: SensorWorker,
     setOffset: (offset: number) => void,
-    setCurrentOffsetValue: () => void,
+    setCurrentOffsetValue: () => number,
 }
 
 interface IState {
@@ -52,6 +52,7 @@ export class App extends React.Component<Props, IState>
             savingChannels: [],
             groups: [],
         }
+
         //this.plotViewController = new ViewController(document.getElementById('gd'));
         this.sensorManualCloseHandler = this.sensorManualCloseHandler.bind(this);
         this.props.sensorService.onDispatch.addListener("Add", this.NewSensorHandler)
@@ -68,8 +69,8 @@ export class App extends React.Component<Props, IState>
     {
         for (let i = 0; i < this.state.groups.length; i++) {
 
-            let index = this.state..findIndex(c => c === channel);
-            this.state.groups[i][1].splice(index, 1);
+            let index = this.state.groups[i].channels.findIndex(c => c === channel);
+            this.state.groups[i].channels.splice(index, 1);
             this.setState((prev, props) => ({
             }));   
         }
@@ -94,15 +95,19 @@ export class App extends React.Component<Props, IState>
     sensorCloseHandler = (sensor: ISingleComponentSensor, args: string) =>
     {
       let index = this.state.groups.findIndex(c => c.node.sensor == sensor);
-      this.state.groups.splice(index, 1);
-      this.setState((prev, props) => ({
+        this.state.groups.splice(index, 1);
+        this.setState((prev, props) => ({
       }));
     }
 
     sensorManualCloseHandler = async (sensor: ISingleComponentSensor) =>
     {
+        this.props.sensorService.RemoveSensor(sensor);
+    }
+
+    sensorClose = async (sensor: ISingleComponentSensor) => {
         sensor.onClose.unsub(this.sensorCloseHandler);
-        await sensor.CloseConnection()
+        await sensor.CloseConnection();
         let index = this.state.groups.findIndex(c => c.node.sensor == sensor);
         this.state.groups.splice(index, 1);
         this.setState((prev, props) => ({

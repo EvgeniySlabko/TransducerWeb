@@ -39,20 +39,23 @@ import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Chann
     {
       this.setState((prev, props) => ({
         value: args.data.data[0].toFixed(2),
-        }));
+      }));
     }
 
     render(){
       return (
-
+        <div className='measure-box'>
+          <div className={`cell-name ${this.props.channel.Style.fontStyle}`}>{this.props.channel.Style.valueName}</div>
           <table className="table">
             <thead>
               <tr>
-                <th>{this.props.channel.Style.unitsName}</th>
+                <th className={`${this.props.channel.Style.fontStyle}`}>{this.props.channel.Style.unitsName}</th>
                 <th className='right-column'>{this.state.value}</th>
               </tr>
             </thead>
           </table>
+        </div>
+        
       )
     }
   }

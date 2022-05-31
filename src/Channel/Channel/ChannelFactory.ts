@@ -12,7 +12,7 @@ declare interface ComplexSavingInfo
     powerChannel: Channel;
 
     offsetSetter: (offset: number) => void,
-    currentValueOffsetSetter: () => void,
+    currentValueOffsetSetter: () => number,
 }
 
 declare interface ComplexPlotInfo
@@ -23,14 +23,14 @@ declare interface ComplexPlotInfo
 
     avgSetter: (offset: number) => void,
     offsetSetter: (offset: number) => void,
-    currentValueOffsetSetter: () => void,
+    currentValueOffsetSetter: () => number,
 }
 
 function CreatePlotComlex(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : ComplexPlotInfo
 {
     let mainSource = CreateMainValueDataSource(sensor);
     let mainOffsetSource = CreateOffsetDataSource(mainSource, 0);
-    let mainAvgSrc = CreateAverageValueDataSource(mainOffsetSource, 1);
+    let mainAvgSrc = CreateAverageValueDataSource(mainOffsetSource, 100);
 
     let mainChannel = new Channel(mainAvgSrc, CreateTorqueStyle(fullSensorInfo));
 
@@ -41,7 +41,7 @@ function CreatePlotComlex(sensor: ISingleComponentSensor, fullSensorInfo: FullSe
     let powerChannel = new Channel(powerSource, CreatePowerStyle(fullSensorInfo));
 
     return{
-        currentValueOffsetSetter: () => mainOffsetSource.SetCurrentOffset(),
+        currentValueOffsetSetter: () : number => mainOffsetSource.SetCurrentOffset(),
         offsetSetter: (offset: number) => mainOffsetSource.SetOffset(offset),
         avgSetter: (avg: number) => mainAvgSrc.SetAverage(avg),
         mainChannel: mainChannel,
@@ -65,7 +65,7 @@ function CreateSavingComlex(sensor: ISingleComponentSensor, fullSensorInfo: Full
     let powerChannel = new Channel(powerSource, CreatePowerStyle(fullSensorInfo));
 
     return{
-        currentValueOffsetSetter: () => mainOffsetSource.SetCurrentOffset(),
+        currentValueOffsetSetter: () : number => mainOffsetSource.SetCurrentOffset(),
         offsetSetter: (offset: number) => mainOffsetSource.SetOffset(offset),
         mainChannel: mainChannel,
         powerChannel: powerChannel,

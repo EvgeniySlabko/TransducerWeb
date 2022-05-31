@@ -22,7 +22,7 @@ export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo) : CellChannelS
         valueName: sensorInfo.ValueName,
         unitsName: sensorInfo.Unitname,
         cellStyle: "cell-main-style",
-        fontStyle: "cell-main-font",
+        fontStyle: "text-success",
         sensorType: sensorInfo.SensorType,
     }
 }
@@ -32,7 +32,7 @@ export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo) : CellChannelSt
         id: count++,
         valueName: "Скорость вр.",
         unitsName: "rpm",
-        fontStyle: "cell-speed-font",
+        fontStyle: "text-primary",
         cellStyle: "cell-speed-style",
         sensorType: sensorInfo.SensorType,
     } 
@@ -43,7 +43,7 @@ export function CreatetemperatureCellStyle(sensorInfo: FullSensorInfo) : CellCha
         id: count++,
         valueName: "Температура",
         unitsName: "C",
-        fontStyle: "cell-tmp-font",
+        fontStyle: "text-warning",
         cellStyle: "cell-tmp-style",
         sensorType: sensorInfo.SensorType,
     }
@@ -54,7 +54,7 @@ export function CreatePowerCellStyle(sensorInfo: FullSensorInfo) : CellChannelSt
         id: count++,
         valueName: "Мощность",
         unitsName: sensorInfo.powerUnitsName,
-        fontStyle: "cell-power-font",
+        fontStyle: "text-danger",
         cellStyle: "cell-power-style",
         sensorType: sensorInfo.SensorType,
     } 

@@ -26,10 +26,10 @@ export interface Group{
     render() {
         return (      
           this.props.groups.map((g, i) => <CellsGroup key={i} 
-                                            dataCells={g.channels} 
-                                            sensorInfo={g.node.fullSensorInfo}
-                                             sensor={g.node.sensor}
-                                             sensorRemove= {(sensor: ISingleComponentSensor) => this.props.sensorRemove(sensor)}
+                                            
+                                            group = {g}
+                                            sensorRemove = {(sensor: ISingleComponentSensor) => this.props.sensorRemove(sensor)}
+
                                              ></CellsGroup>)  
       )
     }

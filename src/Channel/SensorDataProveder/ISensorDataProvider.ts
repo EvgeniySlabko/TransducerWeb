@@ -25,19 +25,19 @@ export declare interface PlotCellChannelsInfo
     plotChannels: Channel[],
     offsetSetter: (offset: number) => void,
     avgSetter: (offset: number) => void,
-    currentValueOffsetSetter: () => void,
+    currentValueOffsetSetter: () => number,
 }
 
 export declare interface SavingPlotChannelsInfo
 {
     plotChannels: Channel[],
     offsetSetter: (offset: number) => void,
-    currentValueOffsetSetter: () => void,
+    currentValueOffsetSetter: () => number,
 }
 
 export declare interface CellChannelsInfo
 {
     cellChannels: CellChannel[],
     offsetSetter: (offset: number) => void,
-    currentValueOffsetSetter: () => void,
+    currentValueOffsetSetter: () => number,
 }

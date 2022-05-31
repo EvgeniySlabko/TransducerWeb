@@ -20,16 +20,13 @@
 	font-size: 13px;
 	width: 100%;
 	height: auto;
-	text-align: center;
-}
-
-.cell-name-p{
-	margin: 0;
+	text-align: left;
 }
 
 .cell-units {
 	border-top-right-radius: 30%;
 	width: 20%;
+	user-select: none;
 	margin-right: 2px;
 }
 
@@ -43,13 +40,9 @@
 }
 
 .measure-box {
-	width: 80%;
-	border-top-right-radius: 10%;
-	border-top-left-radius: 10%;
+	text-align: center;
+	width: 100%;
 	user-select: none;
-	border-style: solid;
-	border-width: 2px;
-	margin-top: 3px;
 }
 
 .cells-box{
@@ -63,17 +56,18 @@
 
 .right-column{
 	text-align: right;
+	font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+	padding-right: 2px;
 }
 
 .table{
 	margin-bottom: 0px !important;
-	margin-top: 10px !important;
 	height: auto;
 }
 
 th{
 	padding-bottom: 1em;
-	padding: 2px !important;
+	padding: 0px !important;
 }
 
 .table{
@@ -89,4 +83,8 @@ thead{
 .width-auto{
 	white-space: nowrap;
 	width: auto;
+}
+
+.margin-bottom{
+	margin-bottom: 2px;
 }

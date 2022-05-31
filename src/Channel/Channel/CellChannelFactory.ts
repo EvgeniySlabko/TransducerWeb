@@ -15,7 +15,7 @@ declare interface ComplexCellInfo
     powerChannel: CellChannel;
 
     offsetSetter: (offset: number) => void,
-    currentValueOffsetSetter: () => void,
+    currentValueOffsetSetter: () => number,
 }
 
 
@@ -34,7 +34,7 @@ function CreateComplex(sensor: ISingleComponentSensor, fullSensorInfo: FullSenso
     let powerChannel = new CellChannel(powerSource, CreatePowerCellStyle(fullSensorInfo));
 
     return{
-        currentValueOffsetSetter: () => mainOffsetSource.SetCurrentOffset(),
+        currentValueOffsetSetter: () : number => mainOffsetSource.SetCurrentOffset(),
         offsetSetter: (offset: number) => mainOffsetSource.SetOffset(offset),
         mainChannel: mainChannel,
         powerChannel: powerChannel,

@@ -32,7 +32,9 @@ export class ViewController
         {
             let streamingPlot = <MyUPlot>this.plot;
             streamingPlot.Reset();
-            this.channels = channels;
+            for (let i = 0; i < channels.length; i++) {
+                this.AddChannel(channels[i]);
+            }
             streamingPlot.SetChannels(channels);
         }
     }
@@ -44,11 +46,20 @@ export class ViewController
             let streamingPlot = <MyUPlot>this.plot;
             streamingPlot.Reset();
             for (let i = 0; i < channels.length; i++) {
-                this.channels.push(channels[i]);
+                this.AddChannel(channels[i]);
             }
 
             streamingPlot.SetChannels(this.channels);
         }
+    }
+
+    public AddChannel(channel: Channel)
+    {
+        this.channels.push(channel);
+        channel.onClose.sub((c, args) => {
+            let index = this.channels.findIndex(c => c == channel);
+            this.channels.splice(index);
+        })
     }
 
     public GetExistsChannels()

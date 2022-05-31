@@ -28,6 +28,14 @@ export const TIME_HIGH = 4
 export const COIL_ON_VALUE = 0x00FF;
 export const COIL_OFF_VALUE = 0x0000;
 
+export class RequiredClose extends Error {
+    constructor(msg: string) {
+        super(msg);
+
+        // Set the prototype explicitly.
+        Object.setPrototypeOf(this, RequiredClose.prototype);
+    }
+}
 
 export enum packageType {
     torque = 100,

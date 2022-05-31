@@ -13,7 +13,7 @@ export interface AllChannelsInfo
 
     avgSetter: (avgRatio: number) => void,
     offsetSetter: (offset: number) => void,
-    currentValueOffsetSetter: () => void,
+    currentValueOffsetSetter: ()  => number,
 }
 
 export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : AllChannelsInfo 
@@ -35,10 +35,11 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
         cellChannelsInfo.offsetSetter(offset);
     }
 
-    let currentValueOffsetSetAll = () =>{
-        plotChannelsInfo.currentValueOffsetSetter();
+    let currentValueOffsetSetAll = () : number =>{
+        let offset = plotChannelsInfo.currentValueOffsetSetter();
         cellChannelsInfo.currentValueOffsetSetter();
         savingChannelsInfo.currentValueOffsetSetter();
+        return offset
     }
 
     return{

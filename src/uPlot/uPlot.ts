@@ -37,9 +37,14 @@ export class MyUPlot extends MyUPlotBase
     new Array(250000),
     new Array(250000),
     new Array(250000),
+
+    new Array(250000),
+    new Array(250000),
+    new Array(250000),
+    new Array(250000),
   ];
   
-  private currentChannels: Channel[] = [];
+  //private currentChannels: Channel[] = [];
   private channels : TraceInfo[] = [];
   //private options: uPlot.Options;
   
@@ -113,8 +118,6 @@ export class MyUPlot extends MyUPlotBase
     if (this.isInit) throw "Already Init";
     if (channels.length == 0) "There are no channels";
 
-    this.currentChannels = channels;
-
     this.BuildNewPlot(channels);
     this.isInit = true;
   }
@@ -137,23 +140,32 @@ export class MyUPlot extends MyUPlotBase
     let series: uPlot.Series;
     let index = this.channels.length + 1;
     
-
     let sameTypeChannel = this.channels.find(c => c.channel.Style.valueType == style.valueType);
     if (sameTypeChannel)
     {
       let scaleName = <string>sameTypeChannel.axis.scale;
+
       series = GetSeries(scaleName);
-      options.series.push(series);
+      series.scale = scaleName;
+      series.show = true;
+      options.series[index] = series;
+
       axis = sameTypeChannel.axis;
       scale = sameTypeChannel.scale;
       range = sameTypeChannel.curRange; 
+      series.stroke = style.color;
+      series.label = style.legendTitle;
+      if (channel.Style.range[0] < range[0]) 
+        range[0] = channel.Style.range[0];
+      if (channel.Style.range[1] > range[1]) 
+        range[1] = channel.Style.range[1];
     }
     else
     {
       let scaleName = "y" + index.toString();               //for scale
       series = GetSeries(scaleName);
       series.scale = scaleName;
-      options.series[index] = series;
+      options.series.push(series);
       
       axis = options.axes![index];
       scale = options.scales![scaleName];
@@ -170,14 +182,11 @@ export class MyUPlot extends MyUPlotBase
       axis.stroke = style.color;
       axis.label = style.legendTitle;
       axis.grid!.show = style.grid;
-      
+      series.stroke = style.color;
+      series.label = style.legendTitle;
       //setInterval( () => {this.SetupAxis(index - 1)}, 100);
-      scale.range = () => {return [range[0], range[1]]};
+      scale.range = () => [range[0], range[1]];
     }
-    
-    series.stroke = style.color;
-    series.label = style.legendTitle;
-    this.plot?.addSeries(series, 1);
     //this.plot?.addSeries(series, index);
 
     let trace = {
@@ -213,27 +222,27 @@ export class MyUPlot extends MyUPlotBase
   private HandleClose = (channel: Channel, msg: ChannelCloseArgs) =>
   {
       let index = this.channels.findIndex(c => c.channel === channel);
-      let i = this.currentChannels!.indexOf(channel);
-      this.currentChannels?.splice(i, 1);
+      this.clearTrace(this.channels[index].dataBufferIndex);
+      //this.channels.splice(index, 1);
+
       channel.onData.unsub(this.HandleData);
       channel.onMessage.unsub(this.HandleMessage);
 
-      this.clearTrace(this.channels[i].dataBufferIndex);
-      this.channels.splice(index, 1); 
 
       
-      this.BuildNewPlot(this.currentChannels);
-      this.SetScale(0, this.params.screenSize);
+      //this.BuildNewPlot(this.channels.map(ch => ch.channel));
+
+      //this.SetScale(0, this.params.screenSize);
       
       //this.plot?.setLegend({idx: index,}, false);
   }
 
   private HandleData = (channel: Channel, args: ChannelDataArgs) => 
   {
-    var curIndex = this.channels.findIndex(c => c.channel == channel);
+    var curIndex = this.channels.find(c => c.channel == channel)!.dataBufferIndex - 1;
     var lastTicksValue = args.data.time[args.data.time.length - 1];
     var xIndex = this.tickToGridIndex(lastTicksValue);        //вычисляем индекс последнего значения данных
-    
+    console.log(curIndex);
     let firstTickVal = args.data.time[0];
     let firstIndex = this.tickToGridIndex(firstTickVal);
 

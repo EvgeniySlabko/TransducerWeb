@@ -59,8 +59,9 @@ export class OffsetDataProvider implements ISensorDataProvider
         this.offset = offset;
     }
 
-    public SetCurrentOffset = () =>
+    public SetCurrentOffset = () : number =>
     {
         this.offset = this.currentValue;
+        return this.offset;
     }
 }

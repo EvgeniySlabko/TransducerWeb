@@ -44,6 +44,8 @@ export class SerialWorker
     {
       this.reader = this.port.readable.getReader();
       this.writer = this.port.writable.getWriter();
+      
+      await this.writer.ready;
     }
     else
     {
@@ -77,7 +79,6 @@ export class SerialWorker
     }
     else
     {
-      console.log("no data");
       throw "no data";
     }
   }
