@@ -32,6 +32,7 @@ export interface SensorNode{
 }
 
 interface IState {
+    hideLeftPanel: boolean,
     groups: Group[],
     plotViewController: ViewController | null;
     savingChannels: Channel[];
@@ -51,6 +52,7 @@ export class App extends React.Component<Props, IState>
             plotChannels: [],
             savingChannels: [],
             groups: [],
+            hideLeftPanel: false
         }
 
         //this.plotViewController = new ViewController(document.getElementById('gd'));
@@ -159,15 +161,28 @@ export class App extends React.Component<Props, IState>
         return [
             <Navbar key = {1} sensorService={this.props.sensorService} 
                     recordController={this.props.recordController}
+                    isStreamingCallback={ stream => 
+                        this.setState((prev, props) => ({
+                            hideLeftPanel: !stream,
+                        }))
+
+
+                            
+                        }
                     plotViewController={() => this.state.plotViewController}></Navbar>,
                     
             <div key = {2} className = "all">
                 <div className="middle-container">
-                    <div className="left-container">
-                        <GroupsContainer groups={ this.state.groups}
-                        sensorRemove = {this.sensorManualCloseHandler}
-                        />
-                    </div>
+
+                    {
+                        this.state.hideLeftPanel ? <></> :
+                        <div className="left-container">
+                            <GroupsContainer groups={ this.state.groups}
+                            sensorRemove = {this.sensorManualCloseHandler}
+                            />
+                        </div>
+                    }
+
                     <div id="gd" className="plot"></div>
                 </div>
             </div>

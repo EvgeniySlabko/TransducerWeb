@@ -16,6 +16,7 @@ export interface Props {
     sensorService: SensorController,
 	recordController: RecordController,
 	plotViewController: () => ViewController | null
+	isStreamingCallback: (stream: boolean) => void
 }
 
   interface IState {
@@ -128,7 +129,12 @@ export interface Props {
 			
 			var snapshot = new Snapshot();
 			await snapshot.FromFile(file);
-			this.state.plotViewController()?.UploadSnapshot(snapshot);   
+			this.state.plotViewController()?.UploadSnapshot(snapshot);  
+			this.props.isStreamingCallback(false); 
+			notification.success({
+                message: `Просмотр отчета ${file.name}`,
+                duration: 2,
+            });
 		};
 
 		input.click();
@@ -173,23 +179,6 @@ export interface Props {
 	async handleFakerClick() {
 		let facker = new Facker();
 		await this.state.sensorService.AddSensor(facker);
-	}
-
-	fileOpenHanle() {
-		let input = document.createElement('input');
-		input.type = 'file';
-		input.onchange = async () => {
-
-			if(input.files && input.files?.length != 1) return;
-			let file = input.files?.item(0);
-			if (!file) return;
-			
-			var snapshot = new Snapshot();
-			await snapshot.FromFile(file);
-			this.state.plotViewController()?.UploadSnapshot(snapshot);   
-		};
-
-		input.click();
 	}
 
 	render(){

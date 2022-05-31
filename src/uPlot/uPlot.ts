@@ -110,6 +110,8 @@ export class MyUPlot extends MyUPlotBase
   public Clear()
   {
     this.Init();
+    this.params.sh = 0;
+    this.params.th = 0;
     this.SetScale(0, this.params.screenSize);
   }
 

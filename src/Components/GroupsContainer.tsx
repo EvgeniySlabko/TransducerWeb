@@ -26,10 +26,8 @@ export interface Group{
     render() {
         return (      
           this.props.groups.map((g, i) => <CellsGroup key={i} 
-                                            
                                             group = {g}
                                             sensorRemove = {(sensor: ISingleComponentSensor) => this.props.sensorRemove(sensor)}
-
                                              ></CellsGroup>)  
       )
     }

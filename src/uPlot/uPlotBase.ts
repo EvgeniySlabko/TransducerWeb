@@ -33,7 +33,7 @@ export class MyUPlotBase
 
     protected getSize() {    
         return {
-            width: document.body.clientWidth - 200,
+            width: this.element.clientWidth,
             height: this.element.clientHeight - 100,
         }
     }
@@ -133,11 +133,9 @@ export class MyUPlotBase
               // wheel drag pan
               over.addEventListener("mousedown", (e: any) => {
                 if (e.button == 1) {
-                //	plot.style.cursor = "move";
                   e.preventDefault();
     
                   let left0 = e.clientX;
-                //	let top0 = e.clientY;
     
                   let scXMin0 = u.scales.x.min;
                   let scXMax0 = u.scales.x.max;
@@ -152,10 +150,8 @@ export class MyUPlotBase
     
                     let dx = xUnitsPerPx * (left1 - left0);
     
-                    let nMin = scXMin0 - dx;
-                    if (nMin >= -0.1)
                     u.setScale('x', {
-                      min: nMin,
+                      min: scXMin0 - dx,
                       max: scXMax0 - dx,
                     });
                   }
@@ -183,7 +179,7 @@ export class MyUPlotBase
                 yMax = u.scales.y1.max;
                 xRange = xMax - xMin;
                 yRange = yMax - yMin;
-                if (xRange < 0.001) 
+                if (xRange < 0.001 && e.deltaY < 0) 
                   return; 
                 rect = over.getBoundingClientRect();
     

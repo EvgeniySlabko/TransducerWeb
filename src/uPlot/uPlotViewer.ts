@@ -36,6 +36,7 @@ export class MyUPlotViewer extends MyUPlotBase
     gridDx: 0,          // 
     screenSize: 5,      // текущий размер зума по оси x
 
+    t0: 0,
     sh: 0,      // Самое большое значение времени на текущий момент
     th: 0,      // Самый большой индекс бубера оси x с данными на текущий момент
   }
@@ -119,9 +120,23 @@ export class MyUPlotViewer extends MyUPlotBase
       }
     }
 
-    var styles = snapshot.GetTrackData().map(t => t.style);
+    // определяем минимальное значение по оси x
+    let minTime = undefined;
+    for (let i = 1; i < this.buff.length; i++) {
+      for (let j = 0; j < this.buff[i].length; j++) {
+        if (this.buff[i][j] != undefined)
+        {
+          let currentFirstvalue = <number>this.buff[0][j];
+          if (!minTime || currentFirstvalue < minTime)
+            minTime = currentFirstvalue
+        }
+      }
+    }
 
+    var styles = snapshot.GetTrackData().map(t => t.style);
+    
     this.BuildNewPlot(styles);
+    this.params.t0 = <number>minTime;
     this.params.th = maxTimeIndex;
     this.params.sh = maxTimeValue;
   }
@@ -148,7 +163,6 @@ export class MyUPlotViewer extends MyUPlotBase
 
   private SetupChannel(style: ChannelStyle)
   { 
-  
     let axis: uPlot.Axis;
     let scale: uPlot.Scale;
     let range : number[];
@@ -233,7 +247,7 @@ export class MyUPlotViewer extends MyUPlotBase
     
       if (e.button == 0) {
         e.preventDefault();
-        this.SetScale(0, this.params.sh);
+        this.SetScale(this.params.t0, this.params.sh);
       }
   }
 
