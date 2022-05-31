@@ -17,4 +17,5 @@ export declare class ChannelStyle{
     yAxeSide: "right" | "left";
     rescaleRationTop: number;
     rescaleRationBottom: number;
+    visible: boolean;
 }

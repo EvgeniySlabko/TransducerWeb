@@ -147,14 +147,11 @@ export class MyUPlot extends MyUPlotBase
 
       series = GetSeries(scaleName);
       series.scale = scaleName;
-      series.show = true;
-      options.series[index] = series;
 
       axis = sameTypeChannel.axis;
       scale = sameTypeChannel.scale;
       range = sameTypeChannel.curRange; 
-      series.stroke = style.color;
-      series.label = style.legendTitle;
+      
       if (channel.Style.range[0] < range[0]) 
         range[0] = channel.Style.range[0];
       if (channel.Style.range[1] > range[1]) 
@@ -165,29 +162,26 @@ export class MyUPlot extends MyUPlotBase
       let scaleName = "y" + index.toString();               //for scale
       series = GetSeries(scaleName);
       series.scale = scaleName;
-      options.series.push(series);
       
       axis = options.axes![index];
       scale = options.scales![scaleName];
-      axis.show = true;
-  
-      //scale.auto = false;
+
       range = [style.range[0], style.range[1]];
-      //scale.range = () => {return [style.range[0], style.range[1]]};
-      
-      //axis.grid!.stroke = style.color;
+
       axis.side = style.yAxeSide == "left" ? 1 : 3;
       axis.stroke = style.color;
       axis.show = true;
       axis.stroke = style.color;
       axis.label = style.legendTitle;
       axis.grid!.show = style.grid;
-      series.stroke = style.color;
-      series.label = style.legendTitle;
-      //setInterval( () => {this.SetupAxis(index - 1)}, 100);
       scale.range = () => [range[0], range[1]];
     }
-    //this.plot?.addSeries(series, index);
+    
+    
+    series.show = channel.Style.visible;
+    series.stroke = style.color;
+    series.label = style.legendTitle;
+    options.series.push(series);
 
     let trace = {
       axis: axis,

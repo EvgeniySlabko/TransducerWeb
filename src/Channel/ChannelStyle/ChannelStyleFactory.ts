@@ -14,7 +14,8 @@ export function CreateDefaultStyle() : ChannelStyle{
         rescaleRationTop: rescaleRatio,
         unitName: "Undefined",
         valueType: "torque",
-        yAxeSide: "left"
+        yAxeSide: "left",
+        visible: true,
     } 
 }
 
@@ -31,6 +32,7 @@ export function CreateTorqueStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
         yAxeSide: "left",
         rescaleRationBottom: rescaleRatio,
         rescaleRationTop: rescaleRatio,
+        visible: true,
     };
 }
 
@@ -47,6 +49,7 @@ export function CreateSpeedStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
         yAxeSide: "right",
         rescaleRationBottom: 0,
         rescaleRationTop: rescaleRatio,
+        visible: true,
     };
 }
 
@@ -63,6 +66,7 @@ export function CreatetemperatureStyle(sensorInfo: FullSensorInfo) : ChannelStyl
         yAxeSide: "right",
         rescaleRationBottom: rescaleRatio,
         rescaleRationTop: rescaleRatio,
+        visible: false,
     };
 }
 
@@ -81,6 +85,7 @@ export function CreatePowerStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
         yAxeSide: "left",
         rescaleRationBottom: rescaleRatio,
         rescaleRationTop: rescaleRatio,
+        visible: false,
     };
 }
 
