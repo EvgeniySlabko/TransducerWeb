@@ -18,6 +18,7 @@ export interface Props {
 	plotViewController: ViewController | null
 	openReportCallback: (file: File) => void
 	setStreamingModeView: () => void
+	allowRecording: () => boolean
 }
 
   interface IState {
@@ -98,7 +99,13 @@ export interface Props {
 
 	async startRecordingHandler()
 	{
-		this.state.recordController.StartListening();
+		try{
+			this.state.recordController.StartListening();
+		}
+		catch(ex)
+		{
+			
+		}
 
 		this.setState((prev, props) => ({
 			recordButtonState: true,
@@ -186,8 +193,8 @@ export interface Props {
 						<Button title="Начать измерение" size='large' id="Start" shape="default"
 						icon = 
 						{
-							this.state.viewingReport ? <ArrowLeftOutlined /> :
-							this.state.playButtonState ?  <CaretRightOutlined/> : <PauseOutlined />
+							this.state.viewingReport ? <ArrowLeftOutlined /> : 
+							this.state.playButtonState || !this.props.allowRecording() ?  <CaretRightOutlined/> : <PauseOutlined />
 							
 						} onClick=
 						{
@@ -200,13 +207,23 @@ export interface Props {
 							}: this.handleStartClick
 						}></Button>
 
-						<Button title="Очистить результаты" size='large' disabled = {!this.state.clearBtnOn || this.state.viewingReport} id="clear" shape="default"  
+						<Button title="Очистить результаты" size='large' 
+						disabled = 
+						{
+							!this.state.clearBtnOn || this.state.viewingReport
+						} id="clear" shape="default"  
 						icon={<BorderOutlined />} onClick={this.handleClearClick}></Button>
 
-						<Button title="Добавить датчик" size='large' disabled = {!this.state.clearBtnOn || this.state.viewingReport} id="open" shape="default"  
+						<Button title="Добавить датчик" size='large' 
+						disabled = 
+						{
+							!this.state.clearBtnOn || this.state.viewingReport
+						} 
+						id="open" shape="default"  
 						icon={<PlusCircleOutlined />} onClick={this.handleAddClick}></Button>
 
-						<Button title="Начать запись в файл" size='large' id="StartRec" disabled = {this.state.viewingReport}
+						<Button title="Начать запись в файл" size='large' id="StartRec" 
+						disabled = {this.state.viewingReport || !this.props.allowRecording()}
 						icon={<AimOutlined style={{ color: this.state.recordButtonState ? "red": "inherit" }}/>} shape="default"  onClick={this.handleRecClick}
 						style={{ borderColor: this.state.recordButtonState ? "red": "#d9d9d9" }}
 						></Button>
@@ -217,8 +234,9 @@ export interface Props {
 								items={[
 								{
 									key: '1',
+									disabled: this.state.viewingReport,
 									label: (
-									<a onClick={this.handleFakerClick} target="_blank" rel="noopener noreferrer">
+									<a  onClick={this.handleFakerClick} target="_blank" rel="noopener noreferrer">
 										Add faker
 									</a>
 									),

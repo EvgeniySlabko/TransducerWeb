@@ -33,7 +33,6 @@ export interface SensorNode{
 }
 
 interface IState {
-    hideLeftPanel: boolean,
     groups: Group[],
     plotViewController: ViewController | null;
     savingChannels: Channel[];
@@ -54,7 +53,6 @@ export class App extends React.Component<Props, IState>
             plotChannels: [],
             savingChannels: [],
             groups: [],
-            hideLeftPanel: false,
             viewingReport: false
         }
 
@@ -87,15 +85,17 @@ export class App extends React.Component<Props, IState>
 
     sensorCloseHandler = (sensor: ISingleComponentSensor, args: string) =>
     {
-      let index = this.state.groups.findIndex(c => c.node.sensor == sensor);
+         let index = this.state.groups.findIndex(c => c.node.sensor == sensor);
         this.state.groups.splice(index, 1);
         this.setState((prev, props) => ({
-      }));
+        }));
     }
 
     sensorManualCloseHandler = async (sensor: ISingleComponentSensor) =>
     {
         this.props.sensorService.RemoveSensor(sensor);
+        this.setState((prev, props) => ({
+        }));
     }
 
     sensorClose = async (sensor: ISingleComponentSensor) => {
@@ -152,20 +152,25 @@ export class App extends React.Component<Props, IState>
     {
         var snapshot = new Snapshot();
         await snapshot.FromFile(file);
-        this.state.plotViewController?.UploadSnapshot(snapshot); 
+        try{
+            this.state.plotViewController?.UploadSnapshot(snapshot); 
+        }
+        catch(ex)
+        {
+            notification.error({
+                message: `Не удалось открыть отчет: ${ex}`,
+                duration: 3,
+            });
+            return;
+        }
         if (!this.state.viewingReport)
         {
             this.setState((prev, props) => ({
                 viewingReport: true,
-                hideLeftPanel: true,
             }));
 
-            this.state.groups.forEach(async (g) => await g.node.worker.Close());
+            this.state.groups.forEach(async (g) => this.props.sensorService.RemoveSensor(g.node.sensor));
         }
-
-        var snapshot = new Snapshot();
-        await snapshot.FromFile(file);
-        this.state.plotViewController?.UploadSnapshot(snapshot);  
         
         notification.success({
             message: `Просмотр отчета ${file.name}`,
@@ -178,13 +183,14 @@ export class App extends React.Component<Props, IState>
             <Navbar key = {1} sensorService={this.props.sensorService} 
                     recordController={this.props.recordController}
                     openReportCallback = { async (file) => await this.OpenFileHandler(file)}
+                    allowRecording = {() => this.state.groups.length > 0}
                     setStreamingModeView = { () => 
                         {
                             this.state.plotViewController?.Reset();
                             this.setState((prev, props) => ({
-                                viewingReport: true,
-                                hideLeftPanel: false,
+                                viewingReport: false,
                             }));
+
                             notification.success({
                                 message: "Режим графика реального времени.",
                                 duration: 2,
@@ -197,7 +203,7 @@ export class App extends React.Component<Props, IState>
                 <div className="middle-container">
 
                     {
-                        this.state.hideLeftPanel ? <></> :
+                        this.state.viewingReport ? <></> :
                         <div className="left-container">
                             <GroupsContainer groups={ this.state.groups}
                             sensorRemove = {this.sensorManualCloseHandler}

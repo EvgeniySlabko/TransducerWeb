@@ -3,7 +3,6 @@ require('../css/cellStyles.css');
 require('../css/grow.css');
 require('../css/measureCell.css');
 
-
 require('../bootstrap-5/css/bootstrap.min.css');
 require('../bootstrap-5/js/bootstrap.bundle.min.js');
 

@@ -1,15 +1,7 @@
 import { MyUPlot } from "../uPlot/uPlot";
-import { GetFullSensorInfo } from "../Sensor/SensorInfoParser/SensorInfoCreator";
-import { SensorWorker } from "../Sensor/SensorWorker";
-import { DataCells } from "./DataCells";
-import { CreateAllSensorCellChannels } from "../Channel/Channel/CellChannelFactory";
-import { SensorController, SensorControllerArgs } from "../SensorController";
 import { Channel } from "../Channel/Channel/Channel";
-import { sleep } from "../Common/Common";
 import { Snapshot } from "../ReportListener/Snapshot";
-import { ISingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/ISensor";
 import { MyUPlotViewer } from "../uPlot/uPlotViewer";
-// принимает датчики. Отвечает за их подачу на форму
 
 export class ViewController
 {
@@ -31,6 +23,7 @@ export class ViewController
         if (!this.streamingMode)
         {
             this.streamingMode = true;
+            this.plot.DestroyPlot();
             this.plot = new MyUPlot(this.element);    
         }
 
@@ -58,7 +51,7 @@ export class ViewController
         }
     }
 
-    public AddChannel(channel: Channel)
+    private AddChannel(channel: Channel)
     {
         this.channels.push(channel);
         channel.onClose.sub((c, args) => {
@@ -67,23 +60,15 @@ export class ViewController
         })
     }
 
-    public GetExistsChannels()
-    {
-        return this.channels;
-    }
-
     public UploadSnapshot(snapshot: Snapshot)
     {
-        if (this.streamingMode)
-        {
-            /// To do check listening
-            let streamingPlot = <MyUPlot>this.plot;
-            streamingPlot.Reset(); 
-            streamingPlot.DestroyPlot();
-            this.plot = new MyUPlotViewer(this.element);    
-            this.plot.FromSnapshot(snapshot); 
-            this.streamingMode = false;  
-        }
+        
+        this.plot.DestroyPlot();
+        this.plot = new MyUPlotViewer(this.element);    
+
+        let plotViewer = <MyUPlotViewer>this.plot;
+        plotViewer.FromSnapshot(snapshot); 
+        this.streamingMode = false;  
     }
 
     public Reset()

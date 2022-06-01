@@ -2,9 +2,8 @@ import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISens
 import React from 'react';
 import { CellChannel, ChannelDataArgs } from '../Channel/Channel/CellChannel';
 import { Button, Card, Collapse, Dropdown, Menu, notification, Radio, Space } from 'antd';
-import { DownOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { DownOutlined, SettingOutlined } from '@ant-design/icons';
 import { Cell } from './Cell';
-import { FullSensorInfo } from '../Sensor/SingleComponentSensor.ts/SensorDefinitions';
 import { Group } from './GroupsContainer';
 const { Panel } = Collapse;
 

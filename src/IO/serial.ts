@@ -89,7 +89,7 @@ export class SerialWorker
     await this.writer.write(bytes);
   }
 
-  public async Close() : Promise<void>{
+    public async Close() : Promise<void>{
     this.reader?.cancel();
     this.reader?.releaseLock();
     this.writer?.releaseLock();

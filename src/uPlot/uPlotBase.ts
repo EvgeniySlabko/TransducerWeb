@@ -329,6 +329,7 @@ export class MyUPlotBase
     {
         if (this.plot)
             this.plot.destroy();
+          this.element.innerHTML = '';
     }
 
     protected Redraw()
