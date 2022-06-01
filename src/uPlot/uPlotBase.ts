@@ -33,7 +33,7 @@ export class MyUPlotBase
 
     protected getSize() {    
         return {
-            width: document.body.clientWidth - 200,
+            width: this.element.clientWidth - 50,
             height: this.element.clientHeight - 100,
         }
     }
@@ -314,9 +314,9 @@ export class MyUPlotBase
         value[0].addEventListener('DOMSubtreeModified', function(e){
           let val = value[0].innerHTML;
           e.stopPropagation();
-          if (val != "--" && val != prev && val.length != 0 && val[val.length - 1] != "C")
+          if (val != "--" && val != prev && val.length != 0 && val[val.length - 1] != "с")
           {
-            let newVal = val + " C";
+            let newVal = val + " с";
             value[0].innerHTML = newVal;
             prev = newVal;
           }

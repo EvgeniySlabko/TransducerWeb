@@ -11,6 +11,7 @@ import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISens
 import { FullSensorInfo } from '../Sensor/SingleComponentSensor.ts/SensorDefinitions';
 import { SensorWorker } from '../Sensor/SensorWorker';
 import { notification } from 'antd';
+import { Snapshot } from '../ReportListener/Snapshot';
 
 
 export interface Props {
@@ -37,6 +38,7 @@ interface IState {
     plotViewController: ViewController | null;
     savingChannels: Channel[];
     plotChannels: Channel[];
+    viewingReport: boolean;
 }
 
 export class App extends React.Component<Props, IState>
@@ -52,7 +54,8 @@ export class App extends React.Component<Props, IState>
             plotChannels: [],
             savingChannels: [],
             groups: [],
-            hideLeftPanel: false
+            hideLeftPanel: false,
+            viewingReport: false
         }
 
         //this.plotViewController = new ViewController(document.getElementById('gd'));
@@ -66,18 +69,6 @@ export class App extends React.Component<Props, IState>
         }));
       }
 
-      /*
-    cellChannelCloseHandler = (channel: CellChannel, channelCloseArgs: ChannelCloseArgs)=>
-    {
-        for (let i = 0; i < this.state.groups.length; i++) {
-
-            let index = this.state.groups[i].channels.findIndex(c => c === channel);
-            this.state.groups[i].channels.splice(index, 1);
-            this.setState((prev, props) => ({
-            }));   
-        }
-    }
-    */
     plotChannelCloseHandler = (channel: Channel, channelCloseArgs: ChannelCloseArgs)=>
     {
       let index = this.state.plotChannels.findIndex(c => c === channel);
@@ -157,19 +148,50 @@ export class App extends React.Component<Props, IState>
         }
     }
     
+    OpenFileHandler = async (file: File)  =>
+    {
+        var snapshot = new Snapshot();
+        await snapshot.FromFile(file);
+        this.state.plotViewController?.UploadSnapshot(snapshot); 
+        if (!this.state.viewingReport)
+        {
+            this.setState((prev, props) => ({
+                viewingReport: true,
+                hideLeftPanel: true,
+            }));
+
+            this.state.groups.forEach(async (g) => await g.node.worker.Close());
+        }
+
+        var snapshot = new Snapshot();
+        await snapshot.FromFile(file);
+        this.state.plotViewController?.UploadSnapshot(snapshot);  
+        
+        notification.success({
+            message: `Просмотр отчета ${file.name}`,
+            duration: 2,
+        });
+    }
+    
     render(){
         return [
             <Navbar key = {1} sensorService={this.props.sensorService} 
                     recordController={this.props.recordController}
-                    isStreamingCallback={ stream => 
-                        this.setState((prev, props) => ({
-                            hideLeftPanel: !stream,
-                        }))
-
-
-                            
-                        }
-                    plotViewController={() => this.state.plotViewController}></Navbar>,
+                    openReportCallback = { async (file) => await this.OpenFileHandler(file)}
+                    setStreamingModeView = { () => 
+                        {
+                            this.state.plotViewController?.Reset();
+                            this.setState((prev, props) => ({
+                                viewingReport: true,
+                                hideLeftPanel: false,
+                            }));
+                            notification.success({
+                                message: "Режим графика реального времени.",
+                                duration: 2,
+                            });
+                        }}
+                    
+                    plotViewController={this.state.plotViewController}></Navbar>,
                     
             <div key = {2} className = "all">
                 <div className="middle-container">

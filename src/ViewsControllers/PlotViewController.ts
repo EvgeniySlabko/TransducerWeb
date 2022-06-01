@@ -28,15 +28,20 @@ export class ViewController
     
     public async SetChannels(channels: Channel[])
     {        
-        if (this.streamingMode)
+        if (!this.streamingMode)
         {
-            let streamingPlot = <MyUPlot>this.plot;
-            streamingPlot.Reset();
-            for (let i = 0; i < channels.length; i++) {
-                this.AddChannel(channels[i]);
-            }
-            streamingPlot.SetChannels(channels);
+            this.streamingMode = true;
+            this.plot = new MyUPlot(this.element);    
         }
+
+        let streamingPlot = <MyUPlot>this.plot;
+        streamingPlot.Reset();
+        for (let i = 0; i < channels.length; i++) {
+            this.AddChannel(channels[i]);
+        }
+
+        streamingPlot.SetChannels(channels);
+        
     }
 
     public async AddChannels(channels: Channel[])
@@ -83,9 +88,14 @@ export class ViewController
 
     public Reset()
     {
-        if (this.streamingMode)
+        if (!this.streamingMode)
         {
-            /// To do check listening
+            this.plot.DestroyPlot();
+            this.streamingMode = true;
+            this.plot = new MyUPlot(this.element);
+        }
+        else
+        {
             let streamingPlot = <MyUPlot>this.plot;
             streamingPlot.Reset();
         }

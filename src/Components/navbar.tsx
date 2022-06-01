@@ -10,27 +10,28 @@ import { RecordController } from '../RecordController';
 import { ViewController } from '../ViewsControllers/PlotViewController';
 import { Snapshot } from '../ReportListener/Snapshot';
 import { Button, Dropdown, Menu, notification } from 'antd';
-import { AimOutlined, BarsOutlined, BorderOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
 
 export interface Props {
     sensorService: SensorController,
 	recordController: RecordController,
-	plotViewController: () => ViewController | null
-	isStreamingCallback: (stream: boolean) => void
+	plotViewController: ViewController | null
+	openReportCallback: (file: File) => void
+	setStreamingModeView: () => void
 }
 
   interface IState {
 	sensorService: SensorController,
 	recordController: RecordController,
-	plotViewController: () => ViewController | null
 
 	clearBtnOn: boolean;
 	playButtonState: boolean;
-	recordButtonStyle: string;
+	recordButtonState: boolean;
 	reecording: boolean;
 	startStop: boolean;
 	firstStart: boolean;
 	recording: boolean;
+	viewingReport: boolean;
   }
 
   export class Navbar extends React.Component<Props, IState>
@@ -43,15 +44,15 @@ export interface Props {
 		this.state = {
 			sensorService: this.props.sensorService,
 			recordController: this.props.recordController,
-			plotViewController: this.props.plotViewController,
 
 			clearBtnOn: true,
 			playButtonState: true,
-			recordButtonStyle: "text-primary",
+			recordButtonState: false,
 			reecording: false,
 			startStop: false,
 			firstStart: true,
 			recording: false,
+			viewingReport: false,
 		  };
 
 		this.handleStartClick = this.handleStartClick.bind(this);
@@ -100,7 +101,7 @@ export interface Props {
 		this.state.recordController.StartListening();
 
 		this.setState((prev, props) => ({
-			recordButtonStyle: "text-danger",
+			recordButtonState: true,
 			recording: true,
 		  }));
 	}
@@ -110,7 +111,7 @@ export interface Props {
 		var snapshot = this.state.recordController.StopListening();
 
 		this.setState((prev, props) => ({
-			recordButtonStyle: "text-primary",
+			recordButtonState: false,
 			recording: false,
 		  }));
 
@@ -127,14 +128,10 @@ export interface Props {
 				let file = input.files?.item(0);
 			if (!file) return;
 			
-			var snapshot = new Snapshot();
-			await snapshot.FromFile(file);
-			this.state.plotViewController()?.UploadSnapshot(snapshot);  
-			this.props.isStreamingCallback(false); 
-			notification.success({
-                message: `Просмотр отчета ${file.name}`,
-                duration: 2,
-            });
+			this.props.openReportCallback(file);
+			this.setState((prev, props) => ({
+				viewingReport: true,
+			}));
 		};
 
 		input.click();
@@ -146,7 +143,7 @@ export interface Props {
 
 	handleClearClick() {
 
-		this.state.plotViewController()?.Clear();
+		this.props.plotViewController?.Clear();
 		this.setState((prev, props) => ({
 			firstStart: true,
 		}));
@@ -186,11 +183,34 @@ export interface Props {
 			<ul className ="nav-tabs">
 				<div className="control-buttons">
 					<div className="btn-group" role="group" aria-label="First group">
-						<Button title="Начать измерение" size='large' id="Start" shape="default" 
-						icon = {this.state.playButtonState ?  <CaretRightOutlined/> : <PauseOutlined />} onClick={this.handleStartClick}></Button>
-						<Button title="Очистить результаты" size='large' disabled = {!this.state.clearBtnOn} id="clear" shape="default"  icon={<BorderOutlined />} onClick={this.handleClearClick}></Button>
-						<Button title="Добавить датчик" size='large' disabled = {!this.state.clearBtnOn} id="open" shape="default"  icon={<PlusCircleOutlined />} onClick={this.handleAddClick}></Button>
-						<Button title="Начать запись в файл" size='large' id="StartRec" icon={<AimOutlined />} shape="default"  onClick={this.handleRecClick}></Button>
+						<Button title="Начать измерение" size='large' id="Start" shape="default"
+						icon = 
+						{
+							this.state.viewingReport ? <ArrowLeftOutlined /> :
+							this.state.playButtonState ?  <CaretRightOutlined/> : <PauseOutlined />
+							
+						} onClick=
+						{
+							this.state.viewingReport ? () => { 
+								this.setState((prev, props) => ({
+									viewingReport: false,
+								}));	
+								
+								this.props.setStreamingModeView();
+							}: this.handleStartClick
+						}></Button>
+
+						<Button title="Очистить результаты" size='large' disabled = {!this.state.clearBtnOn || this.state.viewingReport} id="clear" shape="default"  
+						icon={<BorderOutlined />} onClick={this.handleClearClick}></Button>
+
+						<Button title="Добавить датчик" size='large' disabled = {!this.state.clearBtnOn || this.state.viewingReport} id="open" shape="default"  
+						icon={<PlusCircleOutlined />} onClick={this.handleAddClick}></Button>
+
+						<Button title="Начать запись в файл" size='large' id="StartRec" disabled = {this.state.viewingReport}
+						icon={<AimOutlined style={{ color: this.state.recordButtonState ? "red": "inherit" }}/>} shape="default"  onClick={this.handleRecClick}
+						style={{ borderColor: this.state.recordButtonState ? "red": "#d9d9d9" }}
+						></Button>
+
 						<Dropdown overlay=
 						{
 							<Menu

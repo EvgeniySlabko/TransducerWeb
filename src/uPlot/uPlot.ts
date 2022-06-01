@@ -219,11 +219,13 @@ export class MyUPlot extends MyUPlotBase
   {
       let index = this.channels.findIndex(c => c.channel === channel);
       this.clearTrace(this.channels[index].dataBufferIndex);
-      //this.channels.splice(index, 1);
+      this.channels.splice(index, 1);
 
       channel.onData.unsub(this.HandleData);
       channel.onMessage.unsub(this.HandleMessage);
 
+      if (this.channels.length == 0)
+        this.BuildNewPlot([]);
 
       
       //this.BuildNewPlot(this.channels.map(ch => ch.channel));
@@ -259,8 +261,6 @@ export class MyUPlot extends MyUPlotBase
 
     this.channels[curIndex].lastDataIndex = xIndex;
     this.ScaleHandler();
-    //this.plot?.redraw();
-   
   }
   
   private ScaleHandler = () =>
