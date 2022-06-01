@@ -9,8 +9,8 @@ import { CreateAllSensorChannelsSaving } from '../Channel/Channel/ChannelFactory
 import { RecordController } from '../RecordController';
 import { ViewController } from '../ViewsControllers/PlotViewController';
 import { Snapshot } from '../ReportListener/Snapshot';
-import { Button, notification } from 'antd';
-import { CaretRightFilled, CaretRightOutlined, DownloadOutlined } from '@ant-design/icons';
+import { Button, Dropdown, Menu, notification } from 'antd';
+import { AimOutlined, BarsOutlined, BorderOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
 
 export interface Props {
     sensorService: SensorController,
@@ -25,7 +25,7 @@ export interface Props {
 	plotViewController: () => ViewController | null
 
 	clearBtnOn: boolean;
-	playButtonStyle: string;
+	playButtonState: boolean;
 	recordButtonStyle: string;
 	reecording: boolean;
 	startStop: boolean;
@@ -46,7 +46,7 @@ export interface Props {
 			plotViewController: this.props.plotViewController,
 
 			clearBtnOn: true,
-			playButtonStyle: "glyphicon-play" ,
+			playButtonState: true,
 			recordButtonStyle: "text-primary",
 			reecording: false,
 			startStop: false,
@@ -66,7 +66,7 @@ export interface Props {
 		if (!started) return;
 
 		this.setState((prev, props) => ({
-			playButtonStyle: 'glyphicon-pause',
+			playButtonState: false,
 			clearBtnOn: false,
 			
 		  }));
@@ -90,7 +90,7 @@ export interface Props {
 		await this.state.sensorService.StopAll();
 		this.setState((prev, props) => ({
 			clearBtnOn: true,
-			playButtonStyle: 'glyphicon-play',
+			playButtonState: true,
 			startStop: false,
 		  }));
 	}
@@ -183,43 +183,42 @@ export interface Props {
 
 	render(){
 		return (
-			<ul className ="nav nav-tabs">
-			<li className="nav-item" >
+			<ul className ="nav-tabs">
 				<div className="control-buttons">
-					<div className="btn-group mr-2" role="group" aria-label="First group">
-						<button type="button" title="Начать измерение" className="btn btn-outline-primary" id="Start" onClick={this.handleStartClick}>
-							<span id = "StartStopSpan" className={`glyphicon ${this.state.playButtonStyle}`}></span></button>
-						<button type="button" title="Очистить результаты" disabled = {!this.state.clearBtnOn} className="btn btn-outline-primary" id="clear" onClick={this.handleClearClick}>
-							<span id = "StartStopSpan" className= "glyphicon glyphicon-stop"></span></button>
-						<button type="button" title="Добавить датчик" disabled = {!this.state.clearBtnOn} className="btn btn-outline-primary" id="open" onClick={this.handleAddClick}>
-							<span id = "StartStopSpan" className="glyphicon glyphicon-plus"></span></button>
-						<button type="button" title="Начать запись в файл" className="btn btn-outline-primary" id="StartRec" onClick={this.handleRecClick}>
-							<span id = "StartStopSpan" className={`glyphicon glyphicon-record ${this.state.recordButtonStyle}`}></span></button>
+					<div className="btn-group" role="group" aria-label="First group">
+						<Button title="Начать измерение" size='large' id="Start" shape="default" 
+						icon = {this.state.playButtonState ?  <CaretRightOutlined/> : <PauseOutlined />} onClick={this.handleStartClick}></Button>
+						<Button title="Очистить результаты" size='large' disabled = {!this.state.clearBtnOn} id="clear" shape="default"  icon={<BorderOutlined />} onClick={this.handleClearClick}></Button>
+						<Button title="Добавить датчик" size='large' disabled = {!this.state.clearBtnOn} id="open" shape="default"  icon={<PlusCircleOutlined />} onClick={this.handleAddClick}></Button>
+						<Button title="Начать запись в файл" size='large' id="StartRec" icon={<AimOutlined />} shape="default"  onClick={this.handleRecClick}></Button>
+						<Dropdown overlay=
+						{
+							<Menu
+								items={[
+								{
+									key: '1',
+									label: (
+									<a onClick={this.handleFakerClick} target="_blank" rel="noopener noreferrer">
+										Add faker
+									</a>
+									),
+								},
+								{
+									key: '2',
+									label: (
+									<a onClick={this.handleOpenFile} target="_blank" rel="noopener noreferrer">
+										Открыть очет
+									</a>
+									),
+								},
+								]}
+							/>
+						} arrow>
+							<Button size='large' icon={<BarsOutlined />}></Button>
+						</Dropdown>
 					</div>
 				</div>
-			</li>
-
-			<li className="nav-item" >
-				<div className="zoom-buttons">
-					<div className="btn-group mr-2" role="group" aria-label="First group">
-						<button type="button" title="поднять выбранную ось вверх" className="btn btn-outline-primary" id="pushAxisUp"><span id = "StartStopSpan" className="glyphicon glyphicon-chevron-up"></span></button>
-						<button type="button" title="поднять выбранную ось вверх" className="btn btn-outline-primary" id="pushAxisUp"><span id = "StartStopSpan" className="glyphicon glyphicon-chevron-down"></span></button>
-					</div>
-				</div>
-			</li>
-			<li className="nav-item dropdown">
-				<a className="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Dropdown</a>
-				<ul className="dropdown-menu">
-				<li><button className="dropdown-item" id="Facker" onClick={this.handleFakerClick}>Add facker</button></li>
-				<li><button id="file-input-button" onClick={this.handleOpenFile} >Open</button></li>
-				</ul>
-			</li>
-			<li className="nav-item">
-				<a className="nav-link" href="#">Link</a>
-			</li>
 			</ul>
 		)
     }
   }
-
-

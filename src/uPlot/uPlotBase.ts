@@ -33,7 +33,7 @@ export class MyUPlotBase
 
     protected getSize() {    
         return {
-            width: this.element.clientWidth,
+            width: document.body.clientWidth - 200,
             height: this.element.clientHeight - 100,
         }
     }
@@ -303,6 +303,26 @@ export class MyUPlotBase
     protected BuildPlot(options: Options, dataBuffer: any)
     {
         this.plot = new uPlot(options, dataBuffer, this.element);
+
+        //legend correction.
+        let legendSeries = this.element.getElementsByClassName("u-series")[0];
+        let label = legendSeries.getElementsByClassName("u-label");
+        let value = legendSeries.getElementsByClassName("u-value");
+        label[0].innerHTML = "Время";
+
+        let prev = ""
+        value[0].addEventListener('DOMSubtreeModified', function(e){
+          let val = value[0].innerHTML;
+          e.stopPropagation();
+          if (val != "--" && val != prev && val.length != 0 && val[val.length - 1] != "C")
+          {
+            let newVal = val + " C";
+            value[0].innerHTML = newVal;
+            prev = newVal;
+          }
+        });
+        //item.innerHTML = "Время";
+
     }
 
     public DestroyPlot()

@@ -37,7 +37,7 @@ module.exports = {
   },
   plugins: 
   [
-    new HtmlWebpackPlugin({ template: './index.html' }),
+    new HtmlWebpackPlugin({ favicon: "images/icons/favicon-32x32.png", template: './index.html' }),
     new webpack.ProvidePlugin({
       process: 'process/browser',
       filename: "index.html", //Name of file in ./dist/
@@ -46,7 +46,7 @@ module.exports = {
     }),
     require('precss'),
     require('autoprefixer'),
-],
+  ],
   
   resolve: {
     extensions: [ ".tsx", ".ts", ".js" ],

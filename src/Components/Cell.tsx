@@ -69,7 +69,7 @@ const { Panel } = Collapse;
                 {
                   this.setState((prev, props) => ({
                     fontSize: e,
-                  }));
+                }));
                 }} />
               <h6 style={{margin: "2px", float: "right"}}>Шрифт</h6>
               </div>

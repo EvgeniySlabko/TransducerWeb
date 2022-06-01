@@ -98,7 +98,6 @@ body {
 	display: flex;
     align-items: center;
 	margin-right: 100px;
-	margin-left: 5px;
 }
 
 legend{
@@ -113,4 +112,13 @@ legend{
 
 .ant-collapse-header{
 	padding: 0px !important;
+}
+
+.navbar
+{
+	gap: 2px;
+}
+
+.u-value{
+	white-space: nowrap
 }
