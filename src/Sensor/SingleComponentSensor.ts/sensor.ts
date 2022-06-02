@@ -79,7 +79,7 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
             msgType: SensorMessage.StartStreaming
         })
     }
-    public SetAvgRatio = async (avgRatio: number) => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.PRESET_SINGLE_REGISTER, Defs.AVG_RATIO, 1));  
+    public SetAvgRatio = async (avgRatio: number) => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.PRESET_SINGLE_REGISTER, Defs.AVG_RATIO, avgRatio));  
     public SetComputerConnection = async () => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_ON_VALUE));
     public UnsetComputerConnection = async () => this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_OFF_VALUE));
     public SetT0 = async () => await this.SendRequesAndWaitResponse<void>(new MultipleCommand(Defs.PRESET_MULTIPLE_REGISTERS, 3, new Uint8Array([0, 0])));

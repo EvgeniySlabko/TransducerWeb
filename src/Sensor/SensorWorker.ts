@@ -32,6 +32,7 @@ export class SensorWorker
         await this.sensor.Initialize();
         await this.sensor.StopStreaming();
         await this.sensor.StopMeasuring(true);
+        await this.sensor.SetAvgRatio(1);
         await this.sensor.SetComputerConnection();
 
         /// configure
