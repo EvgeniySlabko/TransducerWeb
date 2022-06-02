@@ -10,7 +10,7 @@ import { RecordController } from '../RecordController';
 import { ViewController } from '../ViewsControllers/PlotViewController';
 import { Snapshot } from '../ReportListener/Snapshot';
 import { Button, Dropdown, Menu, notification } from 'antd';
-import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
 
 export interface Props {
     sensorService: SensorController,
@@ -167,6 +167,18 @@ export interface Props {
 		}
 	}
 
+	handleScreen = async () =>
+	{
+		let screen = await this.props.plotViewController?.MakeScreen();
+		if (screen)
+		{
+			var anchor = document.createElement('a');
+			anchor.setAttribute('download', 'screen.png');
+			anchor.setAttribute('href', screen);
+			anchor.click();
+		}
+	}
+
 	render(){
 		return (
 			<ul className ="nav-tabs">
@@ -209,6 +221,10 @@ export interface Props {
 						icon={<AimOutlined style={{ color: this.props.recordingState() ? "red": "inherit" }}/>} shape="default"  onClick={this.props.toggleRecording}
 						style={{ borderColor: this.props.recordingState() ? "red": "#d9d9d9" }}
 						></Button>
+
+						<Button title="Сделать скриншотю" size='large' 
+						id="screen" shape="default"  
+						icon={<CameraOutlined />} onClick={this.handleScreen}></Button>
 
 						<Dropdown overlay=
 						{

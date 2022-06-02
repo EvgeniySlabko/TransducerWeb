@@ -2,7 +2,6 @@ import { MyUPlot } from "../uPlot/uPlot";
 import { Channel } from "../Channel/Channel/Channel";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { MyUPlotViewer } from "../uPlot/uPlotViewer";
-import { EventDispatcher } from "strongly-typed-events";
 
 export class ViewController
 {
@@ -86,6 +85,11 @@ export class ViewController
             let streamingPlot = <MyUPlot>this.plot;
             streamingPlot.Reset();
         }
+    }
+
+    public async MakeScreen() : Promise<string>
+    {
+        return await this.plot.GetScreen();
     }
 
     public Clear()

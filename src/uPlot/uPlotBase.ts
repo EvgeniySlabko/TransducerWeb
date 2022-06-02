@@ -1,3 +1,4 @@
+import html2canvas from "html2canvas";
 import uPlot, { AlignedData, Axis, Options, Scale, Series } from "uplot";
 import { GetAxe, GetScale } from "./ComponetFactory/ComponentFactory";
 
@@ -22,6 +23,12 @@ export class MyUPlotBase
     constructor (element: HTMLElement)
     {
         this.element = element;
+    }
+
+    public async GetScreen() : Promise<string>
+    {
+      const canvas = await html2canvas(this.element);
+      return canvas.toDataURL("image/png", 1).replace("image/png", "image/octet-stream");
     }
 
     protected SetScale(min: number, max: number){

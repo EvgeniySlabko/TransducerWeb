@@ -44,8 +44,6 @@ module.exports = {
       template: "index.html", //Name of template in ./src
       hash: true,
     }),
-    require('precss'),
-    require('autoprefixer'),
   ],
   
   resolve: {
