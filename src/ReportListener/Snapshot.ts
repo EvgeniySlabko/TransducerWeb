@@ -51,6 +51,6 @@ export class Snapshot
                 type: "text/plain;charset=utf-8",
                 endings: "native",
             });
-        FileSaver.saveAs(blob, "hello world.txt");
+        FileSaver.saveAs(blob, "Report");
     }
 }

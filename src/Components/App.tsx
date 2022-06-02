@@ -38,6 +38,7 @@ interface IState {
     savingChannels: Channel[];
     plotChannels: Channel[];
     viewingReport: boolean;
+    recording: boolean;
 }
 
 export class App extends React.Component<Props, IState>
@@ -49,6 +50,7 @@ export class App extends React.Component<Props, IState>
         super(props);
 
         this.state = {
+            recording: false,
             plotViewController: null,
             plotChannels: [],
             savingChannels: [],
@@ -65,7 +67,7 @@ export class App extends React.Component<Props, IState>
         this.setState((prev, props) => ({
             plotViewController: new ViewController(document.getElementById('gd')),
         }));
-      }
+    }
 
     plotChannelCloseHandler = (channel: Channel, channelCloseArgs: ChannelCloseArgs)=>
     {
@@ -87,6 +89,12 @@ export class App extends React.Component<Props, IState>
     {
          let index = this.state.groups.findIndex(c => c.node.sensor == sensor);
         this.state.groups.splice(index, 1);
+        if (this.state.groups.length == 0)
+        {
+                if (this.state.recording)
+                    this.stopRecordingHandler();
+        }
+
         this.setState((prev, props) => ({
         }));
     }
@@ -152,6 +160,11 @@ export class App extends React.Component<Props, IState>
     {
         var snapshot = new Snapshot();
         await snapshot.FromFile(file);
+        if (!this.state.viewingReport)
+        {
+            this.state.groups.forEach(async (g) => this.props.sensorService.RemoveSensor(g.node.sensor));
+        }
+
         try{
             this.state.plotViewController?.UploadSnapshot(snapshot); 
         }
@@ -163,27 +176,56 @@ export class App extends React.Component<Props, IState>
             });
             return;
         }
-        if (!this.state.viewingReport)
-        {
-            this.setState((prev, props) => ({
-                viewingReport: true,
-            }));
-
-            this.state.groups.forEach(async (g) => this.props.sensorService.RemoveSensor(g.node.sensor));
-        }
         
+        this.setState((prev, props) => ({
+            viewingReport: true,
+        }));
+
         notification.success({
             message: `Просмотр отчета ${file.name}`,
             duration: 2,
         });
     }
     
+    async startRecordingHandler()
+	{
+		try{
+			this.props.recordController.StartListening();
+		}
+		catch(ex)
+		{
+			
+		}
+
+		this.setState((prev, props) => ({
+			recording: true,
+		}));
+	}
+	
+	stopRecordingHandler()
+	{
+		var snapshot = this.props.recordController.StopListening();
+		
+		this.setState((prev, props) => ({
+			recording: false,
+		}));
+		
+		snapshot.ToFile();
+		//saveStaticDataToFile(snapshot);
+	}
+	
+	handleRecClick = async () => {
+		this.state.recording ? this.stopRecordingHandler() : this.startRecordingHandler();
+	}
+
     render(){
         return [
             <Navbar key = {1} sensorService={this.props.sensorService} 
                     recordController={this.props.recordController}
                     openReportCallback = { async (file) => await this.OpenFileHandler(file)}
-                    allowRecording = {() => this.state.groups.length > 0}
+                    ThereAreConnectedSensors = {() => this.state.groups.length > 0}
+                    toggleRecording = {this.handleRecClick}
+                    recordingState = {() => this.state.recording}
                     setStreamingModeView = { () => 
                         {
                             this.state.plotViewController?.Reset();

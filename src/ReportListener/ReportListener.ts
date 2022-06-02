@@ -109,9 +109,9 @@ export class ReportListener
         {
             channel.onData.unsub(this.DataHandler);
             channel.onClose.unsub(this.CloseHandler);
-            this.channelMap.delete(channel);
-            if (this.channelMap.size == 0)
-                this.isInit = false;
+            //this.channelMap.delete(channel);
+            //if (this.channelMap.size == 0)
+                //this.isInit = false;
         }
     }
 }

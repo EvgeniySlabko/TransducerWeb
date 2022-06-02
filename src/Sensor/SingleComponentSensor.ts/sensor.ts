@@ -27,7 +27,6 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
         this.serialWorker = worker;
     }
 
-    private currentAvgFactor: number | undefined;
     private dt: number | undefined = 12.5 // тиков часов декодера между 2 соседними измерениями осню изм вел.
 
     //Events 
@@ -84,7 +83,7 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
     public SetComputerConnection = async () => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_ON_VALUE));
     public UnsetComputerConnection = async () => this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_OFF_VALUE));
     public SetT0 = async () => await this.SendRequesAndWaitResponse<void>(new MultipleCommand(Defs.PRESET_MULTIPLE_REGISTERS, 3, new Uint8Array([0, 0])));
-    public SetM0 = async () => await this.SendRequesAndWaitResponse<void>(new MultipleCommand(Defs.PRESET_MULTIPLE_REGISTERS, 3, new Uint8Array([0, 0])));
+    
     public CloseConnection = async () => 
     {
         this.requiredStopStreaming  =true;

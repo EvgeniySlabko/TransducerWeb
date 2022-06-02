@@ -2,7 +2,6 @@ import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISens
 import React from 'react';
 import { ChannelStyle } from '../Channel/ChannelStyle/ChannelStyle';
 import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Channel/CellChannel';
-import { CellMenu } from './CellMenu';
 import { Checkbox, Col, Collapse, Row, Slider } from 'antd';
 const { Panel } = Collapse;
 

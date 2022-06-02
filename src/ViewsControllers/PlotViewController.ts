@@ -2,6 +2,7 @@ import { MyUPlot } from "../uPlot/uPlot";
 import { Channel } from "../Channel/Channel/Channel";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { MyUPlotViewer } from "../uPlot/uPlotViewer";
+import { EventDispatcher } from "strongly-typed-events";
 
 export class ViewController
 {
@@ -62,10 +63,11 @@ export class ViewController
 
     public UploadSnapshot(snapshot: Snapshot)
     {
-        
+        if (this.streamingMode)
+            this.Reset();
+            
         this.plot.DestroyPlot();
         this.plot = new MyUPlotViewer(this.element);    
-
         let plotViewer = <MyUPlotViewer>this.plot;
         plotViewer.FromSnapshot(snapshot); 
         this.streamingMode = false;  

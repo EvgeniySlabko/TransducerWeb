@@ -18,7 +18,9 @@ export interface Props {
 	plotViewController: ViewController | null
 	openReportCallback: (file: File) => void
 	setStreamingModeView: () => void
-	allowRecording: () => boolean
+	ThereAreConnectedSensors: () => boolean
+	toggleRecording: () => void
+	recordingState: () => boolean;
 }
 
   interface IState {
@@ -27,11 +29,8 @@ export interface Props {
 
 	clearBtnOn: boolean;
 	playButtonState: boolean;
-	recordButtonState: boolean;
-	reecording: boolean;
 	startStop: boolean;
 	firstStart: boolean;
-	recording: boolean;
 	viewingReport: boolean;
   }
 
@@ -48,11 +47,8 @@ export interface Props {
 
 			clearBtnOn: true,
 			playButtonState: true,
-			recordButtonState: false,
-			reecording: false,
 			startStop: false,
 			firstStart: true,
-			recording: false,
 			viewingReport: false,
 		  };
 
@@ -97,35 +93,6 @@ export interface Props {
 		  }));
 	}
 
-	async startRecordingHandler()
-	{
-		try{
-			this.state.recordController.StartListening();
-		}
-		catch(ex)
-		{
-			
-		}
-
-		this.setState((prev, props) => ({
-			recordButtonState: true,
-			recording: true,
-		  }));
-	}
-
-	async stopRecordingHandler()
-	{
-		var snapshot = this.state.recordController.StopListening();
-
-		this.setState((prev, props) => ({
-			recordButtonState: false,
-			recording: false,
-		  }));
-
-		snapshot.ToFile();
-		//saveStaticDataToFile(snapshot);
-	}
-
 	handleOpenFile = async () =>{
 		
 		let input = document.createElement('input');
@@ -155,6 +122,7 @@ export interface Props {
 			firstStart: true,
 		}));
 	}
+	
 
 	private async handleAddClick() {
 		try
@@ -176,13 +144,27 @@ export interface Props {
 		}
 	}
 
-	handleRecClick = async () => {
-		this.state.recording ? await this.stopRecordingHandler() : this.startRecordingHandler();
-	}
 
 	async handleFakerClick() {
 		let facker = new Facker();
 		await this.state.sensorService.AddSensor(facker);
+	}
+
+	getSnapshotBeforeUpdate()
+	{
+		if (!this.props.ThereAreConnectedSensors())
+		{
+			if (!this.state.clearBtnOn || !this.state.playButtonState)
+			{
+				this.setState((prev, props) => ({
+					clearBtnOn: true,
+					playButtonState: true,
+					startStop: false,
+				}));
+				
+				console.log();
+			}
+		}
 	}
 
 	render(){
@@ -194,7 +176,7 @@ export interface Props {
 						icon = 
 						{
 							this.state.viewingReport ? <ArrowLeftOutlined /> : 
-							this.state.playButtonState || !this.props.allowRecording() ?  <CaretRightOutlined/> : <PauseOutlined />
+							this.state.playButtonState?  <CaretRightOutlined/> : <PauseOutlined />
 							
 						} onClick=
 						{
@@ -223,9 +205,9 @@ export interface Props {
 						icon={<PlusCircleOutlined />} onClick={this.handleAddClick}></Button>
 
 						<Button title="Начать запись в файл" size='large' id="StartRec" 
-						disabled = {this.state.viewingReport || !this.props.allowRecording()}
-						icon={<AimOutlined style={{ color: this.state.recordButtonState ? "red": "inherit" }}/>} shape="default"  onClick={this.handleRecClick}
-						style={{ borderColor: this.state.recordButtonState ? "red": "#d9d9d9" }}
+						disabled = {this.state.viewingReport || !this.props.ThereAreConnectedSensors()}
+						icon={<AimOutlined style={{ color: this.props.recordingState() ? "red": "inherit" }}/>} shape="default"  onClick={this.props.toggleRecording}
+						style={{ borderColor: this.props.recordingState() ? "red": "#d9d9d9" }}
 						></Button>
 
 						<Dropdown overlay=

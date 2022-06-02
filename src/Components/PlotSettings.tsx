@@ -1,8 +1,6 @@
 import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISensor';
 import React from 'react';
-import { ChannelStyle } from '../Channel/ChannelStyle/ChannelStyle';
 import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Channel/CellChannel';
-import { CellMenu } from './CellMenu';
 import { Checkbox, Col, Collapse, Row, Slider } from 'antd';
 const { Panel } = Collapse;
 
@@ -16,7 +14,7 @@ const { Panel } = Collapse;
     hide: boolean,
    }
 
-  export class Cell extends React.Component<Props, IState>{
+  export class PlotSettings extends React.Component<Props, IState>{
 
     constructor(prop: Props)
     {
