@@ -2,17 +2,22 @@ import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISens
 import React from 'react';
 import { ChannelStyle } from '../Channel/ChannelStyle/ChannelStyle';
 import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Channel/CellChannel';
-import { Checkbox, Col, Collapse, Row, Slider } from 'antd';
+import { Button, Checkbox, Col, Collapse, Dropdown, Row, Slider } from 'antd';
+import { SketchPicker } from 'react-color';
+import { ColorChanger } from './ColorChanger';
+
 const { Panel } = Collapse;
 
   export interface Props {
    channel: CellChannel;
+   colorChanged: (channel: CellChannel,  color: string) => void;
   }
 
    interface IState {
     value: string,
     fontSize: number,
     hide: boolean,
+    color: string,
    }
 
   export class Cell extends React.Component<Props, IState>{
@@ -24,7 +29,9 @@ const { Panel } = Collapse;
       this.state = {
         hide: false,
         value: "",
+        color: this.props.channel.Style.fontStyle,
         fontSize: this.props.channel.Style.fontSize,
+
       }
       
       this.props.channel.onClose.sub(this.closeHandler);
@@ -48,6 +55,15 @@ const { Panel } = Collapse;
       }));
     }
 
+
+    colorChangeHandler = (color: string) =>{
+      this.setState((prev, props) => ({
+        color: color,
+      }));
+
+      this.props.colorChanged(this.props.channel, color);
+    }
+
     render(){
       return (
         <div className='measure-box'>
@@ -55,11 +71,9 @@ const { Panel } = Collapse;
           <Collapse defaultActiveKey={['0']}>
             <Panel header=
             {
-              <div className={`cell-name ${this.props.channel.Style.fontStyle}`}>
-                <p>
-                  {this.props.channel.Style.valueName}
-                </p>
-              </div>
+                <div className={`cell-name`} style = {{color: this.state.color}} >
+                    {this.props.channel.Style.valueName}
+                </div>
             } key="1">
             <Row>
             
@@ -72,8 +86,9 @@ const { Panel } = Collapse;
                 }} />
               <h6 style={{margin: "2px", float: "right"}}>Шрифт</h6>
               </div>
-              
-              
+              <ColorChanger  baseColor={this.state.color} onColorChange={
+                this.colorChangeHandler
+              }/>
           </Row>
             </Panel>
           </Collapse>
@@ -84,8 +99,8 @@ const { Panel } = Collapse;
               height: this.state.hide ? "0px" : "auto"
             }
           }>
-            <div className={`${this.props.channel.Style.fontStyle}`}>{this.props.channel.Style.unitsName}</div>
-            <div className='right-column' style={{fontSize: `${this.state.fontSize.toString()}px`}}>{this.state.value}</div>
+            <div className={`${this.state.color}`} style = {{color:  this.state.color}}>{this.props.channel.Style.unitsName}</div>
+            <div className='right-column' style={{color:  this.state.color, fontSize: `${this.state.fontSize.toString()}px`}}>{this.state.value}</div>
           </div>
         </div>
       )

@@ -4,6 +4,7 @@ import * as Defs from "./Defs";
 import * as SDefs from "../SingleComponentSensor.ts/SensorDefinitions";
 import { ISingleComponentSensor } from "../SingleComponentSensor.ts/ISensor";
 
+let count = 0;
 export async function GetFullSensorInfo(sensor: ISingleComponentSensor) : Promise<SDefs.FullSensorInfo>
 {
     if (sensor == null) throw "Sensor is null.";
@@ -18,7 +19,7 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
 {
 
     var fullInfo = new SDefs.FullSensorInfo();
-
+    fullInfo.id = count++;
     var Index_Opis = (serviceInfo.ID[0] >> 4);    // Цифра 1 - старшая цифра
     var Tip_Datch = (serviceInfo.ID[0] & 0x0f);   // Цифра 2 
     var Razmernost = (serviceInfo.ID[1] >> 4); // Цифра 3 

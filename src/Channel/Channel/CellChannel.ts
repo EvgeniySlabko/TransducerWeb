@@ -62,7 +62,7 @@ export class CellChannel
     {
         return this.style;
     }
-
+    
     public get onData() {return this._onData.asEvent();}
 
     public get onMessage() {return this._onMessage.asEvent();}

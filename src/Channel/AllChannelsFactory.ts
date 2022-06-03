@@ -16,12 +16,12 @@ export interface AllChannelsInfo
     currentValueOffsetSetter: ()  => number,
 }
 
-export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : AllChannelsInfo 
+export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo, colorSeed: number) : AllChannelsInfo 
 {
-    let plotChannelsInfo = CreateAllSensorChannelsForPlot(sensor, fullSensorInfo);
-    let savingChannelsInfo = CreateAllSensorChannelsSaving(sensor, fullSensorInfo);
+    let plotChannelsInfo = CreateAllSensorChannelsForPlot(sensor, fullSensorInfo, colorSeed);
+    let savingChannelsInfo = CreateAllSensorChannelsSaving(sensor, fullSensorInfo, colorSeed);
 
-    let cellChannelsInfo = CreateAllSensorCellChannels(sensor, fullSensorInfo);
+    let cellChannelsInfo = CreateAllSensorCellChannels(sensor, fullSensorInfo, colorSeed);
 
     let offsetSetterAll = (offset: number) =>{
         plotChannelsInfo.offsetSetter(offset);

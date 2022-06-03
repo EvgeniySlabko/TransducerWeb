@@ -1,7 +1,7 @@
 import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor";
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { Channel } from "./Channel";
-import { CreateDefaultStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "../ChannelStyle/ChannelStyleFactory";
+import { CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "../ChannelStyle/ChannelStyleFactory";
 import { CreateAverageValueDataSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "../SensorDataProveder/DataSourceFactory";
 import { CellChannel } from "./CellChannel";
 import { CreateCellSpeedStyle, CreatePowerCellStyle, CreatetemperatureCellStyle, CreateTorqueCellStyle } from "../ChannelStyle/CellChannelStyleFactory";
@@ -19,19 +19,19 @@ declare interface ComplexCellInfo
 }
 
 
-function CreateComplex(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : ComplexCellInfo
+function CreateComplex(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo, colorSeed: number) : ComplexCellInfo
 {
     let mainSource = CreateMainValueDataSource(sensor);
     let mainOffsetSource = CreateOffsetDataSource(mainSource, 0);
     let mainAvgSrc = CreateAverageValueDataSource(mainOffsetSource, 500);
 
-    let mainChannel = new CellChannel(mainAvgSrc, CreateTorqueCellStyle(fullSensorInfo));
+    let mainChannel = new CellChannel(mainAvgSrc, CreateTorqueCellStyle(fullSensorInfo, colorSeed));
 
     let speedSource = CreateSpeedValueDataSource(sensor);
-    let speedChannel = new CellChannel(speedSource, CreateCellSpeedStyle(fullSensorInfo));
+    let speedChannel = new CellChannel(speedSource, CreateCellSpeedStyle(fullSensorInfo, colorSeed));
 
     let powerSource = CreatePowerDataSource(mainOffsetSource, speedSource);
-    let powerChannel = new CellChannel(powerSource, CreatePowerCellStyle(fullSensorInfo));
+    let powerChannel = new CellChannel(powerSource, CreatePowerCellStyle(fullSensorInfo, colorSeed));
 
     return{
         currentValueOffsetSetter: () : number => mainOffsetSource.SetCurrentOffset(),
@@ -42,18 +42,18 @@ function CreateComplex(sensor: ISingleComponentSensor, fullSensorInfo: FullSenso
     }
 }
 
-function CreateTemperatureCellChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : CellChannel
+function CreateTemperatureCellChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo, colorSeed: number) : CellChannel
 {
     var dataSource = CreateTemperatureValueDataSource(sensor);
-    return new CellChannel(dataSource, CreatetemperatureCellStyle(fullSensorInfo));
+    return new CellChannel(dataSource, CreatetemperatureCellStyle(fullSensorInfo, colorSeed));
 }
 
-export function CreateAllSensorCellChannels(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : CellChannelsInfo
+export function CreateAllSensorCellChannels(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo, colorSeed: number) : CellChannelsInfo
 {
     var channels: CellChannel[] = []; 
 
-    let temperatureChannel = CreateTemperatureCellChannel(sensor, fullSensorInfo);
-    let channelsInfo = CreateComplex(sensor, fullSensorInfo);
+    let temperatureChannel = CreateTemperatureCellChannel(sensor, fullSensorInfo, colorSeed);
+    let channelsInfo = CreateComplex(sensor, fullSensorInfo, colorSeed);
     channels.push(channelsInfo.mainChannel);
     channels.push(channelsInfo.speedCahannel);
     channels.push(temperatureChannel);

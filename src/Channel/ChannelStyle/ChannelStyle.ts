@@ -1,21 +1,22 @@
-import { type } from 'jquery';
-import { LayoutAxis, PlotData, PlotMarker } from 'plotly.js/lib/core';
-import { Axis } from 'uplot';
-import { ColorsDefs } from '../../Common/Colors';
+import { SimpleEventDispatcher } from 'strongly-typed-events';
+import { ValueType } from './StyleCommon';
 
-export type ValueType = "torque" | "speed" | "tmp" | "power" | "power";
 
-export declare class ChannelStyle{
-    grid: boolean;
-    unitName: string;
-    valueType: ValueType;
-    yTitle: string;
-    legendTitle: string;
-    range: number[];
-    color: Axis.Stroke ;
-    line: "dash" | "solid";
-    yAxeSide: "right" | "left";
-    rescaleRationTop: number;
-    rescaleRationBottom: number;
-    visible: boolean;
+export class ChannelStyle{  
+    sensorId: number = 0;      
+    color: string = "green";
+    grid: boolean = false;
+    unitName: string = "Nm";
+    valueType: ValueType = "torque";
+    yTitle: string = "Torque";
+    axisColor: string = "green";
+    legendTitle: string = "Torque";
+    range: number[] = [-50, 50];
+    line: "dash" | "solid" = "solid";
+    yAxeSide: "right" | "left" = "right";
+    rescaleRationTop: number = 0.3;
+    rescaleRationBottom: number = 0.3;
+    visible: boolean = true;
+    width: number = 1;
 }
+

@@ -1,5 +1,10 @@
+import { ValueType } from "./StyleCommon";
+
 export declare class CellChannelStyle{
+    // id fo react
     id: number;
+    //unique datasource id
+    sensorId: number
     cellStyle: string;
     fontStyle: string;
     fontSize: number;
@@ -7,4 +12,5 @@ export declare class CellChannelStyle{
     unitsName: string;   
     sensorType: string;
     accurency: number;
+    valueType: ValueType;
 }

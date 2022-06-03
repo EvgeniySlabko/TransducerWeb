@@ -1,6 +1,5 @@
 import { ChannelStyle } from "../ChannelStyle/ChannelStyle";
 import { ISensorDataProvider } from "../SensorDataProveder/ISensorDataProvider";
-import { CreateDefaultStyle } from "../ChannelStyle/ChannelStyleFactory";
 import { EventDispatcher, IEvent } from "strongly-typed-events";
 import { dataEventArgs, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { type } from "jquery";
@@ -39,7 +38,7 @@ export class Channel
     private _onMessage = new EventDispatcher<Channel, ChannelMessageArgs>();
     private _onClose = new EventDispatcher<Channel, ChannelCloseArgs>();
 
-    public constructor (dataSource: ISensorDataProvider, style: ChannelStyle = CreateDefaultStyle())
+    public constructor (dataSource: ISensorDataProvider, style: ChannelStyle)
     {
         this.style = style;
         this.dataSourse = dataSource;

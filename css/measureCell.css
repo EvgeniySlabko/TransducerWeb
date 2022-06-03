@@ -17,10 +17,13 @@
 }
 
 .cell-name{
-	font-size: 13px;
+	font-size: 17px;
+	font-weight: bold;
 	width: 100%;
 	height: auto;
-	text-align: left;
+	display: flex;
+  	align-items: center;
+  	justify-content: center;
 }
 
 .cell-units {

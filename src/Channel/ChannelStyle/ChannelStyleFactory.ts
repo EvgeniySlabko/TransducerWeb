@@ -1,92 +1,94 @@
 import { CalculatePower } from "../../Common/Common";
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ChannelStyle } from "./ChannelStyle";
+import { GetColorBySeed } from "./ColorFactory";
+import { powerBaseColor, speedBaseColor, tmpBaseColor, torqueBaseColor } from "./StyleCommon";
 
-export function CreateDefaultStyle() : ChannelStyle{
-    return {
-        color: "green",
-        legendTitle: "Default legend title",
-        line: "solid",
-        range: [100, 100],
-        yTitle: "Default y Title",
-        grid: false,
-        rescaleRationBottom: rescaleRatio,
-        rescaleRationTop: rescaleRatio,
-        unitName: "Undefined",
-        valueType: "torque",
-        yAxeSide: "left",
-        visible: true,
-    } 
+
+export function CreateTorqueStyle(sensorInfo: FullSensorInfo, colorSeed: number) : ChannelStyle{
+
+    let style = new ChannelStyle();
+    style.sensorId = sensorInfo.id;
+    style.grid= true;
+    style.color = GetColorBySeed(torqueBaseColor, colorSeed);
+    style.axisColor = torqueBaseColor;
+    style.legendTitle = "Torque";
+    style.line = "solid";
+    style.range = [sensorInfo.MinValue - 0.2 * sensorInfo.MaxValue, sensorInfo.MaxValue + 0.2 * sensorInfo.MaxValue],
+    style.yTitle = "Torque";
+    style.unitName = "sensorInfo.Unitname";
+    style.valueType = "torque";
+    style.yAxeSide = "left";
+    style.rescaleRationBottom = rescaleRatio;
+    style.rescaleRationTop = rescaleRatio;
+    style.visible = true;
+    style.width = 1;
+    return style;
 }
 
-export function CreateTorqueStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
-    return {
-        grid: true,
-        color: "green",
-        legendTitle: sensorInfo.SensorType + " Torque",
-        line: "solid",
-        range: [sensorInfo.MinValue - 0.2 * sensorInfo.MaxValue, sensorInfo.MaxValue + 0.2 * sensorInfo.MaxValue],
-        yTitle: "Torque",
-        unitName: sensorInfo.Unitname,
-        valueType: "torque",
-        yAxeSide: "left",
-        rescaleRationBottom: rescaleRatio,
-        rescaleRationTop: rescaleRatio,
-        visible: true,
-    };
+export function CreateSpeedStyle(sensorInfo: FullSensorInfo, colorSeed: number) : ChannelStyle{
+    let style = new ChannelStyle();
+    style.sensorId = sensorInfo.id;
+    style.grid= false;
+    style.color = GetColorBySeed(speedBaseColor, colorSeed);
+    style.axisColor = speedBaseColor;
+    style.legendTitle = "-Speed";
+    style.line = "solid";
+    style.range = [0, 30000];
+    style.yTitle = "Speed";
+    style.unitName = "hz";
+    style.valueType = "speed";
+    style.yAxeSide = "right";
+    style.rescaleRationBottom = 0;
+    style.rescaleRationTop = rescaleRatio;
+    style.visible = true;
+    style.width = 1;
+    return style;
 }
 
-export function CreateSpeedStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
-    return {
-        grid: false,
-        color: "blue",
-        legendTitle: sensorInfo.SensorType + "-Speed",
-        line: "solid",
-        range: [0, 30000],
-        yTitle: "Speed",
-        unitName: "hz",
-        valueType: "speed",
-        yAxeSide: "right",
-        rescaleRationBottom: 0,
-        rescaleRationTop: rescaleRatio,
-        visible: true,
-    };
+export function CreatetemperatureStyle(sensorInfo: FullSensorInfo, colorSeed: number) : ChannelStyle{
+    let style = new ChannelStyle();
+    style.sensorId = sensorInfo.id;
+    style.grid= false;
+    style.color = GetColorBySeed(tmpBaseColor, colorSeed);
+    style.axisColor = tmpBaseColor;
+    style.legendTitle = "Tmp";
+    style.line = "solid";
+    style.range = [-60, 60],
+    style.yTitle = "Tmp";
+    style.unitName = "Dg";
+    style.valueType = "tmp";
+    style.yAxeSide = "right";
+    style.rescaleRationBottom = rescaleRatio;
+    style.rescaleRationTop = rescaleRatio;
+    style.visible = false;
+    style.width = 1;
+
+    return style;
 }
 
-export function CreatetemperatureStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
-    return {
-        grid: false,
-        color: "red",
-        legendTitle: sensorInfo.SensorType + " Tmp",
-        line: "dash",
-        range: [-60, 60],
-        yTitle: " Tmp",
-        unitName: "Dg",
-        valueType: "tmp",
-        yAxeSide: "right",
-        rescaleRationBottom: rescaleRatio,
-        rescaleRationTop: rescaleRatio,
-        visible: false,
-    };
-}
+export function CreatePowerStyle(sensorInfo: FullSensorInfo, colorSeed: number) : ChannelStyle{
+    let minPower = CalculatePower(sensorInfo.MaxSpeed + 0.1 * sensorInfo.MaxSpeed, sensorInfo.MinValue + 0.1 * sensorInfo.MinValue);
+    let maxPower = -minPower;
 
-export function CreatePowerStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
-        let minPower = CalculatePower(sensorInfo.MaxSpeed + 0.1 * sensorInfo.MaxSpeed, sensorInfo.MinValue + 0.1 * sensorInfo.MinValue);
-        let maxPower = -minPower;
-    return {
-        grid: false,
-        color: "#bab406",
-        legendTitle: sensorInfo.SensorType + "Power",
-        line: "dash",
-        range: [minPower, maxPower],
-        yTitle: " Power",
-        unitName: sensorInfo.powerUnitsName,
-        valueType: "power",
-        yAxeSide: "left",
-        rescaleRationBottom: rescaleRatio,
-        rescaleRationTop: rescaleRatio,
-        visible: false,
-    };
+    let style = new ChannelStyle();
+    style.sensorId = sensorInfo.id;
+    style.grid= false;
+    style.color = GetColorBySeed(powerBaseColor, colorSeed);
+    style.axisColor = powerBaseColor;
+    style.legendTitle = "Power";
+    style.line = "solid";
+    style.range = [minPower, maxPower],
+    style.yTitle = "Power";
+    style.unitName = sensorInfo.powerUnitsName,
+    style.valueType = "power",
+    style.yAxeSide = "left",
+    style.rescaleRationBottom = rescaleRatio;
+    style.rescaleRationTop = rescaleRatio;
+    style.visible = false;
+    style.width = 1;
+
+    return style;
 }
 
 let rescaleRatio = 0.2;

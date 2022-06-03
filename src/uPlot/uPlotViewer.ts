@@ -196,9 +196,8 @@ export class MyUPlotViewer extends MyUPlotBase
       
       //axis.grid!.stroke = style.color;
       axis.side = style.yAxeSide == "left" ? 1 : 3;
-      axis.stroke = style.color;
+      axis.stroke = style.axisColor;
       axis.show = true;
-      axis.stroke = style.color;
       axis.label = style.legendTitle;
       axis.grid!.show = style.grid;
       

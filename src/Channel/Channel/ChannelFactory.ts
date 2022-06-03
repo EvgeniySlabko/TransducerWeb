@@ -1,6 +1,6 @@
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { Channel } from "./Channel";
-import { CreateDefaultStyle, CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "../ChannelStyle/ChannelStyleFactory";
+import { CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "../ChannelStyle/ChannelStyleFactory";
 import { CreateAverageValueDataSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "../SensorDataProveder/DataSourceFactory";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
 import { PlotCellChannelsInfo, SavingPlotChannelsInfo } from "../SensorDataProveder/ISensorDataProvider";
@@ -26,19 +26,19 @@ declare interface ComplexPlotInfo
     currentValueOffsetSetter: () => number,
 }
 
-function CreatePlotComlex(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : ComplexPlotInfo
+function CreatePlotComlex(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo, colorSeed: number) : ComplexPlotInfo
 {
     let mainSource = CreateMainValueDataSource(sensor);
     let mainOffsetSource = CreateOffsetDataSource(mainSource, 0);
     let mainAvgSrc = CreateAverageValueDataSource(mainOffsetSource, 100);
 
-    let mainChannel = new Channel(mainAvgSrc, CreateTorqueStyle(fullSensorInfo));
+    let mainChannel = new Channel(mainAvgSrc, CreateTorqueStyle(fullSensorInfo, colorSeed));
 
     let speedSource = CreateSpeedValueDataSource(sensor);
-    let speedChannel = new Channel(speedSource, CreateSpeedStyle(fullSensorInfo));
+    let speedChannel = new Channel(speedSource, CreateSpeedStyle(fullSensorInfo, colorSeed));
 
     let powerSource = CreatePowerDataSource(mainOffsetSource, speedSource);
-    let powerChannel = new Channel(powerSource, CreatePowerStyle(fullSensorInfo));
+    let powerChannel = new Channel(powerSource, CreatePowerStyle(fullSensorInfo, colorSeed));
 
     return{
         currentValueOffsetSetter: () : number => mainOffsetSource.SetCurrentOffset(),
@@ -50,19 +50,19 @@ function CreatePlotComlex(sensor: ISingleComponentSensor, fullSensorInfo: FullSe
     }
 }
 
-function CreateSavingComlex(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : ComplexSavingInfo
+function CreateSavingComlex(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo, colorSeed: number) : ComplexSavingInfo
 {
     let mainSource = CreateMainValueDataSource(sensor);
     let mainOffsetSource = CreateOffsetDataSource(mainSource, 0);
     //let mainAvgSrc = CreateAverageValueDataSource(mainOffsetSource, 1);
 
-    let mainChannel = new Channel(mainOffsetSource, CreateTorqueStyle(fullSensorInfo));
+    let mainChannel = new Channel(mainOffsetSource, CreateTorqueStyle(fullSensorInfo, colorSeed));
 
     let speedSource = CreateSpeedValueDataSource(sensor);
-    let speedChannel = new Channel(speedSource, CreateSpeedStyle(fullSensorInfo));
+    let speedChannel = new Channel(speedSource, CreateSpeedStyle(fullSensorInfo, colorSeed));
 
     let powerSource = CreatePowerDataSource(mainOffsetSource, speedSource);
-    let powerChannel = new Channel(powerSource, CreatePowerStyle(fullSensorInfo));
+    let powerChannel = new Channel(powerSource, CreatePowerStyle(fullSensorInfo, colorSeed));
 
     return{
         currentValueOffsetSetter: () : number => mainOffsetSource.SetCurrentOffset(),
@@ -73,19 +73,19 @@ function CreateSavingComlex(sensor: ISingleComponentSensor, fullSensorInfo: Full
     }
 }
 
-function CreateTemperatureChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : Channel
+function CreateTemperatureChannel(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo, colorSeed: number) : Channel
 {
     var dataSource = CreateTemperatureValueDataSource(sensor);
-    return new Channel(dataSource, CreatetemperatureStyle(fullSensorInfo));
+    return new Channel(dataSource, CreatetemperatureStyle(fullSensorInfo, colorSeed));
 }
 
 // для графика делаем канал осн. изм величины с офсетером и авгсетером
-export function CreateAllSensorChannelsForPlot(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : PlotCellChannelsInfo
+export function CreateAllSensorChannelsForPlot(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo, colorSeed: number) : PlotCellChannelsInfo
 {
     var channels: Channel[] = []; 
 
-    let temperatureChannel = CreateTemperatureChannel(sensor, fullSensorInfo);
-    let channelsInfo = CreatePlotComlex(sensor, fullSensorInfo);
+    let temperatureChannel = CreateTemperatureChannel(sensor, fullSensorInfo, colorSeed);
+    let channelsInfo = CreatePlotComlex(sensor, fullSensorInfo, colorSeed);
     channels.push(channelsInfo.mainChannel);
     channels.push(channelsInfo.speedCahannel);
     channels.push(temperatureChannel);
@@ -100,12 +100,12 @@ export function CreateAllSensorChannelsForPlot(sensor: ISingleComponentSensor, f
 }
 
 // для записи в файл делаем каналы осн. изм величины с офсетером
-export function CreateAllSensorChannelsSaving(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo) : SavingPlotChannelsInfo
+export function CreateAllSensorChannelsSaving(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo, colorSeed: number) : SavingPlotChannelsInfo
 {
     var channels: Channel[] = []; 
 
-    let temperatureChannel = CreateTemperatureChannel(sensor, fullSensorInfo);
-    let channelsInfo = CreateSavingComlex(sensor, fullSensorInfo);
+    let temperatureChannel = CreateTemperatureChannel(sensor, fullSensorInfo, colorSeed);
+    let channelsInfo = CreateSavingComlex(sensor, fullSensorInfo, colorSeed);
     channels.push(channelsInfo.mainChannel);
     channels.push(channelsInfo.speedCahannel);
     channels.push(temperatureChannel);
@@ -114,7 +114,7 @@ export function CreateAllSensorChannelsSaving(sensor: ISingleComponentSensor, fu
     return {
         currentValueOffsetSetter: channelsInfo.currentValueOffsetSetter,
         offsetSetter: channelsInfo.offsetSetter,
-        plotChannels: channels
+        plotChannels: channels,
     }
 }
 

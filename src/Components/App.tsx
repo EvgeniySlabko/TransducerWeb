@@ -12,6 +12,7 @@ import { FullSensorInfo } from '../Sensor/SingleComponentSensor.ts/SensorDefinit
 import { SensorWorker } from '../Sensor/SensorWorker';
 import { notification } from 'antd';
 import { Snapshot } from '../ReportListener/Snapshot';
+import { getRandomInt } from '../Common/Common';
 
 
 export interface Props {
@@ -119,7 +120,7 @@ export class App extends React.Component<Props, IState>
     {
         if (this.state.plotViewController)
         {
-            let allChannelsInfo = CreateAllChannels(args.sensor, args.fullSensorInfo);
+            let allChannelsInfo = CreateAllChannels(args.sensor, args.fullSensorInfo, getRandomInt(10));
             //let plotChannels = CreateAllSensorChannelsForPlot(args.sensor, args.fullSensorInfo);
             this.setState((prev, props) => ({
                 plotChannels: this.state.plotChannels.concat(allChannelsInfo.plotChannels),
@@ -247,7 +248,24 @@ export class App extends React.Component<Props, IState>
                     {
                         this.state.viewingReport ? <></> :
                         <div className="left-container">
-                            <GroupsContainer groups={ this.state.groups}
+                            <GroupsContainer groups={ this.state.groups }
+                            channelColorChanged = {(channel, color) =>
+                            {
+                                let plotChannel = this.state.plotChannels.find(c => c.Style.sensorId == channel.Style.sensorId && 
+                                                                                c.Style.valueType == channel.Style.valueType);
+
+                                let savingChanel = this.state.savingChannels.find(c => c.Style.sensorId == channel.Style.sensorId && 
+                                                                                    c.Style.valueType == channel.Style.valueType)                                                
+                                if (plotChannel)
+                                {
+                                    plotChannel.Style.color = color;
+                                }
+
+                                if (savingChanel)
+                                {
+                                    savingChanel.Style.color = color;
+                                }
+                            }}
                             sensorRemove = {this.sensorManualCloseHandler}
                             />
                         </div>

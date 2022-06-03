@@ -14,6 +14,7 @@ export interface Group{
   export interface Props {
     groups: Group[],
     sensorRemove: (sensor: ISingleComponentSensor) => void,
+    channelColorChanged: (channel: CellChannel, color: string) => void;
   }
 
   export class GroupsContainer extends React.Component<Props>{
@@ -25,7 +26,8 @@ export interface Group{
 
     render() {
         return (      
-          this.props.groups.map((g, i) => <CellsGroup key={i} 
+          this.props.groups.map((g, i) => <CellsGroup key={g.node.fullSensorInfo.id} 
+                                            channelColorChanged = { (channel, color) => this.props.channelColorChanged(channel, color)}
                                             group = {g}
                                             sensorRemove = {(sensor: ISingleComponentSensor) => this.props.sensorRemove(sensor)}
                                              ></CellsGroup>)  

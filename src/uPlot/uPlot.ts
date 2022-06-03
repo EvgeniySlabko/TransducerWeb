@@ -106,7 +106,7 @@ export class MyUPlot extends MyUPlotBase
     this.params.screenSize = 5;
     this.SetScale(0, this.params.screenSize);
   }
-  
+
   public Clear()
   {
     this.Init();
@@ -171,9 +171,9 @@ export class MyUPlot extends MyUPlotBase
       range = [style.range[0], style.range[1]];
 
       axis.side = style.yAxeSide == "left" ? 1 : 3;
-      axis.stroke = style.color;
+      axis.stroke = style.axisColor;
       axis.show = true;
-      axis.stroke = style.color;
+      axis.stroke = style.axisColor;
       axis.label = style.legendTitle;
       axis.grid!.show = style.grid;
       scale.range = () => [range[0], range[1]];
@@ -182,9 +182,11 @@ export class MyUPlot extends MyUPlotBase
     
     series.show = channel.Style.visible;
     series.stroke = style.color;
+    series.width = style.width;
     series.label = style.legendTitle;
     options.series.push(series);
 
+    
     let trace = {
       axis: axis,
       channel: channel,
@@ -330,6 +332,17 @@ export class MyUPlot extends MyUPlotBase
   }
 
   // Base plot callbacks
+  protected SeriesDraw(i: number)
+  {
+    let channel = this.channels.at(i - 1);
+    if (channel != undefined)
+    {
+      let existsChannel = channel;
+      this.plot!.series[i].stroke = () => existsChannel.channel.Style.color;
+      this.plot!.series[i].width = existsChannel.channel.Style.width;
+    }
+  }
+
   protected AxisZoom(index: number, dy: number): void {
     let dir = dy > 0 ? 1 : -1; 
         

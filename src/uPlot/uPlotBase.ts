@@ -272,6 +272,11 @@ export class MyUPlotBase
               GetAxe("y13", 3),
           ],
           hooks: {
+            drawSeries: [
+              (u, seriesIdx) => {
+                this.SeriesDraw(seriesIdx);
+              }
+            ],
                 setSelect: [
                     u => {
                         this.SelectCommited();
@@ -344,6 +349,8 @@ export class MyUPlotBase
         this.plot?.redraw();
     }
     
+    protected SeriesDraw(i: number){}
+
     protected SelectCommited(){}
     
     protected DbClick(e: any){}
