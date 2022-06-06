@@ -11,6 +11,7 @@ import { ViewController } from '../ViewsControllers/PlotViewController';
 import { Snapshot } from '../ReportListener/Snapshot';
 import { Button, Dropdown, Menu, notification } from 'antd';
 import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { PlotControlPannel } from './PlotControlPannel';
 
 export interface Props {
     sensorService: SensorController,
@@ -181,80 +182,80 @@ export interface Props {
 
 	render(){
 		return (
-			<ul className ="nav-tabs">
-				<div className="control-buttons">
-					<div className="btn-group" role="group" aria-label="First group">
-						<Button title="Начать измерение" size='large' id="Start" shape="default"
-						icon = 
-						{
-							this.state.viewingReport ? <ArrowLeftOutlined /> : 
-							this.state.playButtonState?  <CaretRightOutlined/> : <PauseOutlined />
+			<div className='nav-tab-container'>
+				
+				<div className="btn-group" role="group" aria-label="First group">
+					<Button title="Начать измерение" size='large' id="Start" shape="default"
+					icon = 
+					{
+						this.state.viewingReport ? <ArrowLeftOutlined /> : 
+						this.state.playButtonState?  <CaretRightOutlined/> : <PauseOutlined />
+						
+					} onClick=
+					{
+						this.state.viewingReport ? () => { 
+							this.setState((prev, props) => ({
+								viewingReport: false,
+							}));	
 							
-						} onClick=
-						{
-							this.state.viewingReport ? () => { 
-								this.setState((prev, props) => ({
-									viewingReport: false,
-								}));	
-								
-								this.props.setStreamingModeView();
-							}: this.handleStartClick
-						}></Button>
+							this.props.setStreamingModeView();
+						}: this.handleStartClick
+					}></Button>
 
-						<Button title="Очистить результаты" size='large' 
-						disabled = 
-						{
-							!this.state.clearBtnOn || this.state.viewingReport
-						} id="clear" shape="default"  
-						icon={<BorderOutlined />} onClick={this.handleClearClick}></Button>
+					<Button title="Очистить результаты" size='large' 
+					disabled = 
+					{
+						!this.state.clearBtnOn || this.state.viewingReport
+					} id="clear" shape="default"  
+					icon={<BorderOutlined />} onClick={this.handleClearClick}></Button>
 
-						<Button title="Добавить датчик" size='large' 
-						disabled = 
-						{
-							!this.state.clearBtnOn || this.state.viewingReport
-						} 
-						id="open" shape="default"  
-						icon={<PlusCircleOutlined />} onClick={this.handleAddClick}></Button>
+					<Button title="Добавить датчик" size='large' 
+					disabled = 
+					{
+						!this.state.clearBtnOn || this.state.viewingReport
+					} 
+					id="open" shape="default"  
+					icon={<PlusCircleOutlined />} onClick={this.handleAddClick}></Button>
 
-						<Button title="Начать запись в файл" size='large' id="StartRec" 
-						disabled = {this.state.viewingReport || !this.props.ThereAreConnectedSensors()}
-						icon={<AimOutlined style={{ color: this.props.recordingState() ? "red": "inherit" }}/>} shape="default"  onClick={this.props.toggleRecording}
-						style={{ borderColor: this.props.recordingState() ? "red": "#d9d9d9" }}
-						></Button>
+					<Button title="Начать запись в файл" size='large' id="StartRec" 
+					disabled = {this.state.viewingReport || !this.props.ThereAreConnectedSensors()}
+					icon={<AimOutlined style={{ color: this.props.recordingState() ? "red": "inherit" }}/>} shape="default"  onClick={this.props.toggleRecording}
+					style={{ borderColor: this.props.recordingState() ? "red": "#d9d9d9" }}
+					></Button>
 
-						<Button title="Сделать скриншотю" size='large' 
-						id="screen" shape="default"  
-						icon={<CameraOutlined />} onClick={this.handleScreen}></Button>
+					<Button title="Сделать скриншотю" size='large' 
+					id="screen" shape="default"  
+					icon={<CameraOutlined />} onClick={this.handleScreen}></Button>
 
-						<Dropdown overlay=
-						{
-							<Menu
-								items={[
-								{
-									key: '1',
-									disabled: this.state.viewingReport,
-									label: (
-									<a  onClick={this.handleFakerClick} target="_blank" rel="noopener noreferrer">
-										Add faker
-									</a>
-									),
-								},
-								{
-									key: '2',
-									label: (
-									<a onClick={this.handleOpenFile} target="_blank" rel="noopener noreferrer">
-										Открыть очет
-									</a>
-									),
-								},
-								]}
-							/>
-						} arrow>
-							<Button size='large' icon={<BarsOutlined />}></Button>
-						</Dropdown>
-					</div>
+					<Dropdown overlay=
+					{
+						<Menu
+							items={[
+							{
+								key: '1',
+								disabled: this.state.viewingReport,
+								label: (
+								<a  onClick={this.handleFakerClick} target="_blank" rel="noopener noreferrer">
+									Add faker
+								</a>
+								),
+							},
+							{
+								key: '2',
+								label: (
+								<a onClick={this.handleOpenFile} target="_blank" rel="noopener noreferrer">
+									Открыть очет
+								</a>
+								),
+							},
+							]}
+						/>
+					} arrow>
+						<Button size='large' icon={<BarsOutlined />}></Button>
+					</Dropdown>
+
 				</div>
-			</ul>
+			</div>
 		)
     }
   }

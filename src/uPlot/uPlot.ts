@@ -1,11 +1,9 @@
 
 import uPlot, { AlignedData, Axis, Options, Scale, Series } from "uplot";
 import { Channel, ChannelCloseArgs, ChannelDataArgs, ChannelMessageArgs } from "../Channel/Channel/Channel";
-import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
-import { sleep } from "../Common/Common";
-import { Snapshot } from "../ReportListener/Snapshot";
+import { GetApproximateValue } from "../Common/Common";
 import { SensorMessage } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
-import { GetAxe, GetScale, GetSeries } from "./ComponetFactory/ComponentFactory";
+import { GetSeries } from "./ComponetFactory/ComponentFactory";
 import { AxeRangeChangeHandler } from "./PlotCommon";
 import { MyUPlotBase } from "./uPlotBase";
 
@@ -76,9 +74,9 @@ export class MyUPlot extends MyUPlotBase
 
     document.addEventListener('fullscreenchange', ()=>{
       if (document.fullscreenElement) {
-          console.log('Fullscreen');
+          //console.log('Fullscreen');
       } else {
-          console.log('Normal');
+          //console.log('Normal');
       }
   });
 
@@ -173,19 +171,17 @@ export class MyUPlot extends MyUPlotBase
       axis.side = style.yAxeSide == "left" ? 1 : 3;
       axis.stroke = style.axisColor;
       axis.show = true;
-      axis.stroke = style.axisColor;
       axis.label = style.legendTitle;
       axis.grid!.show = style.grid;
       scale.range = () => [range[0], range[1]];
     }
     
-    
     series.show = channel.Style.visible;
     series.stroke = style.color;
     series.width = style.width;
     series.label = style.legendTitle;
+    series.points!.stroke = style.color;
     options.series.push(series);
-
     
     let trace = {
       axis: axis,
@@ -332,6 +328,7 @@ export class MyUPlot extends MyUPlotBase
   }
 
   // Base plot callbacks
+
   protected SeriesDraw(i: number)
   {
     let channel = this.channels.at(i - 1);
@@ -389,6 +386,32 @@ export class MyUPlot extends MyUPlotBase
     }
 
     return false;
+  }
+
+  protected setCursor(){
+    if (!this.plot)
+      return;
+    
+    let left = this.plot?.cursor.left;
+    if (left)
+    {
+      let xVal = this.plot.posToVal(left, 'x');
+      let index = this.tickToGridIndex(xVal);
+      for (let i = 0; i < this.channels.length; i++) {
+        let nearestIndex = GetApproximateValue(<number[]>(this.datBuf[i + 1]), index, 100);
+        if (nearestIndex && this.legendItems)
+        {
+          let isActive = this.legendItems[i + 1].isActive();
+          if (isActive)
+          {
+            let trace = this.channels[i];
+            let value = this.datBuf[i + 1][nearestIndex];
+            this.legendItems[i + 1].setValue(value!.toFixed(trace.channel.Style.legendValueAcurency));
+          }
+        }
+      }
+
+    }
   }
 
   protected AxisRangeChanged(index: number, dy: number)

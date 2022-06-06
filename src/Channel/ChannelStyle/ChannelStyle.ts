@@ -18,5 +18,6 @@ export class ChannelStyle{
     rescaleRationBottom: number = 0.3;
     visible: boolean = true;
     width: number = 1;
+    legendValueAcurency: number = 2;
 }
 

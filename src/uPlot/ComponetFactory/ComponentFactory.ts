@@ -8,6 +8,9 @@ export function GetSeries(scale: string)
         label: "Undefined",
         stroke: "red",
         scale: scale,
+        points: {
+            stroke: "green",
+        },
         //points: {show: false},
         show: true,
         //spanGaps :true,

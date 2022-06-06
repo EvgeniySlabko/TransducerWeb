@@ -23,6 +23,7 @@ export function CreateTorqueStyle(sensorInfo: FullSensorInfo, colorSeed: number)
     style.rescaleRationTop = rescaleRatio;
     style.visible = true;
     style.width = 1;
+    style.legendValueAcurency = sensorInfo.MasEdRazm.toString().length - 1;
     return style;
 }
 
@@ -43,6 +44,7 @@ export function CreateSpeedStyle(sensorInfo: FullSensorInfo, colorSeed: number) 
     style.rescaleRationTop = rescaleRatio;
     style.visible = true;
     style.width = 1;
+    style.legendValueAcurency = 0;
     return style;
 }
 
@@ -63,6 +65,7 @@ export function CreatetemperatureStyle(sensorInfo: FullSensorInfo, colorSeed: nu
     style.rescaleRationTop = rescaleRatio;
     style.visible = false;
     style.width = 1;
+    style.legendValueAcurency = 1;
 
     return style;
 }
@@ -87,6 +90,7 @@ export function CreatePowerStyle(sensorInfo: FullSensorInfo, colorSeed: number) 
     style.rescaleRationTop = rescaleRatio;
     style.visible = false;
     style.width = 1;
+    style.legendValueAcurency = 0;
 
     return style;
 }

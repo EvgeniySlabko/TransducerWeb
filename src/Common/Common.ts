@@ -17,3 +17,33 @@ export function hashCode(str: string): number {
 export function getRandomInt(max: number) {
     return Math.floor(Math.random() * max);
   }
+
+
+export function GetApproximateValue(arr: number[], index: number, maxPoints: number)
+{
+    if (arr[index] != undefined)
+        return index;
+
+    
+    let left = index;
+    let right = index;
+    let curIter = 0
+    do
+    {
+        if (left != 0)
+            left -=1;
+        
+        if (right != arr.length - 1)
+            right += 1;
+        
+        curIter += 1;
+    } while((arr[right] == undefined && arr[left] == undefined) && curIter <= maxPoints);
+
+    if (arr[left])
+        return left;
+
+    if (arr[right])
+        return right;
+
+    return undefined;
+}

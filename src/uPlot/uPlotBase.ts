@@ -2,109 +2,210 @@ import html2canvas from "html2canvas";
 import uPlot, { AlignedData, Axis, Options, Scale, Series } from "uplot";
 import { GetAxe, GetScale } from "./ComponetFactory/ComponentFactory";
 
+
+export declare class LegendItem {
+  public setValue: (value: string) => void;
+  public getValue: () => string;
+  public isActive: () => boolean;
+}
 export class MyUPlotBase
 {
     protected element: HTMLElement;
     protected plot: uPlot | undefined;
+    protected legendItems: LegendItem[] | undefined = undefined; 
+
     private controlarams =  {
-        gridTicks: 50,     //делений графика в секунду.
-        gridDx: 0,          //
-        screenSize: 5,      //
-        streaming: true,
-        
-        screenRollingGap: 2,
-
-        rightGap: 5,
-        sh: 0,
-        th: 0,
-        t0: 0,
+      gridTicks: 50,     //делений графика в секунду.
+      gridDx: 0,          //
+      screenSize: 5,      //
+      streaming: true,
+      
+      screenRollingGap: 2,
+      
+      rightGap: 5,
+      sh: 0,
+      th: 0,
+      t0: 0,
     }
-
+    
     constructor (element: HTMLElement)
     {
         this.element = element;
-    }
-
-    public async GetScreen() : Promise<string>
-    {
-      const canvas = await html2canvas(this.element);
-      return canvas.toDataURL("image/png", 1).replace("image/png", "image/octet-stream");
-    }
-
-    protected SetScale(min: number, max: number){
+      }
+      
+      public async GetScreen() : Promise<string>
+      {
+        const canvas = await html2canvas(this.element);
+        return canvas.toDataURL("image/png", 1).replace("image/png", "image/octet-stream");
+      }
+      
+      protected SetScale(min: number, max: number){
         this.plot?.setScale('x', {
           min: min,
           max: max,
         });
       }
-
-    protected getSize() {    
+      
+      protected getSize() {    
         return {
             width: this.element.clientWidth - 50,
             height: this.element.clientHeight - 100,
+          }
         }
+        
+        tooltipsPlugin() {
+          let seriestt: any;
+          let cursortt: any; 
+          let ttc = document.createElement("div");
+          function init(u: uPlot) {
+            let over = u.over;
+            
+            
+            ttc.className = "tooltip";
+            ttc.textContent = "(x,y)";
+            ttc.style.pointerEvents = "none";
+            ttc.style.position = "absolute";
+            ttc.style.background = "rgba(0,0,255,0.1)";
+            over.appendChild(ttc);
+            
+            seriestt = u.series.map((s, i) => {
+              if (i == 0) return;
+
+          let tt = document.createElement("div");
+          tt.className = "tooltip";
+          tt.textContent = "Tooltip!";
+          tt.style.pointerEvents = "none";
+          tt.style.position = "absolute";
+          tt.style.background = "rgba(0,0,0,0.1)";
+          //tt.style.color = s.color;
+          //tt.style.display = s.show ? null : "none";
+          over.appendChild(tt);
+          return tt;
+        });
+
+        function hideTips() {
+          ttc.style.display = "contents";
+          seriestt.forEach((tt: any, i: any) => {
+            if (i == 0) return;
+
+            tt!.style.display = "contents";
+          });
+        }
+
+        function showTips() {
+          ttc.style.display = "";
+          seriestt.forEach((tt: any, i: any) => {
+            if (i == 0) return;
+
+            let s = u.series[i];
+            tt!.style.display = s.show ? "contents" : "contents";
+          });
+        }
+
+        over.addEventListener("mouseleave", () => {
+          if (!u.cursor.lock) {
+          //	u.setCursor({left: -10, top: -10});
+            hideTips();
+          }
+        });
+
+        over.addEventListener("mouseenter", () => {
+          showTips();
+        });
+
+        hideTips();
+      }
+
+      function setCursor(u: uPlot) {
+        const {left, top, idx} = u.cursor;
+
+        // this is here to handle if initial cursor position is set
+        // not great (can be optimized by doing more enter/leave state transition tracking)
+      //	if (left > 0)
+      //		u.cursortt.style.display = null;
+
+        ttc.style.left = left + "px";
+        ttc.style.top = top + "px";
+        ttc.textContent = "(" + u.posToVal(<number>left, "x").toFixed(2) + ", " + u.posToVal(<number>top, "y").toFixed(2) + ")";
+
+        // can optimize further by not applying styles if idx did not change
+        seriestt.forEach((tt:any , i:any) => {
+          if (i == 0) return;
+
+          let s = u.series[i];
+          //console.log(left, top, idx);
+          if (s.show) {
+            // this is here to handle if initial cursor position is set
+            // not great (can be optimized by doing more enter/leave state transition tracking)
+          //	if (left > 0)
+          	tt.style.display = null;
+
+            let xVal = u.data[0][<number>idx];
+            let yVal = u.data[i][<number>idx];
+
+            tt.textContent = "(" + xVal + ", " + yVal + ")";
+
+            
+            tt.style.left = Math.round(u.valToPos(xVal, 'x')) + "px";
+            tt.style.top = Math.round(u.valToPos(<number>yVal, (<any>s).scale)) + "px";
+          }
+        });
+      }
+
+      return {
+        hooks: {
+          init,
+          setCursor,
+          setScale: [
+            (u: any, key: any) => {
+              
+            }
+          ],
+          setSeries: [
+            (u: any, idx: any) => {
+              
+            }
+          ],
+        },
+      };
     }
 
-    private tooltipsPlugin(opts: any) {
-        function init(u: any, opts: any, data: any) {
-          let over = u.over;
-    
-          let ttc = u.cursortt = document.createElement("div");
-          ttc.className = "tooltip";
-          ttc.textContent = "(x,y)";
-          ttc.style.pointerEvents = "none";
-          ttc.style.position = "absolute";
-          ttc.style.background = "rgba(0,0,255,0.1)";
-          over.appendChild(ttc);
-    
-          u.seriestt = opts.series.map((s: any, i: any) => {
-            if (i == 0) return;
-    
-            let tt = document.createElement("div");
-            tt.className = "tooltip";
-            tt.textContent = "Tooltip!";
-            tt.style.pointerEvents = "none";
-            tt.style.position = "absolute";
-            tt.style.background = "rgba(0,0,0,0.1)";
-            tt.style.color = s.color;
-            //tt.style.display = s.show ? null : "none";
-            over.appendChild(tt);
-            return tt;
-          });
-    
-          function hideTips() {
-            ttc.style.display = "none";
-            u.seriestt.forEach((tt: any, i: any) => {
-              if (i == 0) return;
-    
-              tt.style.display = "none";
-            });
+      /*
+      function setCursor(u: uPlot) {
+        const {left, top, idx} = u.cursor;
+
+        // this is here to handle if initial cursor position is set
+        // not great (can be optimized by doing more enter/leave state transition tracking)
+      //	if (left > 0)
+      //		u.cursortt.style.display = null;
+        
+        u.cursortt.style.left = left + "px";
+        u.cursortt.style.top = top + "px";
+        u.cursortt.textContent = "(" + u.posToVal(left, "x").toFixed(2) + ", " + u.posToVal(top, "y").toFixed(2) + ")";
+
+        // can optimize further by not applying styles if idx did not change
+        u.seriestt.forEach((tt: any, i: any) => {
+          if (i == 0) return;
+
+          let s = u.series[i];
+
+          if (s.show) {
+            // this is here to handle if initial cursor position is set
+            // not great (can be optimized by doing more enter/leave state transition tracking)
+          //	if (left > 0)
+          //		tt.style.display = null;
+
+            let xVal = u.data[0][idx];
+            let yVal = u.data[i][idx];
+
+            tt.textContent = "(" + xVal + ", " + yVal + ")";
+
+            tt.style.left = Math.round(u.valToPos(xVal, 'x')) + "px";
+            tt.style.top = Math.round(u.valToPos(yVal, s.scale)) + "px";
           }
-    
-          function showTips() {
-            ttc.style.display = "";
-            u.seriestt.forEach((tt: any, i: any) => {
-              if (i == 0) return;
-    
-              let s = u.series[i];
-              tt.style.display = s.show ? null : "none";
-            });
-          }
-    
-          over.addEventListener("mouseleave", () => {
-            if (!u.cursor._lock) {
-            //	u.setCursor({left: -10, top: -10});
-              hideTips();
-            }
-          });
-    
-          over.addEventListener("mouseenter", () => {
-            showTips();
-          });
-    
-          hideTips();
-        }
-    }  
+        });
+      }*/
+        
 
     private wheelZoomPlugin(opts: any) {
         let factor = opts.factor || 0.75;
@@ -137,10 +238,16 @@ export class MyUPlotBase
               });
 
     
+              over.addEventListener("contextmenu", (e: Event) => 
+              {
+                e.preventDefault(); 
+                //return false;
+              });
               // wheel drag pan
               over.addEventListener("mousedown", (e: any) => {
-                if (e.button == 1) {
+                if (e.button == 2) {
                   e.preventDefault();
+                  
     
                   let left0 = e.clientX;
     
@@ -219,14 +326,9 @@ export class MyUPlotBase
           height: 100,
           pxAlign: true,
           plugins: [
-            //this.tooltipsPlugin(this.options),
             this.wheelZoomPlugin({factor: 0.75})
           ],
-          legend:{
-            markers:{
-              
-            }
-          },
+          mode: 1,
           scales: {
               x: {
                 distr: 1,
@@ -272,28 +374,37 @@ export class MyUPlotBase
               GetAxe("y13", 3),
           ],
           hooks: {
+            setCursor:[
+              (u: uPlot) =>{
+                let left = u.cursor.left;
+                if (left)
+                {
+                  this.setCursor();
+                }
+              }
+            ],
             drawSeries: [
               (u, seriesIdx) => {
                 this.SeriesDraw(seriesIdx);
               }
             ],
-                setSelect: [
-                    u => {
-                        this.SelectCommited();
-                        let min = u.posToVal(u.select.left, 'x');
-                        let max = u.posToVal(u.select.left + u.select.width, 'x');
+            setSelect: [
+                u => {
+                    this.SelectCommited();
+                    let min = u.posToVal(u.select.left, 'x');
+                    let max = u.posToVal(u.select.left + u.select.width, 'x');
 
-                        // zoom to selection
-                        u.setScale('x', {min, max});
+                    // zoom to selection
+                    u.setScale('x', {min, max});
 
-                        // reset selection
-                        u.setSelect(
-                        {
-                            width: 0, 
-                            height: 0
-                        } as any, false);
-                    }
-                ]
+                    // reset selection
+                    u.setSelect(
+                    {
+                        width: 0, 
+                        height: 0
+                    } as any, false);
+                }
+            ]
             },
           series: [
               {
@@ -317,22 +428,53 @@ export class MyUPlotBase
         this.plot = new uPlot(options, dataBuffer, this.element);
 
         //legend correction.
-        let legendSeries = this.element.getElementsByClassName("u-series")[0];
-        let label = legendSeries.getElementsByClassName("u-label");
-        let value = legendSeries.getElementsByClassName("u-value");
-        label[0].innerHTML = "Время";
-
-        let prev = ""
-        value[0].addEventListener('DOMSubtreeModified', function(e){
-          let val = value[0].innerHTML;
-          e.stopPropagation();
-          if (val != "--" && val != prev && val.length != 0 && val[val.length - 1] != "с")
+        // wait while all will be drawn
+        setTimeout(() =>
+        {
+          let legendSeries = this.element.getElementsByClassName("u-series");
+          this.legendItems = new Array<LegendItem>();
+          let e = this.element.getElementsByClassName("u-over")[0];
+          e.addEventListener("mouseleave", () =>
           {
-            let newVal = val + " с";
-            value[0].innerHTML = newVal;
-            prev = newVal;
-          }
+              if (this.legendItems)
+              {
+                this.legendItems.forEach(la => la.setValue("--"));
+              }
+          });
+          Array.from(legendSeries).forEach((e, i) =>{
+
+            let item = legendSeries[i];
+
+            this.legendItems?.push({
+                getValue: () => {return item.getElementsByClassName("u-value")[0].innerHTML;},
+                setValue: (value: string) => {item.getElementsByClassName("u-value")[0].innerHTML = value;},
+                isActive: () => !item.classList.contains("u-off"),
+
+            })
+            //*[@id="gd"]/div/table/tr[1]/td
+          })
+          //this.legendItems = legendSeries;
+
+          let timeSeries = this.element.getElementsByClassName("u-series")[0];
+          let label = timeSeries.getElementsByClassName("u-label");
+          let value = timeSeries.getElementsByClassName("u-value");
+          label[0].innerHTML = "Время";
+
+          let prev = ""
+          value[0].addEventListener('DOMSubtreeModified', function(e){
+            let val = value[0].innerHTML;
+            e.stopPropagation();
+            if (val != "--" && val != prev && val.length != 0 && val[val.length - 1] != "с")
+            {
+              let newVal = val + " с";
+              value[0].innerHTML = newVal;
+              prev = newVal;
+            }
         });
+        }, 100)
+        
+
+        
         //item.innerHTML = "Время";
 
     }
@@ -349,6 +491,8 @@ export class MyUPlotBase
         this.plot?.redraw();
     }
     
+    protected setCursor(){}
+
     protected SeriesDraw(i: number){}
 
     protected SelectCommited(){}

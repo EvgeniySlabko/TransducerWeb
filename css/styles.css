@@ -31,10 +31,9 @@
 } 
 
   /* Clear floats (clearfix hack) */
-.btn-group:after {
-	content: "";
-	clear: both;
-	display: table;
+.nav-btn-group {
+	display: flex;
+	gap: 2px;
 }
 
 /* Add a background color on hover */
@@ -125,4 +124,19 @@ legend{
 
 .u-value{
 	white-space: nowrap
+}
+
+.nav-tab-container{
+	width: 100%;
+	align-items: flex-start;
+}
+
+.plot-control-buttons{
+
+}
+
+.tooltip{
+	width: 50;
+	height: 50;
+	background-color: black;
 }
