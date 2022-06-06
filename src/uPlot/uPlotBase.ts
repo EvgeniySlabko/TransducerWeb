@@ -325,10 +325,17 @@ export class MyUPlotBase
           width: 100,
           height: 100,
           pxAlign: true,
+
+          cursor: {
+            points: {
+              size: 6,
+            }
+          },
           plugins: [
             this.wheelZoomPlugin({factor: 0.75})
           ],
           mode: 1,
+          
           scales: {
               x: {
                 distr: 1,

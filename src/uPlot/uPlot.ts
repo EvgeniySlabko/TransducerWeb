@@ -171,7 +171,7 @@ export class MyUPlot extends MyUPlotBase
       axis.side = style.yAxeSide == "left" ? 1 : 3;
       axis.stroke = style.axisColor;
       axis.show = true;
-      axis.label = style.legendTitle;
+      axis.label = style.yTitle;
       axis.grid!.show = style.grid;
       scale.range = () => [range[0], range[1]];
     }

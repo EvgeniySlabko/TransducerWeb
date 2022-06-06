@@ -12,7 +12,7 @@ export function CreateTorqueStyle(sensorInfo: FullSensorInfo, colorSeed: number)
     style.grid= true;
     style.color = GetColorBySeed(torqueBaseColor, colorSeed);
     style.axisColor = torqueBaseColor;
-    style.legendTitle = "Torque";
+    style.legendTitle = sensorInfo.SensorType + ":Torque";
     style.line = "solid";
     style.range = [sensorInfo.MinValue - 0.2 * sensorInfo.MaxValue, sensorInfo.MaxValue + 0.2 * sensorInfo.MaxValue],
     style.yTitle = "Torque";
@@ -33,7 +33,7 @@ export function CreateSpeedStyle(sensorInfo: FullSensorInfo, colorSeed: number) 
     style.grid= false;
     style.color = GetColorBySeed(speedBaseColor, colorSeed);
     style.axisColor = speedBaseColor;
-    style.legendTitle = "-Speed";
+    style.legendTitle = sensorInfo.SensorType + ":Speed";
     style.line = "solid";
     style.range = [0, 30000];
     style.yTitle = "Speed";
@@ -54,7 +54,7 @@ export function CreatetemperatureStyle(sensorInfo: FullSensorInfo, colorSeed: nu
     style.grid= false;
     style.color = GetColorBySeed(tmpBaseColor, colorSeed);
     style.axisColor = tmpBaseColor;
-    style.legendTitle = "Tmp";
+    style.legendTitle = sensorInfo.SensorType +  ":Tmp";
     style.line = "solid";
     style.range = [-60, 60],
     style.yTitle = "Tmp";
@@ -79,7 +79,7 @@ export function CreatePowerStyle(sensorInfo: FullSensorInfo, colorSeed: number) 
     style.grid= false;
     style.color = GetColorBySeed(powerBaseColor, colorSeed);
     style.axisColor = powerBaseColor;
-    style.legendTitle = "Power";
+    style.legendTitle = sensorInfo.SensorType + ":Power";
     style.line = "solid";
     style.range = [minPower, maxPower],
     style.yTitle = "Power";

@@ -39,10 +39,10 @@ export function GetApproximateValue(arr: number[], index: number, maxPoints: num
         curIter += 1;
     } while((arr[right] == undefined && arr[left] == undefined) && curIter <= maxPoints);
 
-    if (arr[left])
+    if (arr[left] != undefined)
         return left;
 
-    if (arr[right])
+    if (arr[right] != undefined)
         return right;
 
     return undefined;
