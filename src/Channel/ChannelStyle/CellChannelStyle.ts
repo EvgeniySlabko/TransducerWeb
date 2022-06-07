@@ -13,4 +13,7 @@ export declare class CellChannelStyle{
     sensorType: string;
     accurency: number;
     valueType: ValueType;
+    maxValue?: number;
+    minValue?: number;
+    limits?: boolean;
 }

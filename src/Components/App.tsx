@@ -266,6 +266,17 @@ export class App extends React.Component<Props, IState>
                                     savingChanel.Style.color = color;
                                 }
                             }}
+                            
+                            limitsStateChanged = {(channel: CellChannel, state: boolean) =>
+                            {
+                                let plotChannel = this.state.plotChannels.find(c => c.Style.sensorId == channel.Style.sensorId && 
+                                    c.Style.valueType == channel.Style.valueType);
+
+                                if (plotChannel)
+                                {
+                                    plotChannel.Style.drawLimits = state;
+                                }
+                            }}
                             sensorRemove = {this.sensorManualCloseHandler}
                             />
                         </div>

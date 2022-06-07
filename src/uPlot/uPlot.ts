@@ -141,6 +141,7 @@ export class MyUPlot extends MyUPlotBase
     let index = this.channels.length + 1;
     
     let sameTypeChannel = this.channels.find(c => c.channel.Style.valueType == style.valueType);
+
     if (sameTypeChannel)
     {
       let scaleName = <string>sameTypeChannel.axis.scale;
@@ -175,7 +176,7 @@ export class MyUPlot extends MyUPlotBase
       axis.grid!.show = style.grid;
       scale.range = () => [range[0], range[1]];
     }
-    
+
     series.show = channel.Style.visible;
     series.stroke = style.color;
     series.width = style.width;
@@ -183,6 +184,29 @@ export class MyUPlot extends MyUPlotBase
     series.points!.stroke = style.color;
     options.series.push(series);
     
+
+    let addLimit = (limitValue: number) => {
+        let channelIndex = this.channels.length + 1;
+        this.limits.push({
+        axis: axis,
+        color: () => channel.Style.color,
+        label: channel.Style.legendTitle,
+        range: range,
+        value: limitValue,
+        enabled: () => 
+        {
+          return (this.legendItems && this.legendItems.at(channelIndex) ? this.legendItems[channelIndex].isActive() : false) &&
+          channel.Style.drawLimits;
+        }
+      })
+    }
+     
+    if (channel.Style.maxValue)
+      addLimit(channel.Style.maxValue);
+    
+    if (channel.Style.minValue)
+      addLimit(channel.Style.minValue);
+
     let trace = {
       axis: axis,
       channel: channel,
@@ -274,6 +298,7 @@ export class MyUPlot extends MyUPlotBase
   private BuildNewPlot = (channels: Channel[]) =>
   {
     //if (!dataBuff) dataBuff = <AlignedData>this.datBuf;
+    this.limits = [];
     this.DestroyPlot();
 
     this.channels.forEach((c, index) => {

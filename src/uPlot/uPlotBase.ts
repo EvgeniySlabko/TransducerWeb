@@ -1,5 +1,6 @@
 import html2canvas from "html2canvas";
 import uPlot, { AlignedData, Axis, Options, Scale, Series } from "uplot";
+import { increase_brightness } from "../Common/Common";
 import { GetAxe, GetScale } from "./ComponetFactory/ComponentFactory";
 
 
@@ -8,11 +9,23 @@ export declare class LegendItem {
   public getValue: () => string;
   public isActive: () => boolean;
 }
+
+export declare class LimitLine{
+  label: string;
+  axis: uPlot.Axis;
+  range: number[];
+  value: number;
+  color: () => string;
+  enabled: () => boolean;
+}
+
 export class MyUPlotBase
 {
     protected element: HTMLElement;
     protected plot: uPlot | undefined;
     protected legendItems: LegendItem[] | undefined = undefined; 
+
+    protected limits: LimitLine[] = [];
 
     private controlarams =  {
       gridTicks: 50,     //делений графика в секунду.
@@ -318,6 +331,59 @@ export class MyUPlotBase
           }
         };
     }
+    
+    private limitsPlugin(limits: LimitLine[]) {
+
+      function drawBg(u:uPlot) {
+        //console.log("left: ", left, "top: ", top, "width", width, "height", height);
+        limits.forEach(l => {
+          if (!l.enabled()) return;
+          let { left, top, width, height } = u.bbox;
+          if (l.value > l.range[1] || l.value < l.range[0]) return;
+          let rangeValue  = l.range[1] - l.range[0];
+          let dr = rangeValue / height;
+          
+          let tmpR = [l.range[0] + -l.range[0], l.range[1] + -l.range[0]];
+          let tmpV = l.value + -l.range[0];
+
+          let relVal = tmpV - tmpR[0];
+          let limitHeight = relVal * height / rangeValue;
+
+          u.ctx.save();
+          u.ctx.strokeStyle = increase_brightness(l.color(), 40);
+
+          let xMax = u.scales["x"].max;
+          let xMin = u.scales["x"].min;
+          let dashLen = 5;
+          let dashGap = 15;
+          if (xMax && xMin)
+          {
+            let range = xMax - xMin;
+            dashLen = (1 / range) * 160;
+            dashGap = (1 / range) * 250;
+          }
+
+          u.ctx.beginPath();       // Начинает новый путь
+          u.ctx.setLineDash([dashLen, dashGap]);
+          u.ctx.font = "10px serif";
+          u.ctx.fillStyle  = increase_brightness(l.color(), 40);
+
+          let dy = height - limitHeight + top;
+          u.ctx.fillText(l.label, left, dy - 6);
+          u.ctx.moveTo(left,  dy);    // Передвигает перо в точку (30, 50)
+          u.ctx.lineWidth = 2;
+          u.ctx.lineTo(left + width, dy);  // Рисует линию до точки (150, 100)
+          u.ctx.stroke();          // Отображает путь
+          u.ctx.restore();
+        });
+      }
+
+      return {
+        hooks: {
+          drawClear: drawBg,
+        }
+      };
+    }
 
     protected getOptions()
     {
@@ -332,6 +398,7 @@ export class MyUPlotBase
             }
           },
           plugins: [
+            this.limitsPlugin(this.limits),
             this.wheelZoomPlugin({factor: 0.75})
           ],
           mode: 1,

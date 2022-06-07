@@ -12,6 +12,7 @@ const { Panel } = Collapse;
     group: Group 
     sensorRemove: (sensor: ISingleComponentSensor) => void,
     channelColorChanged: (channel: CellChannel, color: string) => void;
+    limitsStateChanged: (channel: CellChannel,  state: boolean) => void;
   }
 
   export class CellsGroup extends React.Component<Props>{
@@ -62,7 +63,11 @@ const { Panel } = Collapse;
             </Dropdown.Button>
             } key="1">        
             {
-              this.props.group.channels.map(c => <Cell key={c.Style.id} channel={c} colorChanged={this.props.channelColorChanged}></Cell>)
+              this.props.group.channels.map(c => <Cell key={c.Style.id}
+                                                       channel={c} 
+                                                       colorChanged={this.props.channelColorChanged}
+                                                       limitsStateChanged={this.props.limitsStateChanged}
+                                                       ></Cell>)
             }
           </Panel>
         </Collapse>

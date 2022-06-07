@@ -131,9 +131,9 @@ legend{
 	align-items: flex-start;
 }
 
-.plot-control-buttons{
-
-}
+.uplot .cursor-pt {
+	pointer-events: auto !important;
+  }
 
 .tooltip{
 	width: 50;

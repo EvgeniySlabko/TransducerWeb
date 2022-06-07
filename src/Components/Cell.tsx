@@ -1,16 +1,15 @@
-import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISensor';
 import React from 'react';
-import { ChannelStyle } from '../Channel/ChannelStyle/ChannelStyle';
 import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Channel/CellChannel';
-import { Button, Checkbox, Col, Collapse, Dropdown, Row, Slider } from 'antd';
-import { SketchPicker } from 'react-color';
+import { Checkbox, Collapse, InputNumber, Row, Slider } from 'antd';
 import { ColorChanger } from './ColorChanger';
+import { backgroundClip } from 'html2canvas/dist/types/css/property-descriptors/background-clip';
 
 const { Panel } = Collapse;
 
   export interface Props {
    channel: CellChannel;
    colorChanged: (channel: CellChannel,  color: string) => void;
+   limitsStateChanged: (channel: CellChannel,  state: boolean) => void;
   }
 
    interface IState {
@@ -18,6 +17,9 @@ const { Panel } = Collapse;
     fontSize: number,
     hide: boolean,
     color: string,
+    accurency: number,
+    overload: boolean,
+    limits?: boolean,
    }
 
   export class Cell extends React.Component<Props, IState>{
@@ -31,7 +33,9 @@ const { Panel } = Collapse;
         value: "",
         color: this.props.channel.Style.fontStyle,
         fontSize: this.props.channel.Style.fontSize,
-
+        accurency: this.props.channel.Style.accurency,
+        overload: false,
+        limits: this.props.channel.Style.limits,
       }
       
       this.props.channel.onClose.sub(this.closeHandler);
@@ -50,8 +54,27 @@ const { Panel } = Collapse;
 
     dataHandler = (channel: CellChannel, args: ChannelDataArgs) =>
     {
+      let value = args.data.data[0];
+      let overload = false;
+      if (this.props.channel.Style.minValue && value <= this.props.channel.Style.minValue)
+      {
+        overload = true;
+      }
+
+      if (this.props.channel.Style.maxValue && value >= this.props.channel.Style.maxValue)
+      {
+        overload = true;
+      }
+
+      if (this.state.overload != overload)
+      {
+        this.setState((prev, props) => ({
+          overload: overload,
+        }));
+      }
+
       this.setState((prev, props) => ({
-        value: args.data.data[0].toFixed(this.props.channel.Style.accurency),
+        value: args.data.data[0].toFixed(this.state.accurency),
       }));
     }
 
@@ -71,7 +94,7 @@ const { Panel } = Collapse;
           <Collapse defaultActiveKey={['0']}>
             <Panel header=
             {
-                <div className={`cell-name`} style = {{color: this.state.color}} >
+                <div className={`cell-name`} style = {{color: this.state.color, background: this.state.overload ? "red" : "white"}} >
                     {this.props.channel.Style.valueName}
                 </div>
             } key="1">
@@ -85,14 +108,39 @@ const { Panel } = Collapse;
                 }));
                 }} />
               <h6 style={{margin: "2px", float: "right"}}>Шрифт</h6>
+
               </div>
               <ColorChanger  baseColor={this.state.color} onColorChange={
                 this.colorChangeHandler
               }/>
+              
+              <div style={{display: "flex", width: "100%", alignItems: "center" }}>
+              <InputNumber step = {1} size="small" style={{width: "auto"}} min={0} max={5} value={this.state.accurency} onChange={
+                  (value: number) => {
+                    this.setState((prev, props) => ({
+                      accurency: value,
+                    }));
+                  }
+                } />
+                <h6 style={{margin: "2px", float: "right"}}>Знаков после запятой</h6>
+
+              </div>
+              
+                
+                <Checkbox disabled={this.state.limits === undefined} checked = {this.state.limits != undefined && this.state.limits} style={{fontWeight:"3px"}} onChange={(s) =>
+                {
+                  this.setState((prev, props) => ({
+                    limits: s.target.checked,
+                  }));
+
+                  this.props.limitsStateChanged(this.props.channel, s.target.checked);
+                }}>Пределы измерений</Checkbox>
+                
+              
           </Row>
             </Panel>
           </Collapse>
-
+          
           <div style={
             {
               display: "flex",

@@ -1,7 +1,4 @@
-import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor";
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
-import { Channel } from "./Channel";
-import { CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "../ChannelStyle/ChannelStyleFactory";
 import { CreateAverageValueDataSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "../SensorDataProveder/DataSourceFactory";
 import { CellChannel } from "./CellChannel";
 import { CreateCellSpeedStyle, CreatePowerCellStyle, CreatetemperatureCellStyle, CreateTorqueCellStyle } from "../ChannelStyle/CellChannelStyleFactory";

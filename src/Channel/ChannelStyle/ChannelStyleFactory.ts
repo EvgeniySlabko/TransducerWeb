@@ -24,6 +24,10 @@ export function CreateTorqueStyle(sensorInfo: FullSensorInfo, colorSeed: number)
     style.visible = true;
     style.width = 1;
     style.legendValueAcurency = sensorInfo.MasEdRazm.toString().length - 1;
+    style.drawLimits = true;
+    style.minValue = sensorInfo.MinValue;
+    style.maxValue = sensorInfo.MaxValue;
+    
     return style;
 }
 
@@ -45,6 +49,8 @@ export function CreateSpeedStyle(sensorInfo: FullSensorInfo, colorSeed: number) 
     style.visible = true;
     style.width = 1;
     style.legendValueAcurency = 0;
+    style.maxValue = sensorInfo.MaxSpeed;
+
     return style;
 }
 
@@ -91,6 +97,8 @@ export function CreatePowerStyle(sensorInfo: FullSensorInfo, colorSeed: number) 
     style.visible = false;
     style.width = 1;
     style.legendValueAcurency = 0;
+    style.maxValue = CalculatePower(sensorInfo.MaxSpeed, sensorInfo.MaxValue);
+    style.minValue = CalculatePower(sensorInfo.MaxSpeed, sensorInfo.MinValue);
 
     return style;
 }

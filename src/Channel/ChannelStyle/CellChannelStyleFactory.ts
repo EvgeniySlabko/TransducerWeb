@@ -1,5 +1,6 @@
 
 import { ColorsDefs } from "../../Common/Colors";
+import { CalculatePower } from "../../Common/Common";
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { CellChannelStyle } from "./CellChannelStyle";
 import { ChannelStyle } from "./ChannelStyle";
@@ -34,6 +35,9 @@ export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo, colorSeed: num
         sensorType: sensorInfo.SensorType,
         accurency: sensorInfo.MasEdRazm.toString().length - 1,
         valueType: "torque",
+        maxValue: sensorInfo.MaxValue,
+        minValue: sensorInfo.MinValue,
+        limits: true,
     }
 }
 
@@ -49,6 +53,8 @@ export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo, colorSeed: numb
         sensorType: sensorInfo.SensorType,
         accurency: 0,
         valueType: "speed",
+        maxValue: sensorInfo.MaxSpeed,
+        limits: false,
     } 
 }
 
@@ -79,5 +85,8 @@ export function CreatePowerCellStyle(sensorInfo: FullSensorInfo, colorSeed: numb
         sensorType: sensorInfo.SensorType,
         accurency: sensorInfo.MasEdRazm.toString().length - 1,
         valueType: "power",
+        maxValue: CalculatePower(sensorInfo.MaxSpeed, sensorInfo.MaxValue),
+        minValue: CalculatePower(sensorInfo.MaxSpeed, sensorInfo.MinValue),
+        limits: false,
     } 
 }
