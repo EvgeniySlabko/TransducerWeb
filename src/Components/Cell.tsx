@@ -95,7 +95,7 @@ const { Panel } = Collapse;
             <Panel header=
             {
                 <div className={`cell-name`} style = {{color: this.state.color, background: this.state.overload ? "red" : "white"}} >
-                    {this.props.channel.Style.valueName}
+                    {this.props.channel.Style.valueName + ` ${"(" + this.props.channel.Style.unitsName + ")"}`}
                 </div>
             } key="1">
             <Row>
@@ -147,7 +147,7 @@ const { Panel } = Collapse;
               height: this.state.hide ? "0px" : "auto"
             }
           }>
-            <div className={`${this.state.color}`} style = {{color:  this.state.color}}>{this.props.channel.Style.unitsName}</div>
+            
             <div className='right-column' style={{color:  this.state.color, fontSize: `${this.state.fontSize.toString()}px`}}>{this.state.value}</div>
           </div>
         </div>
