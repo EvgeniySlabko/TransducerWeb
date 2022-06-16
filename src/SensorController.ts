@@ -79,19 +79,28 @@ export class SensorController
     public async RemoveSensor(sensor: ISingleComponentSensor)
     {
         var index = this.GetIndex(sensor);
-        if (index !== -1) {
-            this.sensors.splice(index, 1);
-            await this._dispatcher.dispatch('Remove', {
-                sender: this,
-                sensor: sensor,
-            });
-            
-            
-            await sensor.CloseConnection();
+        try{
+            let node = this.sensors[index];
+            await node.worker.Close();
         }
-        else
+        catch(ex)
         {
-            throw "there is no such sensor";
+            throw ex;
+        }
+        finally
+        {
+            if (index !== -1) {
+                this.sensors.splice(index, 1);
+                await this._dispatcher.dispatch('Remove', {
+                    sender: this,
+                    sensor: sensor,
+                });
+                
+            }
+            else
+            {
+                throw "there is no such sensor";
+            }
         }
     }   
 

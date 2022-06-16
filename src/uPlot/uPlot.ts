@@ -3,6 +3,7 @@ import uPlot, { AlignedData, Axis, Options, Scale, Series } from "uplot";
 import { Channel, ChannelCloseArgs, ChannelDataArgs, ChannelMessageArgs } from "../Channel/Channel/Channel";
 import { GetApproximateValue } from "../Common/Common";
 import { SensorMessage } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { PlotBufferManager } from "./BufferManager";
 import { GetSeries } from "./ComponetFactory/ComponentFactory";
 import { AxeRangeChangeHandler } from "./PlotCommon";
 import { MyUPlotBase } from "./uPlotBase";
@@ -14,7 +15,6 @@ export type TraceInfo =
     axis: Axis;
     series: Series;
     scale: Scale;
-    lastDataIndex: number;
     requireGap: boolean;  
     curRange: number[];
     dataBufferIndex: number;
@@ -22,51 +22,25 @@ export type TraceInfo =
 
 export class MyUPlot extends MyUPlotBase
 {
-  private datBuf : (number | null | undefined)[][] = 
-  [
-    new Array(250000),
-
-    new Array(250000),
-    new Array(250000),
-    new Array(250000),
-    new Array(250000),
-
-    new Array(250000),
-    new Array(250000),
-    new Array(250000),
-    new Array(250000),
-
-    new Array(250000),
-    new Array(250000),
-    new Array(250000),
-    new Array(250000),
-  ];
+  private bufferManager : PlotBufferManager | null = null;
   
   //private currentChannels: Channel[] = [];
   private channels : TraceInfo[] = [];
-  //private options: uPlot.Options;
   
   private listening: boolean = false;
   private isInit: boolean = false;
-
   
   private params =  {
     gridTicks: 50,      //делений графика в секунду.
-    gridDx: 0,          // 
-    screenSize: 5,      // текущий размер зума по оси x
     streaming: true,    // режим автопрокрутки
-
-    sh: 0,      // Самое большое значение времени на текущий момент
-    th: 0,      // Самый большой индекс бубера оси x с данными на текущий момент
   }
   
   constructor(element: HTMLElement)
   {
     super(element);
-    this.Init();
-    //this.options = this.getOptions();    
+
     this.BuildNewPlot([]);
-    this.SetScale(0, this.params.screenSize);
+    this.SetScale(0, this.controlarams.screenSize);
 
     window.addEventListener("resize", e => {
       this.plot?.setSize(this.getSize());
@@ -79,10 +53,6 @@ export class MyUPlot extends MyUPlotBase
           //console.log('Normal');
       }
   });
-
-    setInterval(() => {
-      this.plot?.redraw(true, true)
-    }, 100);
   }
 
   public Reset()
@@ -98,19 +68,8 @@ export class MyUPlot extends MyUPlotBase
       //this.plot!.delSeries(1);
     this.channels = [];
 
-    this.Init();
-    this.params.th = 0;
-    this.params.sh = 0;
-    this.params.screenSize = 5;
-    this.SetScale(0, this.params.screenSize);
-  }
-
-  public Clear()
-  {
-    this.Init();
-    this.params.sh = 0;
-    this.params.th = 0;
-    this.SetScale(0, this.params.screenSize);
+    this.controlarams.screenSize = 5;
+    this.SetScale(0, this.controlarams.screenSize);
   }
 
   public SetChannels(channels: Channel[])
@@ -124,8 +83,8 @@ export class MyUPlot extends MyUPlotBase
   
   private HandleMessage = (channel: Channel, args: ChannelMessageArgs) =>
   {
-    if (args.sensorMsgArgs.msgType === SensorMessage.StopStreaming)
-          this.handleStopStreaming(channel);
+    //if (args.sensorMsgArgs.msgType === SensorMessage.StopStreaming)
+    //      this.handleStopStreaming(channel);
     if (args.sensorMsgArgs.msgType === SensorMessage.StartStreaming)
           this.handleStartStreaming(channel);
   }
@@ -223,31 +182,25 @@ export class MyUPlot extends MyUPlotBase
     //this.plot!.setData(this.datBuf);
     this.channels.push(trace);
   }
-  
-  private handleStopStreaming = (channel: Channel) =>
-  {
-    let index = this.channels.findIndex(t => t.channel === channel)
-    let lastIndex = this.channels[index].lastDataIndex;
-  }
 
   private handleStartStreaming = (channel: Channel) =>
   {
     let index = this.channels.findIndex(t => t.channel === channel);
-    if (this.channels[index].lastDataIndex != 0)
+    if (this.bufferManager!.GetLastSegmentTime(index) != 0)
       this.channels[index].requireGap = true; 
   }
 
   private HandleClose = (channel: Channel, msg: ChannelCloseArgs) =>
   {
-      let index = this.channels.findIndex(c => c.channel === channel);
-      this.clearTrace(this.channels[index].dataBufferIndex);
-      this.channels.splice(index, 1);
+      //let index = this.channels.findIndex(c => c.channel === channel);
+      //this.bufferManager?.CleanSegment(this.channels[index].dataBufferIndex);
+      //this.channels.splice(index, 1);
 
-      channel.onData.unsub(this.HandleData);
-      channel.onMessage.unsub(this.HandleMessage);
+      //channel.onData.unsub(this.HandleData);
+      //channel.onMessage.unsub(this.HandleMessage);
 
-      if (this.channels.length == 0)
-        this.BuildNewPlot([]);
+      //if (this.channels.length == 0)
+        //this.BuildNewPlot([]);
 
       
       //this.BuildNewPlot(this.channels.map(ch => ch.channel));
@@ -261,27 +214,16 @@ export class MyUPlot extends MyUPlotBase
   {
     var curIndex = this.channels.find(c => c.channel == channel)!.dataBufferIndex - 1;
     var lastTicksValue = args.data.time[args.data.time.length - 1];
-    var xIndex = this.tickToGridIndex(lastTicksValue);        //вычисляем индекс последнего значения данных
-  
-    let firstTickVal = args.data.time[0];
-    let firstIndex = this.tickToGridIndex(firstTickVal);
 
     if (this.channels[curIndex].requireGap)
     {
       this.channels[curIndex].requireGap = false;
-      for (let i = this.channels[curIndex].lastDataIndex + 1; i < firstIndex; i++) {
-        this.datBuf[curIndex + 1][i] = null;
-      }
-    }
-    if (this.params.th < xIndex) {this.params.th = xIndex; this.params.sh = lastTicksValue;}
-
-    for (let k = 0; k < args.data.time.length; k++) //проставляем данные
-    {
-      var currentIndex = this.tickToGridIndex(args.data.time[k]);
-      this.datBuf[curIndex + 1][currentIndex] = args.data.data[k];
+      let lastSegmentTime =  this.bufferManager!.GetLastSegmentTime(curIndex);
+      this.bufferManager?.SetGap(curIndex, lastSegmentTime, args.data.time[0]);
     }
 
-    this.channels[curIndex].lastDataIndex = xIndex;
+    this.bufferManager!.SetRange(curIndex, args.data);
+
     this.ScaleHandler();
   }
   
@@ -289,17 +231,24 @@ export class MyUPlot extends MyUPlotBase
   {
     var max = this.plot?.scales["x"].max;
     if (max == null) {max = 0};
-    if (this.params.sh > max - (this.params.screenSize / 2) + 0.05 && this.params.streaming)
+    if (this.bufferManager!.GetLastTime() > max - (this.controlarams.screenSize / 2) + 0.03 && this.params.streaming)
     {
       this.SetCurrentScale();
     }
   }
   
+
+  public Clear() {
+    this.bufferManager?.CleanSegments();
+  }
+
   private BuildNewPlot = (channels: Channel[]) =>
   {
     //if (!dataBuff) dataBuff = <AlignedData>this.datBuf;
     this.limits = [];
     this.DestroyPlot();
+
+    this.bufferManager = new PlotBufferManager(channels.length, 1 / this.params.gridTicks);
 
     this.channels.forEach((c, index) => {
       //this.clearTrace(index + 1);
@@ -307,6 +256,7 @@ export class MyUPlot extends MyUPlotBase
       c.channel.onClose.unsub(this.HandleClose);
       c.channel.onMessage.unsub(this.HandleMessage);
     });
+
     this.channels = [];
 
     let options = this.getOptions();
@@ -320,36 +270,9 @@ export class MyUPlot extends MyUPlotBase
     });
 
     setTimeout(() => this.InitAxes(), 100);
-    this.BuildPlot(options, this.datBuf);
+    this.BuildPlot(options, this.bufferManager.Source);
     this.plot!.setSize(this.getSize());
-    this.SetScale(0, this.params.screenSize);
-  }
-
-  private Init()
-  {
-    this.params.gridDx = 1 / this.params.gridTicks;
-
-    //проставляем основной массив с данными
-    for (let i = 1; i < this.datBuf.length; i++) {
-      for (let j = 0; j < this.datBuf[0].length; j++) {
-        this.datBuf[i][j] = undefined;
-      }
-    }
-
-    for (let k = 0; k < this.datBuf[0].length; k++) {
-      this.datBuf[0][k] = k * this.params.gridDx;
-    }
-  }
-
-  private tickToGridIndex (sensorTimeValue: number) {
-    return Math.floor(sensorTimeValue / this.params.gridDx ); // получаем индекс на графике по оси x (пододвигаем в меньшую сторону)
-  };
-
-  private clearTrace = (dataBufferIndex: number) =>
-  {
-    for (let k = 0; k < this.datBuf[0].length; k++) {
-      this.datBuf[dataBufferIndex][k] = undefined;
-    }
+    this.SetScale(0, this.controlarams.screenSize);
   }
 
   // Base plot callbacks
@@ -382,8 +305,10 @@ export class MyUPlot extends MyUPlotBase
   
   private SetCurrentScale()
   {
-    let newMax = this.params.sh + this.params.screenSize / 2;
-    let newMin = this.params.sh - this.params.screenSize / 2;
+    
+    let lastTime = this.bufferManager!.GetLastTime();
+    let newMax = lastTime + this.controlarams.screenSize / 2;
+    let newMin = lastTime - this.controlarams.screenSize / 2;
     this.SetScale(newMin, newMax);
   }
 
@@ -391,8 +316,8 @@ export class MyUPlot extends MyUPlotBase
     this.params.streaming = false;
   }
 
-  protected DbClick(e: any) {
-    
+  protected DbClick(e: any) 
+  { 
       if (e.button == 0) {
         e.preventDefault();
         this.params.streaming = !this.params.streaming;
@@ -404,39 +329,14 @@ export class MyUPlot extends MyUPlotBase
     if (this.params.streaming)
     {
       let dw = ((e.deltaY < 0) ? -1 : 1);
-      let newSize =this.params.screenSize + (this.params.screenSize * dw * 0.1);
-      this.params.screenSize = newSize < 0.1 ? 0.1 : newSize;
+      let newSize = this.controlarams.screenSize + (this.controlarams.screenSize * dw * 0.1);
+      this.controlarams.screenSize = newSize < 0.1 ? 0.1 : newSize;
+      
       this.SetCurrentScale();
       return true;
     }
 
     return false;
-  }
-
-  protected setCursor(){
-    if (!this.plot)
-      return;
-    
-    let left = this.plot?.cursor.left;
-    if (left)
-    {
-      let xVal = this.plot.posToVal(left, 'x');
-      let index = this.tickToGridIndex(xVal);
-      for (let i = 0; i < this.channels.length; i++) {
-        let nearestIndex = GetApproximateValue(<number[]>(this.datBuf[i + 1]), index, 100);
-        if (nearestIndex && this.legendItems)
-        {
-          let isActive = this.legendItems[i + 1].isActive();
-          if (isActive)
-          {
-            let trace = this.channels[i];
-            let value = this.datBuf[i + 1][nearestIndex];
-            this.legendItems[i + 1].setValue(value!.toFixed(trace.channel.Style.legendValueAcurency));
-          }
-        }
-      }
-
-    }
   }
 
   protected AxisRangeChanged(index: number, dy: number)

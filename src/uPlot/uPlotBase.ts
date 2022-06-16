@@ -1,6 +1,6 @@
 import html2canvas from "html2canvas";
 import uPlot, { AlignedData, Axis, Options, Scale, Series } from "uplot";
-import { increase_brightness } from "../Common/Common";
+import { getRandomInt, increase_brightness } from "../Common/Common";
 import { GetAxe, GetScale } from "./ComponetFactory/ComponentFactory";
 
 
@@ -27,199 +27,39 @@ export class MyUPlotBase
 
     protected limits: LimitLine[] = [];
 
-    private controlarams =  {
+    protected controlarams =  {
       gridTicks: 50,     //делений графика в секунду.
       gridDx: 0,          //
       screenSize: 5,      //
-      streaming: true,
-      
-      screenRollingGap: 2,
-      
-      rightGap: 5,
-      sh: 0,
-      th: 0,
       t0: 0,
+      range: [0, 5],
     }
     
     constructor (element: HTMLElement)
     {
         this.element = element;
-      }
-      
-      public async GetScreen() : Promise<string>
-      {
-        const canvas = await html2canvas(this.element);
-        return canvas.toDataURL("image/png", 1).replace("image/png", "image/octet-stream");
-      }
-      
-      protected SetScale(min: number, max: number){
-        this.plot?.setScale('x', {
-          min: min,
-          max: max,
-        });
-      }
-      
-      protected getSize() {    
-        return {
-            width: this.element.clientWidth - 50,
-            height: this.element.clientHeight - 100,
-          }
-        }
-        
-        tooltipsPlugin() {
-          let seriestt: any;
-          let cursortt: any; 
-          let ttc = document.createElement("div");
-          function init(u: uPlot) {
-            let over = u.over;
-            
-            
-            ttc.className = "tooltip";
-            ttc.textContent = "(x,y)";
-            ttc.style.pointerEvents = "none";
-            ttc.style.position = "absolute";
-            ttc.style.background = "rgba(0,0,255,0.1)";
-            over.appendChild(ttc);
-            
-            seriestt = u.series.map((s, i) => {
-              if (i == 0) return;
-
-          let tt = document.createElement("div");
-          tt.className = "tooltip";
-          tt.textContent = "Tooltip!";
-          tt.style.pointerEvents = "none";
-          tt.style.position = "absolute";
-          tt.style.background = "rgba(0,0,0,0.1)";
-          //tt.style.color = s.color;
-          //tt.style.display = s.show ? null : "none";
-          over.appendChild(tt);
-          return tt;
-        });
-
-        function hideTips() {
-          ttc.style.display = "contents";
-          seriestt.forEach((tt: any, i: any) => {
-            if (i == 0) return;
-
-            tt!.style.display = "contents";
-          });
-        }
-
-        function showTips() {
-          ttc.style.display = "";
-          seriestt.forEach((tt: any, i: any) => {
-            if (i == 0) return;
-
-            let s = u.series[i];
-            tt!.style.display = s.show ? "contents" : "contents";
-          });
-        }
-
-        over.addEventListener("mouseleave", () => {
-          if (!u.cursor.lock) {
-          //	u.setCursor({left: -10, top: -10});
-            hideTips();
-          }
-        });
-
-        over.addEventListener("mouseenter", () => {
-          showTips();
-        });
-
-        hideTips();
-      }
-
-      function setCursor(u: uPlot) {
-        const {left, top, idx} = u.cursor;
-
-        // this is here to handle if initial cursor position is set
-        // not great (can be optimized by doing more enter/leave state transition tracking)
-      //	if (left > 0)
-      //		u.cursortt.style.display = null;
-
-        ttc.style.left = left + "px";
-        ttc.style.top = top + "px";
-        ttc.textContent = "(" + u.posToVal(<number>left, "x").toFixed(2) + ", " + u.posToVal(<number>top, "y").toFixed(2) + ")";
-
-        // can optimize further by not applying styles if idx did not change
-        seriestt.forEach((tt:any , i:any) => {
-          if (i == 0) return;
-
-          let s = u.series[i];
-          //console.log(left, top, idx);
-          if (s.show) {
-            // this is here to handle if initial cursor position is set
-            // not great (can be optimized by doing more enter/leave state transition tracking)
-          //	if (left > 0)
-          	tt.style.display = null;
-
-            let xVal = u.data[0][<number>idx];
-            let yVal = u.data[i][<number>idx];
-
-            tt.textContent = "(" + xVal + ", " + yVal + ")";
-
-            
-            tt.style.left = Math.round(u.valToPos(xVal, 'x')) + "px";
-            tt.style.top = Math.round(u.valToPos(<number>yVal, (<any>s).scale)) + "px";
-          }
-        });
-      }
-
-      return {
-        hooks: {
-          init,
-          setCursor,
-          setScale: [
-            (u: any, key: any) => {
-              
-            }
-          ],
-          setSeries: [
-            (u: any, idx: any) => {
-              
-            }
-          ],
-        },
-      };
+        setInterval(() => {
+          this.plot?.redraw(true, true)
+        }, 30);
     }
-
-      /*
-      function setCursor(u: uPlot) {
-        const {left, top, idx} = u.cursor;
-
-        // this is here to handle if initial cursor position is set
-        // not great (can be optimized by doing more enter/leave state transition tracking)
-      //	if (left > 0)
-      //		u.cursortt.style.display = null;
-        
-        u.cursortt.style.left = left + "px";
-        u.cursortt.style.top = top + "px";
-        u.cursortt.textContent = "(" + u.posToVal(left, "x").toFixed(2) + ", " + u.posToVal(top, "y").toFixed(2) + ")";
-
-        // can optimize further by not applying styles if idx did not change
-        u.seriestt.forEach((tt: any, i: any) => {
-          if (i == 0) return;
-
-          let s = u.series[i];
-
-          if (s.show) {
-            // this is here to handle if initial cursor position is set
-            // not great (can be optimized by doing more enter/leave state transition tracking)
-          //	if (left > 0)
-          //		tt.style.display = null;
-
-            let xVal = u.data[0][idx];
-            let yVal = u.data[i][idx];
-
-            tt.textContent = "(" + xVal + ", " + yVal + ")";
-
-            tt.style.left = Math.round(u.valToPos(xVal, 'x')) + "px";
-            tt.style.top = Math.round(u.valToPos(yVal, s.scale)) + "px";
-          }
-        });
-      }*/
-        
-
+    
+    public async GetScreen() : Promise<string>
+    {
+      const canvas = await html2canvas(this.element);
+      return canvas.toDataURL("image/png", 1).replace("image/png", "image/octet-stream");
+    }
+      
+    protected SetScale(min: number, max: number){
+      this.controlarams.range = [min, max];
+    }
+      
+    protected getSize() {    
+      return {
+          width: this.element.clientWidth - 50,
+          height: this.element.clientHeight - 100,
+        }
+    }
+      
     private wheelZoomPlugin(opts: any) {
         let factor = opts.factor || 0.75;
     
@@ -248,6 +88,7 @@ export class MyUPlotBase
               
               over.addEventListener("dblclick", (e: MouseEvent) => {
                 this.DbClick(e);
+                e.stopPropagation();
               });
 
     
@@ -276,11 +117,6 @@ export class MyUPlotBase
                       //let top1 = e.clientY;
     
                     let dx = xUnitsPerPx * (left1 - left0);
-    
-                    u.setScale('x', {
-                      min: scXMin0 - dx,
-                      max: scXMax0 - dx,
-                    });
                   }
     
                   function onup(e: any) {
@@ -300,12 +136,12 @@ export class MyUPlotBase
                 if (this.Wheel(e))
                     return;
             
-                xMin = u.scales.x.min;
-                xMax = u.scales.x.max; //u.scales.x.max;
-                yMin = u.scales.y1.min;
-                yMax = u.scales.y1.max;
+                xMin = this.controlarams.range[0];
+                xMax = this.controlarams.range[1];
+                //yMin = u.scales.y1.min;
+                //yMax = u.scales.y1.max;
                 xRange = xMax - xMin;
-                yRange = yMax - yMin;
+                //yRange = yMax - yMin;
                 if (xRange < 0.001 && e.deltaY < 0) 
                   return; 
                 rect = over.getBoundingClientRect();
@@ -387,6 +223,7 @@ export class MyUPlotBase
 
     protected getOptions()
     {
+      let range = [0,5];
       return  {  
           width: 100,
           height: 100,
@@ -405,6 +242,8 @@ export class MyUPlotBase
           
           scales: {
               x: {
+                range: () =>  <Scale.Range>this.controlarams.range,
+
                 distr: 1,
                 time: false, 
                 auto: false,  
@@ -464,13 +303,14 @@ export class MyUPlotBase
             ],
             setSelect: [
                 u => {
+                  if (u.select.width == 0) return;
                     this.SelectCommited();
                     let min = u.posToVal(u.select.left, 'x');
                     let max = u.posToVal(u.select.left + u.select.width, 'x');
 
                     // zoom to selection
-                    u.setScale('x', {min, max});
-
+                    this.SetScale(min, max);
+                    //console.log(min, max);
                     // reset selection
                     u.setSelect(
                     {
@@ -482,7 +322,6 @@ export class MyUPlotBase
             },
           series: [
               {
-                // x series
                   auto: false,
               }, 
           ],
@@ -501,8 +340,6 @@ export class MyUPlotBase
     {
         this.plot = new uPlot(options, dataBuffer, this.element);
 
-        //legend correction.
-        // wait while all will be drawn
         setTimeout(() =>
         {
           let legendSeries = this.element.getElementsByClassName("u-series");
@@ -525,9 +362,7 @@ export class MyUPlotBase
                 isActive: () => !item.classList.contains("u-off"),
 
             })
-            //*[@id="gd"]/div/table/tr[1]/td
           })
-          //this.legendItems = legendSeries;
 
           let timeSeries = this.element.getElementsByClassName("u-series")[0];
           let label = timeSeries.getElementsByClassName("u-label");
@@ -546,11 +381,6 @@ export class MyUPlotBase
             }
         });
         }, 100)
-        
-
-        
-        //item.innerHTML = "Время";
-
     }
 
     public DestroyPlot()
@@ -623,8 +453,8 @@ export class MyUPlotBase
 
         let index = i; 
         divAxis.addEventListener('mousewheel', (e: any) => {
-        e.preventDefault();
-        this.AxisZoom(i, e.deltaY);
+          e.preventDefault();
+          this.AxisZoom(i, e.deltaY);
         });
     }
 }

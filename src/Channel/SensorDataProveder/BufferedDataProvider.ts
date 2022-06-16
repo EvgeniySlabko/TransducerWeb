@@ -17,7 +17,7 @@ export class BufferedSensorDataProvider implements ISensorDataProvider
     private dataBuffer: number[];
     private timeBuffer: number[];
 
-    constructor(sensor: ISingleComponentSensor,
+    constructor(sensor: ISensorDataProvider,
         bufferSize: number)
     {
         this.bufferSize = bufferSize;
@@ -51,7 +51,7 @@ export class BufferedSensorDataProvider implements ISensorDataProvider
                         time: this.timeBuffer,
                     }
 
-                    this._onData.dispatch(sensor, args)
+                    this._onData.dispatch(sensor, args);
                     this.dataCount = 0;
                 }
             }

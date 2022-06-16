@@ -1,7 +1,7 @@
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { Channel } from "./Channel";
 import { CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "../ChannelStyle/ChannelStyleFactory";
-import { CreateAverageValueDataSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "../SensorDataProveder/DataSourceFactory";
+import { CreateAverageValueDataSource, CreateBufferedDataSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "../SensorDataProveder/DataSourceFactory";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
 import { PlotCellChannelsInfo, SavingPlotChannelsInfo } from "../SensorDataProveder/ISensorDataProvider";
 
@@ -31,7 +31,7 @@ function CreatePlotComlex(sensor: ISingleComponentSensor, fullSensorInfo: FullSe
     let mainSource = CreateMainValueDataSource(sensor);
     let mainOffsetSource = CreateOffsetDataSource(mainSource, 0);
     let mainAvgSrc = CreateAverageValueDataSource(mainOffsetSource, 100);
-
+    //let bufferedSrc = CreateBufferedDataSource(mainOffsetSource, 500);
     let mainChannel = new Channel(mainAvgSrc, CreateTorqueStyle(fullSensorInfo, colorSeed));
 
     let speedSource = CreateSpeedValueDataSource(sensor);

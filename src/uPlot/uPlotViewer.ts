@@ -1,10 +1,8 @@
 import uPlot, { AlignedData, Axis, Scale, Series } from "uplot";
-import { Channel, ChannelCloseArgs, ChannelDataArgs, ChannelMessageArgs } from "../Channel/Channel/Channel";
+import { Channel } from "../Channel/Channel/Channel";
 import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
-import { sleep } from "../Common/Common";
 import { Snapshot } from "../ReportListener/Snapshot";
-import { SensorMessage } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
-import { GetAxe, GetScale, GetSeries } from "./ComponetFactory/ComponentFactory";
+import { GetSeries } from "./ComponetFactory/ComponentFactory";
 import { MyUPlotBase } from "./uPlotBase";
 
 
@@ -149,7 +147,7 @@ export class MyUPlotViewer extends MyUPlotBase
     this.channels = [];
 
     this.options = this.getOptions();
-
+    this.options.cursor!.points!.size = 8;
     styles.forEach((s, i) => {
       this.SetupChannel(s);
     });
@@ -221,7 +219,6 @@ export class MyUPlotViewer extends MyUPlotBase
       dataBufferIndex: index,
     }
 
-    
     this.channels.push(trace);
   }
 
@@ -248,12 +245,6 @@ export class MyUPlotViewer extends MyUPlotBase
         e.preventDefault();
         this.SetScale(this.params.t0, this.params.sh);
       }
-  }
-
-  private SetCurrentScale()
-  {
-    let newMax = this.params.sh + this.params.screenSize / 2;
-    this.SetScale(this.params.sh - this.params.screenSize, newMax);
   }
 
   protected Wheel(e: any): boolean {

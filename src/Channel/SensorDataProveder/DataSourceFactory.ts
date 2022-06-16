@@ -1,5 +1,6 @@
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
 import { AverageSensorDataProvider } from "./AverageDataProvider";
+import { BufferedSensorDataProvider } from "./BufferedDataProvider";
 import { DataSourseType, ISensorDataProvider } from "./ISensorDataProvider";
 import { OffsetDataProvider } from "./OffseDataProveder";
 import { PowerDataProvider } from "./PowerDataProveder";
@@ -33,4 +34,9 @@ export function CreateOffsetDataSource(baseSource: ISensorDataProvider, offset: 
 export function CreatePowerDataSource(toqueDataSourse: ISensorDataProvider, speedDataSourse: ISensorDataProvider) : PowerDataProvider
 {
     return new PowerDataProvider(toqueDataSourse, speedDataSourse);
+}
+
+export function CreateBufferedDataSource(dataSource: ISensorDataProvider, bufferSize: number) : BufferedSensorDataProvider
+{
+    return new BufferedSensorDataProvider(dataSource, bufferSize);
 }
