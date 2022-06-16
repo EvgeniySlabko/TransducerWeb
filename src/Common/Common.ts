@@ -19,12 +19,11 @@ export function getRandomInt(max: number) {
   }
 
 
-export function GetApproximateValue(arr: number[], index: number, maxPoints: number)
+export function GetApproximateValue(arr: (number | null | undefined)[], index: number, maxPoints: number) : number | undefined
 {
-    if (arr[index] != undefined)
-        return index;
+    if (arr[index] != undefined && arr[index] != null)
+        return <number>arr[index];
 
-    
     let left = index;
     let right = index;
     let curIter = 0
@@ -37,13 +36,13 @@ export function GetApproximateValue(arr: number[], index: number, maxPoints: num
             right += 1;
         
         curIter += 1;
-    } while((arr[right] == undefined && arr[left] == undefined) && curIter <= maxPoints);
+    } while((!arr[right] && !arr[left]) && curIter <= maxPoints);
 
     if (arr[left] != undefined)
-        return left;
+        return <number>arr[left];
 
     if (arr[right] != undefined)
-        return right;
+        return <number>arr[right];
 
     return undefined;
 }

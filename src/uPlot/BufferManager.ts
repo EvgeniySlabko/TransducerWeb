@@ -1,3 +1,4 @@
+import { GetApproximateValue } from "../Common/Common";
 import { dataEventArgs as DataEventArgs } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 
 declare class ISegmentInfo
@@ -33,12 +34,13 @@ export class PlotBufferManager
     }
 
     private size = () => this.buff[0].length; 
-    
+    public get Source() {return this.buff}
+    public get Segments() {return this.segmentInfo.length}
+
     private tickToGridIndex (sensorTimeValue: number) {
         return Math.floor(sensorTimeValue / this.dt); // получаем индекс на графике по оси x (пододвигаем в меньшую сторону)
     };
 
-    public get Source() {return this.buff}
 
     public GetLastSegmentTime(segmentIndex: number) : number{
         return this.segmentInfo[segmentIndex].lastDataIndex * this.dt;
@@ -131,6 +133,16 @@ export class PlotBufferManager
     {
         // TODO
         // this.bufferCutOffMaxLength = ...
+    }
+
+    public GetSegmentValue(segmentIndex: number, time: number) : number | undefined
+    {
+        let segment = this.buff[segmentIndex + 1];
+        let index = this.tickToGridIndex(time);
+        if (index > this.segmentInfo[segmentIndex].lastDataIndex) return undefined;
+        if (time < 0) return undefined;
+        let nearestValue = GetApproximateValue(segment, index, 100);
+        return nearestValue;
     }
 
     public SetGap(segmentIndex: number, from: number, to: number)

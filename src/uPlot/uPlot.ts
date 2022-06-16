@@ -237,7 +237,6 @@ export class MyUPlot extends MyUPlotBase
     }
   }
   
-
   public Clear() {
     this.bufferManager?.CleanSegments();
   }
@@ -276,6 +275,29 @@ export class MyUPlot extends MyUPlotBase
   }
 
   // Base plot callbacks
+
+  protected setCursor(){
+    if (!this.plot)
+      return;
+    
+    let left = this.plot?.cursor.left;
+    if (left)
+    {
+      for (let i = 0; i < this.bufferManager!.Segments; i++) {
+          if (!this.legendItems) continue;
+          
+          let isActive = this.legendItems[i + 1].isActive();
+          if (isActive)
+          {
+            let trace = this.channels[i];
+            let xVal = this.plot.posToVal(left, 'x');
+            let nearesrValue = this.bufferManager!.GetSegmentValue(i, xVal);
+            let strValue = nearesrValue ? nearesrValue.toFixed(trace.channel.Style.legendValueAcurency).toString() : "--"
+            this.legendItems[i + 1].setValue(strValue);
+          } 
+      }
+    }
+  }
 
   protected SeriesDraw(i: number)
   {
