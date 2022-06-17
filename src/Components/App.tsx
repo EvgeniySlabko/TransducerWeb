@@ -13,6 +13,8 @@ import { SensorWorker } from '../Sensor/SensorWorker';
 import { notification } from 'antd';
 import { Snapshot } from '../ReportListener/Snapshot';
 import { getRandomInt } from '../Common/Common';
+import { IEvent } from 'strongly-typed-events';
+import { PeakEventArgs } from '../Channel/SensorDataProveder/PeakAnalyzer';
 
 
 export interface Props {
@@ -31,6 +33,7 @@ export interface SensorNode{
     worker: SensorWorker,
     setOffset: (offset: number) => void,
     setCurrentOffsetValue: () => number,
+    peackDetected: IEvent<Channel, PeakEventArgs>,
 }
 
 interface IState {
@@ -132,12 +135,20 @@ export class App extends React.Component<Props, IState>
                         sensor: args.sensor,
                         worker: args.worker,
                         setCurrentOffsetValue: allChannelsInfo.currentValueOffsetSetter,
-                        setOffset: allChannelsInfo.offsetSetter
+                        setOffset: allChannelsInfo.offsetSetter,
+                        peackDetected: allChannelsInfo.peackDetected,
                     }
-                    
                 }])
             }));
 
+            allChannelsInfo.peackDetected.sub((channel, args) => 
+                console.log("Peak: ", args.peakValue, "Time:", args.time)
+            )
+
+            allChannelsInfo.peackDetected.sub((channel, args) =>
+            {
+                this.state.plotViewController
+            })
             this.state.plotViewController.AddChannels(allChannelsInfo.plotChannels);
 
             this.props.recordController.SetChannels(allChannelsInfo.savingChannels);

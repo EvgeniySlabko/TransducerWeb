@@ -19,12 +19,20 @@ export declare class LimitLine{
   enabled: () => boolean;
 }
 
+export declare class Label
+{
+  yRange: number[];
+  time: number;
+  text: string;
+  value: number;
+}
+
 export class MyUPlotBase
 {
     protected element: HTMLElement;
     protected plot: uPlot | undefined;
     protected legendItems: LegendItem[] | undefined = undefined; 
-
+    protected labels: Label[] = [];
     protected limits: LimitLine[] = [];
 
     protected controlarams =  {
@@ -37,6 +45,7 @@ export class MyUPlotBase
     
     constructor (element: HTMLElement)
     {
+        // переотрисовка
         this.element = element;
         setInterval(() => {
           this.plot?.redraw(true, true)
@@ -168,6 +177,39 @@ export class MyUPlotBase
         };
     }
     
+    private labelsPlugin(labels: Label[], ) {
+
+      function drawBg(u: uPlot) {
+        //console.log("left: ", left, "top: ", top, "width", width, "height", height);
+        labels.forEach(l => {
+          let { left, top, width, height } = u.bbox;
+
+          if (l.value > l.yRange[1] || l.value < l.yRange[0]) return;
+          let xRange = <number[]>u.scales['x']!.range;
+          if (l.time > xRange[1] || l.time < xRange[0]) return;
+
+          let rangeValue  = xRange[1] - xRange[0];
+          let absTime = l.time - xRange[0];
+          let xCord = absTime * rangeValue / width;
+          
+          let yRangeValue  = l.yRange[1] - l.yRange[0];
+          let absValue = l.value - xRange[0];
+          let yCord = absValue * yRangeValue / height;
+          u.ctx.save();
+          u.ctx.font = "10px serif";
+          u.ctx.fillText("Максимум!!", xCord, yCord);
+          u.ctx.stroke();          // Отображает путь
+          u.ctx.restore();
+        });
+      }
+
+      return {
+        hooks: {
+          drawClear: drawBg,
+        }
+      };
+    }
+
     private limitsPlugin(limits: LimitLine[]) {
 
       function drawBg(u:uPlot) {
@@ -236,7 +278,8 @@ export class MyUPlotBase
           },
           plugins: [
             this.limitsPlugin(this.limits),
-            this.wheelZoomPlugin({factor: 0.75})
+            this.wheelZoomPlugin({factor: 0.75}),
+            this.labelsPlugin(this.labels)
           ],
           mode: 1,
           

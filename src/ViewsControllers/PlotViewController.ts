@@ -2,6 +2,15 @@ import { MyUPlot } from "../uPlot/uPlot";
 import { Channel } from "../Channel/Channel/Channel";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { MyUPlotViewer } from "../uPlot/uPlotViewer";
+import { Label } from "../uPlot/uPlotBase";
+
+export declare class ChannelLabel
+{
+    channel: Channel;
+    time: number;
+    text: string;
+    value: number;
+}
 
 export class ViewController
 {
@@ -35,6 +44,15 @@ export class ViewController
 
         streamingPlot.SetChannels(channels);
         
+    }
+
+    public AddLabelForChannel(label: ChannelLabel)
+    {
+        if (this.streamingMode)
+        {
+            let streamingPlot = <MyUPlot>this.plot;
+            streamingPlot.AddLabel(label);
+        }
     }
 
     public async AddChannels(channels: Channel[])

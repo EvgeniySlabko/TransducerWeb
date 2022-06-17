@@ -3,6 +3,7 @@ import { AverageSensorDataProvider } from "./AverageDataProvider";
 import { BufferedSensorDataProvider } from "./BufferedDataProvider";
 import { DataSourseType, ISensorDataProvider } from "./ISensorDataProvider";
 import { OffsetDataProvider } from "./OffseDataProveder";
+import { PeakAnalizer } from "./PeakAnalyzer";
 import { PowerDataProvider } from "./PowerDataProveder";
 import { SensorDataProvider } from "./SensorDataProvider";
 
@@ -29,6 +30,11 @@ export function CreateAverageValueDataSource(baseSource: ISensorDataProvider, av
 export function CreateOffsetDataSource(baseSource: ISensorDataProvider, offset: number) : OffsetDataProvider
 {
     return new OffsetDataProvider(baseSource, 0);
+}
+
+export function CreateDetectorSource(baseSource: ISensorDataProvider, threshold : number) : PeakAnalizer
+{
+    return new PeakAnalizer(baseSource, threshold);
 }
 
 export function CreatePowerDataSource(toqueDataSourse: ISensorDataProvider, speedDataSourse: ISensorDataProvider) : PowerDataProvider

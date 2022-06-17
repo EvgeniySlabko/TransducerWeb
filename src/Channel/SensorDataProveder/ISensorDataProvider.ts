@@ -4,6 +4,7 @@ import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor"
 import { dataEventArgs, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { CellChannel } from "../Channel/CellChannel";
 import { Channel } from "../Channel/Channel";
+import { PeakEventArgs } from "./PeakAnalyzer";
 
 export interface ISensorDataProvider
 {
@@ -26,6 +27,7 @@ export declare interface PlotCellChannelsInfo
     offsetSetter: (offset: number) => void,
     avgSetter: (offset: number) => void,
     currentValueOffsetSetter: () => number,
+    peakDetected: IEvent<Channel, PeakEventArgs>
 }
 
 export declare interface SavingPlotChannelsInfo

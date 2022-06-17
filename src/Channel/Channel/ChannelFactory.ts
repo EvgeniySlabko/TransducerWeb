@@ -1,9 +1,11 @@
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { Channel } from "./Channel";
 import { CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "../ChannelStyle/ChannelStyleFactory";
-import { CreateAverageValueDataSource, CreateBufferedDataSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "../SensorDataProveder/DataSourceFactory";
+import { CreateAverageValueDataSource, CreateBufferedDataSource, CreateDetectorSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "../SensorDataProveder/DataSourceFactory";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
-import { PlotCellChannelsInfo, SavingPlotChannelsInfo } from "../SensorDataProveder/ISensorDataProvider";
+import { ISensorDataProvider, PlotCellChannelsInfo, SavingPlotChannelsInfo } from "../SensorDataProveder/ISensorDataProvider";
+import { EventDispatcher, IEvent } from "strongly-typed-events";
+import { PeakEventArgs } from "../SensorDataProveder/PeakAnalyzer";
 
 declare interface ComplexSavingInfo
 {
@@ -24,13 +26,15 @@ declare interface ComplexPlotInfo
     avgSetter: (offset: number) => void,
     offsetSetter: (offset: number) => void,
     currentValueOffsetSetter: () => number,
+    peakDetected: IEvent<ISensorDataProvider, PeakEventArgs>
 }
 
 function CreatePlotComlex(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo, colorSeed: number) : ComplexPlotInfo
 {
     let mainSource = CreateMainValueDataSource(sensor);
     let mainOffsetSource = CreateOffsetDataSource(mainSource, 0);
-    let mainAvgSrc = CreateAverageValueDataSource(mainOffsetSource, 100);
+    let peakAnalizer = CreateDetectorSource(mainOffsetSource, 1000);
+    let mainAvgSrc = CreateAverageValueDataSource(peakAnalizer, 100);
     //let bufferedSrc = CreateBufferedDataSource(mainOffsetSource, 500);
     let mainChannel = new Channel(mainAvgSrc, CreateTorqueStyle(fullSensorInfo, colorSeed));
 
@@ -47,6 +51,7 @@ function CreatePlotComlex(sensor: ISingleComponentSensor, fullSensorInfo: FullSe
         mainChannel: mainChannel,
         powerChannel: powerChannel,
         speedCahannel: speedChannel,
+        peakDetected: peakAnalizer.onPeakDetected,
     }
 }
 
@@ -91,11 +96,17 @@ export function CreateAllSensorChannelsForPlot(sensor: ISingleComponentSensor, f
     channels.push(temperatureChannel);
     channels.push(channelsInfo.powerChannel);
 
+    let peakEvent = new EventDispatcher<Channel, PeakEventArgs>();
+    channelsInfo.peakDetected.sub((source, args) => 
+    {
+        peakEvent.dispatch(channelsInfo.mainChannel, args);
+    })
     return {
         avgSetter: channelsInfo.avgSetter,
         currentValueOffsetSetter: channelsInfo.currentValueOffsetSetter,
         offsetSetter: channelsInfo.offsetSetter,
-        plotChannels: channels
+        plotChannels: channels,
+        peakDetected: peakEvent.asEvent()
     }
 }
 

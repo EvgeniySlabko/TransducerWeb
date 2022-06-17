@@ -1,12 +1,14 @@
 
+import { timers } from "jquery";
 import uPlot, { AlignedData, Axis, Options, Scale, Series } from "uplot";
 import { Channel, ChannelCloseArgs, ChannelDataArgs, ChannelMessageArgs } from "../Channel/Channel/Channel";
 import { GetApproximateValue } from "../Common/Common";
 import { SensorMessage } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { ChannelLabel } from "../ViewsControllers/PlotViewController";
 import { PlotBufferManager } from "./BufferManager";
 import { GetSeries } from "./ComponetFactory/ComponentFactory";
 import { AxeRangeChangeHandler } from "./PlotCommon";
-import { MyUPlotBase } from "./uPlotBase";
+import { Label, MyUPlotBase } from "./uPlotBase";
 
 
 export type TraceInfo =
@@ -274,6 +276,23 @@ export class MyUPlot extends MyUPlotBase
     this.SetScale(0, this.controlarams.screenSize);
   }
 
+
+  public AddLabel(channelLabel: ChannelLabel)
+  {
+    let trace = this.channels.find(c => c.channel == channelLabel.channel)
+    if (!trace) return;
+
+    let label: Label =
+    {
+      time: channelLabel.time,
+      text: channelLabel.text,
+      yRange: trace.curRange,
+      value: channelLabel.value,
+    }
+
+    this.labels.push(label);
+  }
+  
   // Base plot callbacks
 
   protected setCursor(){
