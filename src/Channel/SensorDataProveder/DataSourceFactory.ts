@@ -1,4 +1,5 @@
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
+import { AbsolutePeakAnalyzer } from "./AbsolutePeakAnalyzer";
 import { AverageSensorDataProvider } from "./AverageDataProvider";
 import { BufferedSensorDataProvider } from "./BufferedDataProvider";
 import { DataSourseType, ISensorDataProvider } from "./ISensorDataProvider";
@@ -32,9 +33,14 @@ export function CreateOffsetDataSource(baseSource: ISensorDataProvider, offset: 
     return new OffsetDataProvider(baseSource, 0);
 }
 
-export function CreateDetectorSource(baseSource: ISensorDataProvider, threshold : number) : PeakAnalizer
+export function CreateDetectorSource(baseSource: ISensorDataProvider, threshold : number, shmithValue : number) : PeakAnalizer
 {
-    return new PeakAnalizer(baseSource, threshold);
+    return new PeakAnalizer(baseSource, threshold, shmithValue);
+}
+
+export function CreateAbsoluteAnalizerSource(baseSource: ISensorDataProvider) : AbsolutePeakAnalyzer
+{
+    return new AbsolutePeakAnalyzer(baseSource);
 }
 
 export function CreatePowerDataSource(toqueDataSourse: ISensorDataProvider, speedDataSourse: ISensorDataProvider) : PowerDataProvider

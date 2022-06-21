@@ -276,7 +276,6 @@ export class MyUPlot extends MyUPlotBase
     this.SetScale(0, this.controlarams.screenSize);
   }
 
-
   public AddLabel(channelLabel: ChannelLabel)
   {
     let trace = this.channels.find(c => c.channel == channelLabel.channel)
@@ -286,11 +285,16 @@ export class MyUPlot extends MyUPlotBase
     {
       time: channelLabel.time,
       text: channelLabel.text,
-      yRange: trace.curRange,
+      scale: <string>trace.axis.scale,
       value: channelLabel.value,
     }
 
     this.labels.push(label);
+  }
+
+  public ClearLabels()
+  {
+    this.labels.splice(0, this.labels.length);
   }
   
   // Base plot callbacks

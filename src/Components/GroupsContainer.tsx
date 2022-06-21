@@ -1,21 +1,19 @@
 import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISensor';
 import React from 'react';
 import { CellChannel, ChannelDataArgs } from '../Channel/Channel/CellChannel';
-import { Collapse, Dropdown, Menu, Radio, Space } from 'antd';
-import { SettingOutlined } from '@ant-design/icons';
-import { SensorNode } from './App';
-import { CellsGroup } from './CellsGroup';
+import { Collapse, Dropdown, Menu, notification, Radio, Space } from 'antd';
+import { Group, SensorNode } from './App';
+import { CellsGroup, PeackMode } from './CellsGroup';
+import { Channel } from '../Channel/Channel/Channel';
+import { ViewController } from '../ViewsControllers/PlotViewController';
+import { PlotPeackController } from '../ViewsControllers/PeacksController';
 const { Panel } = Collapse;
 
-export interface Group{
-  node: SensorNode;
-  channels: CellChannel[];
-}
   export interface Props {
     groups: Group[],
+    plotViewController: ViewController | null;
+    peackController: PlotPeackController | null;
     sensorRemove: (sensor: ISingleComponentSensor) => void,
-    channelColorChanged: (channel: CellChannel, color: string) => void;
-    limitsStateChanged: (channel: CellChannel,  state: boolean) => void;
   }
 
   export class GroupsContainer extends React.Component<Props>{
@@ -28,10 +26,11 @@ export interface Group{
     render() {
         return (      
           this.props.groups.map((g, i) => <CellsGroup key={g.node.fullSensorInfo.id} 
-                                            channelColorChanged = { (channel, color) => this.props.channelColorChanged(channel, color)}
+                                            plotViewController = {this.props.plotViewController}
+                                            peackController = {this.props.peackController}
                                             group = {g}
-                                            limitsStateChanged = {this.props.limitsStateChanged}
                                             sensorRemove = {(sensor: ISingleComponentSensor) => this.props.sensorRemove(sensor)}
+                                            setThreshold={ g.channelsInfo.setThreshold}
                                              ></CellsGroup>)  
       )
     }

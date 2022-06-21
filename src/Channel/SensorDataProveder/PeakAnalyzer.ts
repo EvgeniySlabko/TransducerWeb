@@ -1,4 +1,5 @@
 import { EventDispatcher, IEvent, ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
+import { PeackMode } from "../../Components/CellsGroup";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
 import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor";
 import { dataEventArgs, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
@@ -28,58 +29,70 @@ export class PeakAnalizer
     private currentMaxPeakValue: number = 0;
     private currentMaxTimeValue: number = 0;
 
-    private prevPeak: boolean = false;
+    private shmithValue: number;
+    private mode: PeackMode = "none";
+    
+    private absoluteModeMaxValue: number = 0;
 
-    constructor(baseSource: ISensorDataProvider, threshold : number)
+    constructor(baseSource: ISensorDataProvider, threshold : number, shmithValue: number)
     {
         this.threshold = threshold;
+        this.shmithValue = shmithValue;
+        baseSource.onData.sub(this.relativeHandler);
+    }
 
-        baseSource.onData.sub((sensor, data) => {
-            
-            for (let i = 0; i < data.data.length; i++) {
-                let absValue = Math.abs(data.data[i]);
+    private relativeHandler = (sensor : ISingleComponentSensor, data: dataEventArgs) =>
+    {
+        let args: PeakEventArgs | null;
+        args = null;
 
-                if (this.thresholdCrossed)
+        for (let i = 0; i < data.data.length; i++) {
+            let absValue = Math.abs(data.data[i]);
+
+            if (this.thresholdCrossed)
+            {
+                if (absValue > this.currentMaxAbsPeakValue)
                 {
-                    if (absValue > this.currentMaxAbsPeakValue)
+                    this.currentMaxPeakValue = data.data[i];
+                    this.currentMaxTimeValue = data.time[i];
+                    this.currentMaxAbsPeakValue = absValue;
+                }
+                else
+                {
+                    //пик закончился
+                    if (absValue < this.shmithValue && this.thresholdCrossed)
                     {
-                        this.currentMaxPeakValue = data.data[i];
-                        this.currentMaxTimeValue = data.time[i];
-                        this.currentMaxAbsPeakValue = absValue;
-                    }
-                    else
-                    {
-                        //пик закончился
-                        if (absValue < this.threshold)
+                        this.thresholdCrossed = false;
+                        if (this.currentMaxAbsPeakValue)
                         {
-                            this.thresholdCrossed = false;
-                            if (this.currentMaxAbsPeakValue)
-                            {
-                                this._onPeakDetected.dispatch(this, {
-                                    peakValue: this.currentMaxPeakValue,
-                                    time: this.currentMaxTimeValue
-                                })
+                            args = {
+                                peakValue: this.currentMaxPeakValue,
+                                time: this.currentMaxTimeValue
                             }
                         }
                     }
                 }
-                else
+            }
+            else
+            {
+                if (absValue > this.threshold)
                 {
-                    if (absValue > this.threshold)
-                    {
-                        this.thresholdCrossed = true;
-                        this.currentMaxPeakValue = data.data[i];
-                        this.currentMaxAbsPeakValue = absValue;
-                        this.currentMaxTimeValue = data.time[i];
-                    }
+                    this.thresholdCrossed = true;
+                    this.currentMaxPeakValue = data.data[i];
+                    this.currentMaxAbsPeakValue = absValue;
+                    this.currentMaxTimeValue = data.time[i];
                 }
             }
-        });
+        }
+
+        if (args)
+            this._onPeakDetected.dispatch(this, args);
     }
 
-    public SetThreshold = (threshold: number) =>
+    public SetThreshold = (upperdorger: number, lowerBorder: number) =>
     {
-        this.threshold = threshold;
+        this.threshold = upperdorger;
+        this.shmithValue = lowerBorder
     }
 
     get onPeakDetected(): IEvent<ISensorDataProvider, PeakEventArgs> {

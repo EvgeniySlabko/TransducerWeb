@@ -7,21 +7,29 @@ import { Channel } from "./Channel/Channel";
 import { CreateAllSensorChannelsForPlot, CreateAllSensorChannelsSaving } from "./Channel/ChannelFactory";
 import { CreateCellSpeedStyle, CreatePowerCellStyle, CreatetemperatureCellStyle, CreateTorqueCellStyle } from "./ChannelStyle/CellChannelStyleFactory";
 import { CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "./ChannelStyle/ChannelStyleFactory";
-import { CreateAverageValueDataSource, CreateDetectorSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "./SensorDataProveder/DataSourceFactory";
+import { CreateAbsoluteAnalizerSource, CreateAverageValueDataSource, CreateDetectorSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "./SensorDataProveder/DataSourceFactory";
 import { ISensorDataProvider } from "./SensorDataProveder/ISensorDataProvider";
 import { PeakEventArgs } from "./SensorDataProveder/PeakAnalyzer";
 import { SensorDataProvider } from "./SensorDataProveder/SensorDataProvider";
 
+export interface ChannelsGroup
+{
+    plotChannel: Channel;
+    savingChannel: Channel;
+    cellChannel: CellChannel;
+}
+
 export interface AllChannelsInfo
 {
-    plotChannels: Channel[];
-    savingChannels: Channel[];
-    cellChannels: CellChannel[];
-
+    channelGroups: ChannelsGroup[];
     avgSetter: (avgRatio: number) => void,
     offsetSetter: (offset: number) => void,
     currentValueOffsetSetter: ()  => number,
-    peackDetected: IEvent<Channel, PeakEventArgs>
+    peackDetected: IEvent<Channel, PeakEventArgs>,
+    absolutePeackDetected: IEvent<Channel, PeakEventArgs>,
+    setThreshold: (upperThreshold: number, lowerThreshold: number) => void,
+    resetAbsoluteAnalizer: () => void,
+    setAbsoluteAnalizer: (state: boolean) => void,
 }
 
 /*
@@ -72,7 +80,8 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     //Torque
     let mainSource = CreateMainValueDataSource(sensor);
     let offsetSource =  CreateOffsetDataSource(mainSource, 0);
-    let analizerSource = CreateDetectorSource(offsetSource, 0.1 * fullSensorInfo.MaxValue);
+    let analizerSource = CreateDetectorSource(offsetSource, 0.1 * fullSensorInfo.MaxValue, 0.4);
+    let absoluteAnalizerSource = CreateAbsoluteAnalizerSource(offsetSource);
     let cellAverager = CreateAverageValueDataSource(offsetSource, 500);
     let plotAverager = CreateAverageValueDataSource(offsetSource, 100);
     
@@ -113,21 +122,37 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
 
 
     let peakEvent = new EventDispatcher<Channel, PeakEventArgs>();
-    
+    let absolutepeakEvent = new EventDispatcher<Channel, PeakEventArgs>();
     analizerSource.onPeakDetected.sub((sensor, args) =>
     {
         peakEvent.dispatch(mainPlotChannel, args);
     });
+
+    absoluteAnalizerSource.onPeakDetected.sub((sensor, args) =>
+    {
+        absolutepeakEvent.dispatch(mainPlotChannel, args);
+    });
     
+    let groups : ChannelsGroup[] = [];
+    for (let i = 0; i < cellChannels.length; i++) {
+        groups.push(
+            {
+                cellChannel: cellChannels[i],
+                plotChannel: channels[i],
+                savingChannel: savingChannels[i],
+            })
+    }
 
     return{
         avgSetter: plotAverager.SetAverage,
         offsetSetter: offsetSource.SetOffset,
         currentValueOffsetSetter: offsetSource.SetCurrentOffset,
-        cellChannels: cellChannels,
-        savingChannels: savingChannels,
-        plotChannels: channels,
+        channelGroups: groups,
         peackDetected: peakEvent.asEvent(),
+        absolutePeackDetected: absolutepeakEvent.asEvent(),
+        setThreshold: analizerSource.SetThreshold,
+        resetAbsoluteAnalizer: absoluteAnalizerSource.Reset,
+        setAbsoluteAnalizer: absoluteAnalizerSource.setState,
     }
 
     function CreateTemperatureChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo, colorSeed: number) : Channel

@@ -2,14 +2,14 @@ import React from 'react';
 import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Channel/CellChannel';
 import { Checkbox, Collapse, InputNumber, Row, Slider } from 'antd';
 import { ColorChanger } from './ColorChanger';
-import { backgroundClip } from 'html2canvas/dist/types/css/property-descriptors/background-clip';
+import { ViewController } from '../ViewsControllers/PlotViewController';
+import { ChannelsGroup } from '../Channel/AllChannelsFactory';
 
 const { Panel } = Collapse;
 
   export interface Props {
-   channel: CellChannel;
-   colorChanged: (channel: CellChannel,  color: string) => void;
-   limitsStateChanged: (channel: CellChannel,  state: boolean) => void;
+   channelGroup: ChannelsGroup;
+   plotViewController: ViewController | null;
   }
 
    interface IState {
@@ -31,15 +31,15 @@ const { Panel } = Collapse;
       this.state = {
         hide: false,
         value: "",
-        color: this.props.channel.Style.fontStyle,
-        fontSize: this.props.channel.Style.fontSize,
-        accurency: this.props.channel.Style.accurency,
+        color: this.props.channelGroup.cellChannel.Style.fontStyle,
+        fontSize: this.props.channelGroup.cellChannel.Style.fontSize,
+        accurency: this.props.channelGroup.cellChannel.Style.accurency,
         overload: false,
-        limits: this.props.channel.Style.limits,
+        limits: this.props.channelGroup.cellChannel.Style.limits,
       }
       
-      this.props.channel.onClose.sub(this.closeHandler);
-      this.props.channel.onData.sub(this.dataHandler);
+      this.props.channelGroup.cellChannel.onClose.sub(this.closeHandler);
+      this.props.channelGroup.cellChannel.onData.sub(this.dataHandler);
     }
 
     closeHandler = (channel: CellChannel, args: ChannelCloseArgs) =>
@@ -48,20 +48,20 @@ const { Panel } = Collapse;
           value: ""
         }));
 
-        this.props.channel.onClose.unsub(this.closeHandler);
-        this.props.channel.onData.unsub(this.dataHandler);
+        this.props.channelGroup.cellChannel.onClose.unsub(this.closeHandler);
+        this.props.channelGroup.cellChannel.onData.unsub(this.dataHandler);
     }
 
     dataHandler = (channel: CellChannel, args: ChannelDataArgs) =>
     {
       let value = args.data.data[0];
       let overload = false;
-      if (this.props.channel.Style.minValue && value <= this.props.channel.Style.minValue)
+      if (this.props.channelGroup.cellChannel.Style.minValue && value <= this.props.channelGroup.cellChannel.Style.minValue)
       {
         overload = true;
       }
 
-      if (this.props.channel.Style.maxValue && value >= this.props.channel.Style.maxValue)
+      if (this.props.channelGroup.cellChannel.Style.maxValue && value >= this.props.channelGroup.cellChannel.Style.maxValue)
       {
         overload = true;
       }
@@ -78,13 +78,15 @@ const { Panel } = Collapse;
       }));
     }
 
+    colorChangeHandler = (color: string) => {
 
-    colorChangeHandler = (color: string) =>{
-      this.setState((prev, props) => ({
-        color: color,
-      }));
+      this.props.channelGroup.plotChannel.Style.color = color;
+      this.props.channelGroup.savingChannel.Style.color = color;
+      this.setState((prev, props) => ({color: color,}));
+    }
 
-      this.props.colorChanged(this.props.channel, color);
+    limitHandler = (state: boolean) =>{
+      this.props.channelGroup.plotChannel.Style.drawLimits = state;
     }
 
     render(){
@@ -95,7 +97,7 @@ const { Panel } = Collapse;
             <Panel header=
             {
                 <div className={`cell-name`} style = {{color: this.state.color, background: this.state.overload ? "red" : "white"}} >
-                    {this.props.channel.Style.valueName + ` ${"(" + this.props.channel.Style.unitsName + ")"}`}
+                    {this.props.channelGroup.cellChannel.Style.valueName + ` ${"(" + this.props.channelGroup.cellChannel.Style.unitsName + ")"}`}
                 </div>
             } key="1">
             <Row>
@@ -133,7 +135,7 @@ const { Panel } = Collapse;
                     limits: s.target.checked,
                   }));
 
-                  this.props.limitsStateChanged(this.props.channel, s.target.checked);
+                  this.limitHandler(s.target.checked);
                 }}>Пределы измерений</Checkbox>
                 
               

@@ -33,7 +33,7 @@ function CreatePlotComlex(sensor: ISingleComponentSensor, fullSensorInfo: FullSe
 {
     let mainSource = CreateMainValueDataSource(sensor);
     let mainOffsetSource = CreateOffsetDataSource(mainSource, 0);
-    let peakAnalizer = CreateDetectorSource(mainOffsetSource, 1000);
+    let peakAnalizer = CreateDetectorSource(mainOffsetSource, 1000, fullSensorInfo.MaxValue * 0.3 / 1200);
     let mainAvgSrc = CreateAverageValueDataSource(peakAnalizer, 100);
     //let bufferedSrc = CreateBufferedDataSource(mainOffsetSource, 500);
     let mainChannel = new Channel(mainAvgSrc, CreateTorqueStyle(fullSensorInfo, colorSeed));

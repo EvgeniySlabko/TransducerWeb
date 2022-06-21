@@ -12,11 +12,13 @@ import { Snapshot } from '../ReportListener/Snapshot';
 import { Button, Dropdown, Menu, notification } from 'antd';
 import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { PlotControlPannel } from './PlotControlPannel';
+import { Group } from './App';
 
 export interface Props {
     sensorService: SensorController,
 	recordController: RecordController,
 	plotViewController: ViewController | null
+	groups: Group[],
 	openReportCallback: (file: File) => void
 	setStreamingModeView: () => void
 	ThereAreConnectedSensors: () => boolean
@@ -119,6 +121,8 @@ export interface Props {
 	handleClearClick() {
 
 		this.props.plotViewController?.Clear();
+		this.props.plotViewController?.ClearLabels();
+		this.props.groups.forEach(g => g.channelsInfo.resetAbsoluteAnalizer());
 		this.setState((prev, props) => ({
 			firstStart: true,
 		}));
@@ -144,7 +148,6 @@ export interface Props {
 			}		
 		}
 	}
-
 
 	async handleFakerClick() {
 		let facker = new Facker();

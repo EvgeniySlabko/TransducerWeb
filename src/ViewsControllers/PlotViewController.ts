@@ -55,6 +55,15 @@ export class ViewController
         }
     }
 
+    public ClearLabels()
+    {
+        if (this.streamingMode)
+        {
+            let streamingPlot = <MyUPlot>this.plot;
+            streamingPlot.ClearLabels();
+        }
+    }
+
     public async AddChannels(channels: Channel[])
     {        
         if (this.streamingMode)

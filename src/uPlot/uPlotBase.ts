@@ -21,7 +21,7 @@ export declare class LimitLine{
 
 export declare class Label
 {
-  yRange: number[];
+  scale: string;
   time: number;
   text: string;
   value: number;
@@ -184,20 +184,33 @@ export class MyUPlotBase
         labels.forEach(l => {
           let { left, top, width, height } = u.bbox;
 
-          if (l.value > l.yRange[1] || l.value < l.yRange[0]) return;
-          let xRange = <number[]>u.scales['x']!.range;
-          if (l.time > xRange[1] || l.time < xRange[0]) return;
+          //if (l.value > l.yRange[1] || l.value < l.yRange[0]) return;
+          let xRange = <number[]>[u.scales['x']!.min, u.scales['x']!.max];
 
-          let rangeValue  = xRange[1] - xRange[0];
-          let absTime = l.time - xRange[0];
-          let xCord = absTime * rangeValue / width;
-          
-          let yRangeValue  = l.yRange[1] - l.yRange[0];
-          let absValue = l.value - xRange[0];
-          let yCord = absValue * yRangeValue / height;
+          if (l.time > xRange[1] || l.time < xRange[0]) return; 
+    
+          let xCord = u.valToPos(l.time, "x", true);
+          let yCord = u.valToPos(l.value, l.scale, true);
+
+          let xShifted = xCord;
+          let yShifted = yCord;
+          if (l.value > 0) yShifted -= 10;
+          else yShifted += 20;
+
           u.ctx.save();
-          u.ctx.font = "10px serif";
-          u.ctx.fillText("Максимум!!", xCord, yCord);
+
+          u.ctx.font = "15px Comic Sans MS";
+          u.ctx.fillStyle = "black";
+          u.ctx.textAlign = "center";
+          u.ctx.fillText(l.text, xShifted, yShifted);
+
+          u.ctx.strokeStyle = "red";
+          u.ctx.fillStyle = "red";
+          u.ctx.beginPath();
+          u.ctx.arc(xCord, yCord, 3, 0, 2 * Math.PI, true);
+          u.ctx.fill();
+          u.ctx.stroke();
+
           u.ctx.stroke();          // Отображает путь
           u.ctx.restore();
         });
@@ -205,7 +218,7 @@ export class MyUPlotBase
 
       return {
         hooks: {
-          drawClear: drawBg,
+          draw: drawBg,
         }
       };
     }
@@ -241,17 +254,18 @@ export class MyUPlotBase
             dashGap = (1 / range) * 250;
           }
 
-          u.ctx.beginPath();       // Начинает новый путь
+          u.ctx.beginPath();       
           u.ctx.setLineDash([dashLen, dashGap]);
           u.ctx.font = "10px serif";
+          u.ctx.textAlign = "start";
           u.ctx.fillStyle  = increase_brightness(l.color(), 40);
 
           let dy = height - limitHeight + top;
           u.ctx.fillText(l.label, left, dy - 6);
-          u.ctx.moveTo(left,  dy);    // Передвигает перо в точку (30, 50)
+          u.ctx.moveTo(left,  dy);    
           u.ctx.lineWidth = 2;
-          u.ctx.lineTo(left + width, dy);  // Рисует линию до точки (150, 100)
-          u.ctx.stroke();          // Отображает путь
+          u.ctx.lineTo(left + width, dy);  
+          u.ctx.stroke();          
           u.ctx.restore();
         });
       }

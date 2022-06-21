@@ -3,8 +3,8 @@ import { Navbar } from './navbar';
 import { GroupsContainer } from './GroupsContainer';
 import { SensorController, SensorControllerArgs } from '../SensorController';
 import { RecordController } from '../RecordController';
-import { ViewController } from '../ViewsControllers/PlotViewController';
-import { CreateAllChannels } from '../Channel/AllChannelsFactory';
+import { ChannelLabel, ViewController } from '../ViewsControllers/PlotViewController';
+import { AllChannelsInfo, ChannelsGroup, CreateAllChannels } from '../Channel/AllChannelsFactory';
 import { CellChannel, ChannelCloseArgs } from '../Channel/Channel/CellChannel';
 import { Channel } from '../Channel/Channel/Channel';
 import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISensor';
@@ -13,9 +13,9 @@ import { SensorWorker } from '../Sensor/SensorWorker';
 import { notification } from 'antd';
 import { Snapshot } from '../ReportListener/Snapshot';
 import { getRandomInt } from '../Common/Common';
-import { IEvent } from 'strongly-typed-events';
 import { PeakEventArgs } from '../Channel/SensorDataProveder/PeakAnalyzer';
-
+import { PeackMode } from './CellsGroup';
+import { PlotPeackController } from '../ViewsControllers/PeacksController';
 
 export interface Props {
     sensorService: SensorController;
@@ -24,23 +24,20 @@ export interface Props {
 
 export interface Group{
     node: SensorNode;
-    channels: CellChannel[],
+    channelsInfo: AllChannelsInfo
   }
 
 export interface SensorNode{
     sensor: ISingleComponentSensor,
     fullSensorInfo: FullSensorInfo
     worker: SensorWorker,
-    setOffset: (offset: number) => void,
-    setCurrentOffsetValue: () => number,
-    peackDetected: IEvent<Channel, PeakEventArgs>,
+    maxPeack: number,
 }
 
 interface IState {
     groups: Group[],
     plotViewController: ViewController | null;
-    savingChannels: Channel[];
-    plotChannels: Channel[];
+    peackController: PlotPeackController | null;
     viewingReport: boolean;
     recording: boolean;
 }
@@ -56,10 +53,10 @@ export class App extends React.Component<Props, IState>
         this.state = {
             recording: false,
             plotViewController: null,
-            plotChannels: [],
-            savingChannels: [],
+            peackController: null,
             groups: [],
-            viewingReport: false
+            viewingReport: false,
+            //currentMaxPeak: 0,
         }
 
         //this.plotViewController = new ViewController(document.getElementById('gd'));
@@ -67,56 +64,55 @@ export class App extends React.Component<Props, IState>
         this.props.sensorService.onDispatch.addListener("Add", this.NewSensorHandler)
     }
 
+    getGroupByPlotChannel = (channel: Channel) => this.state.groups.find(g => g.channelsInfo.channelGroups.find(g => g.plotChannel == channel));
+    getGroupByCellChannelChannel = (channel: CellChannel) => this.state.groups.find(g => g.channelsInfo.channelGroups.find(g => g.cellChannel == channel));
+    getGroupBySensor = (sensor: ISingleComponentSensor) => this.state.groups.find(g => g.node.sensor == sensor);
+    getGroupIndexBySensor = (sensor: ISingleComponentSensor) => this.state.groups.findIndex(g => g.node.sensor == sensor);
+    getChannelsGroupBy = (predicate: (group: ChannelsGroup) => boolean) : ChannelsGroup | undefined =>
+    {
+        for (let i = 0; i < this.state.groups.length; i++) {
+            for (let j = 0; j < this.state.groups[i].channelsInfo.channelGroups.length; j++) {
+                if (predicate(this.state.groups[i].channelsInfo.channelGroups[j]))
+                {
+                    return this.state.groups[i].channelsInfo.channelGroups[j];
+                }
+            }
+        }
+
+        return undefined;
+    }
+
     componentDidMount() {
+        let plotController = new ViewController(document.getElementById('gd'));
         this.setState((prev, props) => ({
-            plotViewController: new ViewController(document.getElementById('gd')),
+            plotViewController: plotController,
+            peackController: new PlotPeackController(plotController)
         }));
-    }
-
-    plotChannelCloseHandler = (channel: Channel, channelCloseArgs: ChannelCloseArgs)=>
-    {
-      let index = this.state.plotChannels.findIndex(c => c === channel);
-      this.state.plotChannels.splice(index, 1);
-      this.setState((prev, props) => ({
-      }));
-    }
-
-    savingChannelCloseHandler = (channel: Channel, channelCloseArgs: ChannelCloseArgs) =>
-    {
-      let index = this.state.savingChannels.findIndex(c => c == channel);
-      this.state.savingChannels.splice(index, 1);
-      this.setState((prev, props) => ({
-      }));
     }
 
     sensorCloseHandler = (sensor: ISingleComponentSensor, args: string) =>
     {
-         let index = this.state.groups.findIndex(c => c.node.sensor == sensor);
+        let index = this.getGroupIndexBySensor(sensor);
         this.state.groups.splice(index, 1);
         if (this.state.groups.length == 0)
         {
-                if (this.state.recording)
-                    this.stopRecordingHandler();
+            if (this.state.recording)
+                this.stopRecordingHandler();
         }
 
-        this.setState((prev, props) => ({
-        }));
+        this.setState((prev, props) => ({}));
     }
 
     sensorManualCloseHandler = async (sensor: ISingleComponentSensor) =>
     {
         this.props.sensorService.RemoveSensor(sensor);
-        this.setState((prev, props) => ({
-        }));
+        this.setState((prev, props) => ({}));
     }
 
     sensorClose = async (sensor: ISingleComponentSensor) => {
         sensor.onClose.unsub(this.sensorCloseHandler);
-        await sensor.CloseConnection();
-        let index = this.state.groups.findIndex(c => c.node.sensor == sensor);
-        this.state.groups.splice(index, 1);
-        this.setState((prev, props) => ({
-        }));
+        let group = this.getGroupBySensor(sensor);
+        await group?.node.worker.Close();
     }
 
     NewSensorHandler = (args: SensorControllerArgs) =>
@@ -126,40 +122,39 @@ export class App extends React.Component<Props, IState>
             let allChannelsInfo = CreateAllChannels(args.sensor, args.fullSensorInfo, getRandomInt(10));
             //let plotChannels = CreateAllSensorChannelsForPlot(args.sensor, args.fullSensorInfo);
             this.setState((prev, props) => ({
-                plotChannels: this.state.plotChannels.concat(allChannelsInfo.plotChannels),
-                savingChannels: this.state.savingChannels.concat(allChannelsInfo.savingChannels),
                 groups: this.state.groups.concat([{
-                    channels: allChannelsInfo.cellChannels,
+                    channelsInfo: allChannelsInfo,
                     node: {
                         fullSensorInfo: args.fullSensorInfo,
                         sensor: args.sensor,
                         worker: args.worker,
-                        setCurrentOffsetValue: allChannelsInfo.currentValueOffsetSetter,
-                        setOffset: allChannelsInfo.offsetSetter,
-                        peackDetected: allChannelsInfo.peackDetected,
+                        maxPeack: 0,
                     }
-                }])
+                }]
+                )
             }));
 
-            allChannelsInfo.peackDetected.sub((channel, args) => 
-                console.log("Peak: ", args.peakValue, "Time:", args.time)
+            allChannelsInfo.absolutePeackDetected.sub((channel, peakArgs) =>
+            {
+                let group = allChannelsInfo.channelGroups.find(g => g.plotChannel === channel)
+                this.state.plotViewController?.ClearLabels();
+                this.state.plotViewController?.AddLabelForChannel({
+                    channel: channel,
+                    time: peakArgs.time,
+                    text: peakArgs.peakValue.toFixed(group?.cellChannel.Style.accurency) + " " + group?.cellChannel.Style.unitsName,
+                    value: peakArgs.peakValue,
+                })
+            } 
             )
 
             allChannelsInfo.peackDetected.sub((channel, args) =>
             {
-                this.state.plotViewController
+                this.state.peackController?.AddPeack(channel, args);
             })
-            this.state.plotViewController.AddChannels(allChannelsInfo.plotChannels);
 
-            this.props.recordController.SetChannels(allChannelsInfo.savingChannels);
-
-            allChannelsInfo.plotChannels.forEach(channel =>  { channel.onClose.sub(this.plotChannelCloseHandler);});
-            allChannelsInfo.savingChannels.forEach(channel =>  { channel.onClose.sub(this.savingChannelCloseHandler) ;});
-            //allChannelsInfo.cellChannels.forEach(channel =>  { channel.onClose.sub(this.cellChannelCloseHandler);});
-            
+            this.state.plotViewController.AddChannels(allChannelsInfo.channelGroups.map(g => g.plotChannel));
+            this.props.recordController.SetChannels(allChannelsInfo.channelGroups.map(g => g.savingChannel));
             args.sensor.onClose.sub(this.sensorCloseHandler);
-
-            this.props.recordController.SetChannels(this.state.savingChannels);
 
             notification.success({
                 message: `Добавлен датчик ${args.fullSensorInfo.SensorType}`,
@@ -167,7 +162,7 @@ export class App extends React.Component<Props, IState>
             });
         }
     }
-    
+
     OpenFileHandler = async (file: File)  =>
     {
         var snapshot = new Snapshot();
@@ -230,27 +225,29 @@ export class App extends React.Component<Props, IState>
 		this.state.recording ? this.stopRecordingHandler() : this.startRecordingHandler();
 	}
 
+    streamingModeViewHandler = () =>
+    {
+        this.state.plotViewController?.Reset();
+        this.setState((prev, props) => ({
+            viewingReport: false,
+        }));
+
+        notification.success({
+            message: "Режим графика реального времени.",
+            duration: 2,
+        });
+    }
+    
     render(){
         return [
             <Navbar key = {1} sensorService={this.props.sensorService} 
                     recordController={this.props.recordController}
                     openReportCallback = { async (file) => await this.OpenFileHandler(file)}
                     ThereAreConnectedSensors = {() => this.state.groups.length > 0}
+                    groups = {this.state.groups}
                     toggleRecording = {this.handleRecClick}
                     recordingState = {() => this.state.recording}
-                    setStreamingModeView = { () => 
-                        {
-                            this.state.plotViewController?.Reset();
-                            this.setState((prev, props) => ({
-                                viewingReport: false,
-                            }));
-
-                            notification.success({
-                                message: "Режим графика реального времени.",
-                                duration: 2,
-                            });
-                        }}
-                    
+                    setStreamingModeView = { this.streamingModeViewHandler }
                     plotViewController={this.state.plotViewController}></Navbar>,
                     
             <div key = {2} className = "all">
@@ -259,35 +256,10 @@ export class App extends React.Component<Props, IState>
                     {
                         this.state.viewingReport ? <></> :
                         <div className="left-container">
-                            <GroupsContainer groups={ this.state.groups }
-                            channelColorChanged = {(channel, color) =>
-                            {
-                                let plotChannel = this.state.plotChannels.find(c => c.Style.sensorId == channel.Style.sensorId && 
-                                                                                c.Style.valueType == channel.Style.valueType);
-
-                                let savingChanel = this.state.savingChannels.find(c => c.Style.sensorId == channel.Style.sensorId && 
-                                                                                    c.Style.valueType == channel.Style.valueType)                                                
-                                if (plotChannel)
-                                {
-                                    plotChannel.Style.color = color;
-                                }
-
-                                if (savingChanel)
-                                {
-                                    savingChanel.Style.color = color;
-                                }
-                            }}
-                            
-                            limitsStateChanged = {(channel: CellChannel, state: boolean) =>
-                            {
-                                let plotChannel = this.state.plotChannels.find(c => c.Style.sensorId == channel.Style.sensorId && 
-                                    c.Style.valueType == channel.Style.valueType);
-
-                                if (plotChannel)
-                                {
-                                    plotChannel.Style.drawLimits = state;
-                                }
-                            }}
+                            <GroupsContainer 
+                            peackController={this.state.peackController}
+                            plotViewController={this.state.plotViewController}
+                            groups = {this.state.groups} 
                             sensorRemove = {this.sensorManualCloseHandler}
                             />
                         </div>
