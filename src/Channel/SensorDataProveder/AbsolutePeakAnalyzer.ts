@@ -58,6 +58,8 @@ export class AbsolutePeakAnalyzer
         this.state = state;
     }
 
+    getState = () => this.state;
+
     get onPeakDetected(): IEvent<ISensorDataProvider, PeakEventArgs> {
         return this._onPeakDetected.asEvent();
     }

@@ -112,6 +112,7 @@ export class SensorSK
 
 export class FullSensorInfo{
     public id: number = 0;
+    public SensorId: string = "";
     public Razmernost: number = 0;
     public Mnogitel: number = 0;
     public SensorType: string = "";

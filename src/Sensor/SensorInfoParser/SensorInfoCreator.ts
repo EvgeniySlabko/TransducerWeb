@@ -29,8 +29,15 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
     fullInfo.Mnogitel = Defs.Mas_Mnog[IndMnog];
 
     fullInfo.isRotative = 0; //По умолчанию датчик не вращающийся
-
-  var typeString : string = ""; 
+    let formatDigit = (n : number) : string => {
+      
+      let hex = n.toString(16);
+      if (hex.length < 2) 
+      hex = "0" + hex;
+      return hex.toUpperCase();
+    };
+    fullInfo.SensorId = formatDigit(serviceInfo.ID[0]) + formatDigit(serviceInfo.ID[1]) + formatDigit(serviceInfo.ID[2]); 
+    var typeString : string = ""; 
 
   var rotativeFromDecoderType = false;
   switch (Index_Opis)

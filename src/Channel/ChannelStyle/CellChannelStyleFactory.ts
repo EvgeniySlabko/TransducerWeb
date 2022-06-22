@@ -20,6 +20,7 @@ export function CreateDefaultCellStyle() : CellChannelStyle{
         sensorType: "Undefined",
         accurency: 2,
         valueType: "torque",
+        visible: true,
     } 
 }
 
@@ -38,6 +39,7 @@ export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo, colorSeed: num
         maxValue: sensorInfo.MaxValue,
         minValue: sensorInfo.MinValue,
         limits: true,
+        visible: true,
     }
 }
 
@@ -55,6 +57,7 @@ export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo, colorSeed: numb
         valueType: "speed",
         maxValue: sensorInfo.MaxSpeed,
         limits: false,
+        visible: true,
     } 
 }
 
@@ -70,6 +73,7 @@ export function CreatetemperatureCellStyle(sensorInfo: FullSensorInfo, colorSeed
         sensorType: sensorInfo.SensorType,
         accurency: 1,
         valueType: "tmp",
+        visible: true,
     }
 }
 
@@ -88,5 +92,6 @@ export function CreatePowerCellStyle(sensorInfo: FullSensorInfo, colorSeed: numb
         maxValue: CalculatePower(sensorInfo.MaxSpeed, sensorInfo.MaxValue),
         minValue: CalculatePower(sensorInfo.MaxSpeed, sensorInfo.MinValue),
         limits: false,
+        visible: true,
     } 
 }

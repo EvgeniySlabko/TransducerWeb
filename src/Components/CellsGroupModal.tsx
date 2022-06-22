@@ -8,70 +8,62 @@ import { Group } from './App';
 import { IEvent } from 'strongly-typed-events';
 import { Channel } from '../Channel/Channel/Channel';
 import { PeakEventArgs } from '../Channel/SensorDataProveder/PeakAnalyzer';
+import { ViewController } from '../ViewsControllers/PlotViewController';
+import { ParamsStorage } from '../Storage/Storage';
 const { Panel } = Collapse;
 
-  export type PeackMode = "none" | "absolute" | "relative";
-
   export interface Props {
-    group: Group 
-    sensorRemove: (sensor: ISingleComponentSensor) => void,
-    channelColorChanged: (channel: CellChannel, color: string) => void;
-    setThreshold: (threshold: number) => void;
-    detectorModeSettor: (channel: Channel, mode: PeackMode) => void
+    group: Group,
+    plotViewController: ViewController | null;
+    visible: boolean;
+    storage: ParamsStorage;
+    onClose: () => void;
   }
 
   interface IState {
-    modalVisible: boolean,
-    treshold: number,
-   }
+    absoluteAnalizer: boolean
+  }
 
-  export class CellsGroup extends React.Component<Props, IState>{
+  export class CellsGroupModal extends React.Component<Props, IState>{
     
     constructor(prop: Props)
     {
       super(prop);
       this.state = {
-       treshold: 0.1 * this.props.group.node.fullSensorInfo.MaxValue,
-       modalVisible: false,
+        absoluteAnalizer: this.props.group.channelsInfo.getAbsoluteAnalizerState(),
       }
-    }
-
-    tresholdChanged = (value: number) =>
-    {
-      this.setState((prev, props) => ({
-          treshold: value,
-        }));        
     }
 
     onOk = () =>
     {
-      this.setState((prev, props) => ({
-        modalVisible: false,
-      }));
-
-      this.props.setThreshold(this.state.treshold);
-    }
-
-    onShow = () =>
-    {
-      this.setState((prev, props) => ({
-        modalVisible: true,
-      }));
-    }
-
-    onCancel = () =>
-    {
-      this.setState((prev, props) => ({
-        modalVisible: false,
-      }));
+      this.props.group.channelsInfo.setAbsoluteAnalizer(this.state.absoluteAnalizer);
     }
 
     render() {
-        return (
-        <Modal title="Basic Modal" visible={this.state.modalVisible} onCancel={e => this.onCancel()} onOk={event => { this.onOk(); } }>
+      return (
+        <Modal title="Параметры датчика" 
+        visible={this.props.visible} 
+        onCancel={e => this.props.onClose()} 
+        onOk={event => { this.onOk(); this.props.onClose(); }}
+        centered={false}>
 
-        <Checkbox>Показывать максимум.</Checkbox>
-
+        <div className='vertical-flex'>
+          <h5>Отображение каналов:</h5>
+          {
+            this.props.group.channelsInfo.channelGroups.map((g, i) => 
+              <Checkbox defaultChecked = {g.cellChannel.Style.visible} onChange={e => g.cellChannel.Style.visible = e.target.checked}>{g.cellChannel.Style.valueName} </Checkbox>
+            )
+          }
+        </div>
+        
+        <h5>Остальное:</h5>
+        <Checkbox defaultChecked = {false} onChange ={(c) => 
+          {
+            this.setState((prev, props) => ({
+              absoluteAnalizer: c.target.checked,
+            }));
+          }}>Отслеживать максимум.</Checkbox>
+        
         </Modal>
       )
     }

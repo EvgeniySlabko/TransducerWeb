@@ -16,10 +16,12 @@ import { getRandomInt } from '../Common/Common';
 import { PeakEventArgs } from '../Channel/SensorDataProveder/PeakAnalyzer';
 import { PeackMode } from './CellsGroup';
 import { PlotPeackController } from '../ViewsControllers/PeacksController';
+import { ParamsStorage } from '../Storage/Storage';
 
 export interface Props {
     sensorService: SensorController;
     recordController: RecordController;
+    storage: ParamsStorage;
 }
 
 export interface Group{
@@ -257,6 +259,7 @@ export class App extends React.Component<Props, IState>
                         this.state.viewingReport ? <></> :
                         <div className="left-container">
                             <GroupsContainer 
+                            storage={this.props.storage}
                             peackController={this.state.peackController}
                             plotViewController={this.state.plotViewController}
                             groups = {this.state.groups} 

@@ -14,7 +14,7 @@ import { notification } from 'antd';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { App } from './Components/App';
-import { recordController, sensorService } from './initialStartup';
+import { recordController, sensorService, storage } from './initialStartup';
 import 'antd/dist/antd.css';
 //import Demo from './Components/SensorContainer';
 
@@ -22,4 +22,5 @@ import 'antd/dist/antd.css';
 
 ReactDOM.render(<App sensorService={sensorService} 
                      recordController={recordController}
+                     storage = {storage}
                      ></App>, document.getElementById("root"));

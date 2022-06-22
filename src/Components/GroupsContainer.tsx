@@ -7,6 +7,7 @@ import { CellsGroup, PeackMode } from './CellsGroup';
 import { Channel } from '../Channel/Channel/Channel';
 import { ViewController } from '../ViewsControllers/PlotViewController';
 import { PlotPeackController } from '../ViewsControllers/PeacksController';
+import { ParamsStorage } from '../Storage/Storage';
 const { Panel } = Collapse;
 
   export interface Props {
@@ -14,6 +15,7 @@ const { Panel } = Collapse;
     plotViewController: ViewController | null;
     peackController: PlotPeackController | null;
     sensorRemove: (sensor: ISingleComponentSensor) => void,
+    storage: ParamsStorage;
   }
 
   export class GroupsContainer extends React.Component<Props>{
@@ -29,6 +31,7 @@ const { Panel } = Collapse;
                                             plotViewController = {this.props.plotViewController}
                                             peackController = {this.props.peackController}
                                             group = {g}
+                                            storage = {this.props.storage}
                                             sensorRemove = {(sensor: ISingleComponentSensor) => this.props.sensorRemove(sensor)}
                                             setThreshold={ g.channelsInfo.setThreshold}
                                              ></CellsGroup>)  

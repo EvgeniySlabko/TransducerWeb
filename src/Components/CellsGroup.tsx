@@ -9,6 +9,8 @@ import { Group } from './App';
 import { Channel } from '../Channel/Channel/Channel';
 import { ViewController } from '../ViewsControllers/PlotViewController';
 import { PlotPeackController } from '../ViewsControllers/PeacksController';
+import { ParamsStorage } from '../Storage/Storage';
+import { CellsGroupModal } from './CellsGroupModal';
 const { Panel } = Collapse;
 
   export type PeackMode = "none" | "absolute" | "relative";
@@ -19,6 +21,7 @@ const { Panel } = Collapse;
     sensorRemove: (sensor: ISingleComponentSensor) => void,
     setThreshold: (upperThreshold: number, lowerThreshold: number) => void;
     peackController: PlotPeackController | null;
+    storage: ParamsStorage;
   }
 
   interface IState {
@@ -70,11 +73,6 @@ const { Panel } = Collapse;
       }));
     }
 
-    detectorHandler = (state: boolean) =>
-    {
-      this.props.group.channelsInfo.setAbsoluteAnalizer(state)
-    }
-
     setZeroClick = () =>
     {
       let currentOffset = this.props.group.channelsInfo.currentValueOffsetSetter();
@@ -90,29 +88,36 @@ const { Panel } = Collapse;
               <Panel  key="1" header=
               {
                 <>
-                <Button key={1} icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
-                <Button key={2} onClick={event =>{ event.stopPropagation(); this.setZeroClick()}} >0</Button>
-                <Button key={4} icon={<CloseOutlined onClick={event => { event.stopPropagation(); this.props.sensorRemove(this.props.group.node.sensor); } } />}></Button>
-                <div key={3} onClick={e => e.stopPropagation()}>
-                  <Modal title="Basic Modal" visible={this.state.modalVisible} onCancel={e => this.onCancel()} onOk={event => { this.onOk(); } }>
-
-                    <Checkbox defaultChecked = {false} onChange ={(c) => 
-                      {
-                        this.setState((prev, props) => ({
-                          absoluteAnalizer: c.target.checked,
-                        }));
-                      }}>Отслеживать максимум.</Checkbox>
-
-                  </Modal>
+                <Button className='horizontal-padding' key={1} icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
+                <Button className='horizontal-padding' key={2} onClick={event =>{ event.stopPropagation(); this.setZeroClick()}} >{">0<"}</Button>
+                <Button className='horizontal-padding' key={4} icon={<CloseOutlined onClick={event => { event.stopPropagation(); this.props.sensorRemove(this.props.group.node.sensor); } } />}></Button>
+                
+                <div className='vertical-flex'>
+                  <h6 className='cell-group-title'>{this.props.group.node.fullSensorInfo.SensorType}</h6>
+                  <h6 className='cell-group-title'>ID: {this.props.group.node.fullSensorInfo.SensorId}</h6>
                 </div>
-              </>
+
+                <div key={3} onClick={e => e.stopPropagation()}>
+                <CellsGroupModal group={this.props.group} 
+                                 onClose={() => this.setState(() =>({modalVisible: false}))} 
+                                 plotViewController = {this.props.plotViewController}
+                                 storage = {this.props.storage}
+                                 visible = {this.state.modalVisible}/>
+
+
+                                 
+                </div>
+                </>
               }>
+                
               {
-              this.props.group.channelsInfo.channelGroups.map(c => <Cell key={c.cellChannel.Style.id}
-                                                       channelGroup={c} 
-                                                       plotViewController={this.props.plotViewController}
-                                                       ></Cell>)
-            }
+              this.props.group.channelsInfo.channelGroups.filter(c => c.cellChannel.Style.visible)
+                                                         .map(c => 
+                                                         <Cell key={c.cellChannel.Style.id}
+                                                          channelGroup={c} 
+                                                          plotViewController={this.props.plotViewController}
+                                                          ></Cell>)
+              }
 
             </Panel>   
         </Collapse>     

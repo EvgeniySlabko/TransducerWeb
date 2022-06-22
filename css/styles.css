@@ -140,3 +140,35 @@ legend{
 	height: 50;
 	background-color: black;
 }
+
+.horizontal-padding{
+	padding-left: 2px !important;
+	padding-right: 2px !important;
+}
+
+.vertical-flex
+{
+	display: flex;
+	flex-direction: column;
+}
+
+.horizontal-flex
+{
+	display: flex;
+	flex-direction: "row";
+}
+
+.cell-group-title{
+	font-size: 12px !important; 
+	display: table-cell !important;
+  	vertical-align: middle !important;
+	margin: 0px;
+	margin-top: 3px;
+	width: 77px;
+	height: 100%;
+	text-align: center;
+}
+
+.margin{
+	margin: 10px;
+}

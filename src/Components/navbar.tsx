@@ -5,7 +5,6 @@ import { CreateSerialSensor } from '../SensorFactory';
 import { SensorController } from '../SensorController';
 import { Facker } from '../Sensor/SingleComponentSensor.ts/FackerSensor';
 import { Channel } from '../Channel/Channel/Channel';
-import { CreateAllSensorChannelsSaving } from '../Channel/Channel/ChannelFactory';
 import { RecordController } from '../RecordController';
 import { ViewController } from '../ViewsControllers/PlotViewController';
 import { Snapshot } from '../ReportListener/Snapshot';

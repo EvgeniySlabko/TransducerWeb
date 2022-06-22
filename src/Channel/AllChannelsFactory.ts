@@ -2,9 +2,7 @@ import { EventDispatcher, IEvent } from "strongly-typed-events";
 import { ISingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/ISensor";
 import { FullSensorInfo } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { CellChannel } from "./Channel/CellChannel";
-import { CreateAllSensorCellChannels } from "./Channel/CellChannelFactory";
 import { Channel } from "./Channel/Channel";
-import { CreateAllSensorChannelsForPlot, CreateAllSensorChannelsSaving } from "./Channel/ChannelFactory";
 import { CreateCellSpeedStyle, CreatePowerCellStyle, CreatetemperatureCellStyle, CreateTorqueCellStyle } from "./ChannelStyle/CellChannelStyleFactory";
 import { CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "./ChannelStyle/ChannelStyleFactory";
 import { CreateAbsoluteAnalizerSource, CreateAverageValueDataSource, CreateDetectorSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "./SensorDataProveder/DataSourceFactory";
@@ -30,46 +28,8 @@ export interface AllChannelsInfo
     setThreshold: (upperThreshold: number, lowerThreshold: number) => void,
     resetAbsoluteAnalizer: () => void,
     setAbsoluteAnalizer: (state: boolean) => void,
+    getAbsoluteAnalizerState: () => boolean,
 }
-
-/*
-export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo, colorSeed: number) : AllChannelsInfo 
-{
-    let plotChannelsInfo = CreateAllSensorChannelsForPlot(sensor, fullSensorInfo, colorSeed);
-    let savingChannelsInfo = CreateAllSensorChannelsSaving(sensor, fullSensorInfo, colorSeed);
-
-    let cellChannelsInfo = CreateAllSensorCellChannels(sensor, fullSensorInfo, colorSeed);
-
-    let offsetSetterAll = (offset: number) =>{
-        plotChannelsInfo.offsetSetter(offset);
-        savingChannelsInfo.offsetSetter(offset);
-        cellChannelsInfo.offsetSetter(offset);
-    }
-
-    // для записи в отчета усреднение не ставится (всегда 1)
-    let avgSetterAll = (offset: number) =>{
-        plotChannelsInfo.offsetSetter(offset);
-        cellChannelsInfo.offsetSetter(offset);
-    }
-
-    let currentValueOffsetSetAll = () : number =>{
-        let offset = plotChannelsInfo.currentValueOffsetSetter();
-        cellChannelsInfo.currentValueOffsetSetter();
-        savingChannelsInfo.currentValueOffsetSetter();
-        return offset
-    }
-
-    return{
-        avgSetter: avgSetterAll,
-        offsetSetter: offsetSetterAll,
-        currentValueOffsetSetter: currentValueOffsetSetAll,
-        cellChannels: cellChannelsInfo.cellChannels,
-        savingChannels: savingChannelsInfo.plotChannels,
-        plotChannels: plotChannelsInfo.plotChannels,
-        peackDetected: plotChannelsInfo.peakDetected,
-    }
-}
-*/
 
 export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo, colorSeed: number) : AllChannelsInfo 
 {
@@ -119,8 +79,6 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     savingChannels.push(temperatureChannel);
     cellChannels.push(temperatureCellChannel);
 
-
-
     let peakEvent = new EventDispatcher<Channel, PeakEventArgs>();
     let absolutepeakEvent = new EventDispatcher<Channel, PeakEventArgs>();
     analizerSource.onPeakDetected.sub((sensor, args) =>
@@ -153,6 +111,7 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
         setThreshold: analizerSource.SetThreshold,
         resetAbsoluteAnalizer: absoluteAnalizerSource.Reset,
         setAbsoluteAnalizer: absoluteAnalizerSource.setState,
+        getAbsoluteAnalizerState: absoluteAnalizerSource.getState
     }
 
     function CreateTemperatureChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo, colorSeed: number) : Channel
