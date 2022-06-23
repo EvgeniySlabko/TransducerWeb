@@ -42,6 +42,7 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     let offsetSource =  CreateOffsetDataSource(mainSource, 0);
     let analizerSource = CreateDetectorSource(offsetSource, 0.1 * fullSensorInfo.MaxValue, 0.4);
     let absoluteAnalizerSource = CreateAbsoluteAnalizerSource(offsetSource);
+    
     let cellAverager = CreateAverageValueDataSource(offsetSource, 500);
     let plotAverager = CreateAverageValueDataSource(offsetSource, 100);
     

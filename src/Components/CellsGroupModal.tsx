@@ -21,7 +21,11 @@ const { Panel } = Collapse;
   }
 
   interface IState {
-    absoluteAnalizer: boolean
+    absoluteAnalizer: boolean,
+    speedPeriod: number,
+    avgFactor: number,
+    externalSpeedSensor: boolean,
+    dataReceived: boolean,
   }
 
   export class CellsGroupModal extends React.Component<Props, IState>{
@@ -31,12 +35,62 @@ const { Panel } = Collapse;
       super(prop);
       this.state = {
         absoluteAnalizer: this.props.group.channelsInfo.getAbsoluteAnalizerState(),
+        speedPeriod: 0,
+        avgFactor: 0,
+        dataReceived: false,
+        externalSpeedSensor: false,
       }
     }
 
-    onOk = () =>
+    onOk = async () =>
     {
       this.props.group.channelsInfo.setAbsoluteAnalizer(this.state.absoluteAnalizer);
+
+      try
+      {
+        await this.props.group.node.sensor.SetAvgRatio(this.state.avgFactor);
+        await this.props.group.node.sensor.SetSpeedPeriod(this.state.speedPeriod);
+        await this.props.group.node.sensor.SetExternalSensorState(this.state.externalSpeedSensor);
+      }
+      catch
+      {
+        notification.error({
+          message: `Не удалось записать данные ${this.props.group.node.fullSensorInfo.SensorType}`,
+          duration: 2,
+      });
+      }
+    }
+
+    async componentDidMount()
+    {
+      try{
+        let holdingRegisters = await this.props.group.node.sensor.GetHoldingRegisters();
+
+        this.setState((prev, props) => ({
+          speedPeriod: holdingRegisters.SpeedMeasurigPeriod,
+          avgFactor: holdingRegisters.AverageRatio,
+          dataReceived: true
+        })); 
+      }
+      catch
+      {
+        notification.error({
+          message: `Не удалось получить данные ${this.props.group.node.fullSensorInfo.SensorType}`,
+          duration: 2,
+      });
+      }
+    }
+
+    onSpeedChanged = (value: number) =>{
+      this.setState((prev, props) => ({
+        speedPeriod: value,
+      })); 
+    }
+
+    onAvgChanged = (value: number) =>{
+      this.setState((prev, props) => ({
+        avgFactor: value,
+      })); 
     }
 
     render() {
@@ -48,7 +102,7 @@ const { Panel } = Collapse;
         centered={false}>
 
         <div className='vertical-flex'>
-          <h5>Отображение каналов:</h5>
+          <h5 className='margin'>Отображение каналов:</h5>
           {
             this.props.group.channelsInfo.channelGroups.map((g, i) => 
               <Checkbox defaultChecked = {g.cellChannel.Style.visible} onChange={e => g.cellChannel.Style.visible = e.target.checked}>{g.cellChannel.Style.valueName} </Checkbox>
@@ -56,23 +110,44 @@ const { Panel } = Collapse;
           }
         </div>
         
-        <h5>Остальное:</h5>
-        <Checkbox defaultChecked = {false} onChange ={(c) => 
+        <h5 className='margin'>Остальное:</h5>
+        <Checkbox className='margin' defaultChecked = {false} onChange ={(c) => 
           {
             this.setState((prev, props) => ({
               absoluteAnalizer: c.target.checked,
             }));
           }}>Отслеживать максимум.</Checkbox>
-        
+          
+          {
+              (!this.state.dataReceived) ? <></> :  
+                <>
+                  <h5 className='margin'>Параметры датчика:</h5>
+
+                  <div className='horizontal-flex'>
+                    <label className='margin vertical-alignment'>Период измерения скорости: </label>
+                    <div className='margin horizontal-flex'>
+                      <InputNumber className='margin vertical-alignment' step = {1} size="small" style={{height: "25px" }} defaultValue={this.state.speedPeriod} onChange={this.onSpeedChanged}/>
+                      <p className='margin-left'>мс</p>
+                    </div>
+                  </div>
+
+                  <div className='horizontal-flex'>
+                    <label className='margin vertical-alignment'>Коэффицент усреднения: </label>
+                    <div className='margin'>
+                      <p>{this.state.avgFactor}</p>
+                    </div>
+                  </div>
+
+                  <Checkbox className='margin' defaultChecked = {false} onChange ={(c) => 
+                  {
+                    this.setState((prev, props) => ({
+                      externalSpeedSensor: c.target.checked,
+                    }));
+                  }}>Внешний датчик скорости</Checkbox>
+                </>
+          }
+          
         </Modal>
       )
     }
   }
-
-
-  /*
-  <InputNumber step={0.01 * this.props.group.node.fullSensorInfo.MaxValue}
-            style={{ width: "auto" }}
-            min={0} max={this.props.group.node.fullSensorInfo.MaxValue}
-            value={this.state.treshold} onChange={this.tresholdChanged} />
-  */

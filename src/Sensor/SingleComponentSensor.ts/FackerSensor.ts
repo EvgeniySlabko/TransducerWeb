@@ -5,6 +5,21 @@ import { dataEventArgs, HoldingRegisters, SensorMessage, SensorMessageEventArgs,
 
 export class Facker implements ISingleComponentSensor
 {
+    SetUsingFloatState(state: boolean): Promise<void> {
+        return new Promise<void>(async (resolve, reject) => {
+            resolve();
+        });
+    }
+    SetExternalSensorState(state: boolean): Promise<void> {
+        return new Promise<void>(async (resolve, reject) => {
+            resolve();
+        });
+    }
+    SetSpeedPeriod(speedPerion: number): Promise<void> {
+        return new Promise<void>(async (resolve, reject) => {
+            resolve();
+        });
+    }
     
     StopMeasuring(waitAnswer?: boolean): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {

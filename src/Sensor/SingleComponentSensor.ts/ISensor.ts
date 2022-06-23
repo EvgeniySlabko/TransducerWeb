@@ -1,5 +1,4 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
-import SensorComponentSensor from "./sensor";
 import { dataEventArgs, HoldingRegisters, SensorMessageEventArgs, SensorSK } from "./SensorDefinitions";
 
 export interface ISingleComponentSensor {
@@ -14,7 +13,9 @@ export interface ISingleComponentSensor {
     get onMessage() : IEvent<ISingleComponentSensor, SensorMessageEventArgs>;
 
     Initialize(): Promise<void>;
+
     GetHoldingRegisters(): Promise<HoldingRegisters>;
+
     GetSkInfo(): Promise<SensorSK>;
     StartStreaming(): Promise<void>;
     StopStreaming(): Promise<void>;
@@ -25,4 +26,7 @@ export interface ISingleComponentSensor {
     CloseConnection() : Promise<void>;
     StopMeasuring(waitAnswer: boolean): Promise<void>;
     StartMeasuring(waitAnswer: boolean): Promise<void>;
+    SetSpeedPeriod(speedPerion: number) : Promise<void>;
+    SetUsingFloatState(state: boolean) : Promise<void>;
+    SetExternalSensorState(state: boolean) : Promise<void>    
   }

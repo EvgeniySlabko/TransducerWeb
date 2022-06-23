@@ -88,7 +88,9 @@ const { Panel } = Collapse;
               <Panel  key="1" header=
               {
                 <>
-                <Button className='horizontal-padding' key={1} icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
+                <Button className='horizontal-padding' key={1} onClick={event => { event.stopPropagation(); this.onShow(); } } 
+                 icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
+
                 <Button className='horizontal-padding' key={2} onClick={event =>{ event.stopPropagation(); this.setZeroClick()}} >{">0<"}</Button>
                 <Button className='horizontal-padding' key={4} icon={<CloseOutlined onClick={event => { event.stopPropagation(); this.props.sensorRemove(this.props.group.node.sensor); } } />}></Button>
                 
@@ -103,9 +105,6 @@ const { Panel } = Collapse;
                                  plotViewController = {this.props.plotViewController}
                                  storage = {this.props.storage}
                                  visible = {this.state.modalVisible}/>
-
-
-                                 
                 </div>
                 </>
               }>

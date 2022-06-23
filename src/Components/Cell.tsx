@@ -93,10 +93,9 @@ const { Panel } = Collapse;
       return (
         <div className='measure-box'>
 
-          <Collapse defaultActiveKey={['0']}>
-            <Panel header=
-            {
-              <>
+          <div className='horizontal-flex'>
+            
+              
               <div className={`cell-name`} style = {{color: this.props.channelGroup.cellChannel.Style.fontStyle, background: this.state.overload ? "red" : "white"}} >
                   {this.props.channelGroup.cellChannel.Style.valueName + ` ${"(" + this.props.channelGroup.cellChannel.Style.unitsName + ")"}`}
               </div>
@@ -104,21 +103,12 @@ const { Panel } = Collapse;
               icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
 
               <CellModal 
-              group = {this.props.channelGroup} 
-              plotViewController={this.props.plotViewController} 
-              visible={this.state.modalVisible} 
-              onClose={ this.onModalClose }></CellModal>
-              </>
+                group = {this.props.channelGroup} 
+                plotViewController={this.props.plotViewController} 
+                visible={this.state.modalVisible} 
+                onClose={ this.onModalClose }></CellModal>
               
-            } key={2}>
-              
-
-            
-            </Panel>
-          </Collapse>
-          
-            
-
+          </div>
           <div style={
             {
               display: "flex",

@@ -81,6 +81,15 @@ export class HoldingRegisters
     public get TimeHigh() { return this.registers[4] };
 }
 
+
+export declare class FlagRegisters
+{
+    IsMeasuring : boolean;
+    IsStreaming : boolean;
+    ExternalSensor : boolean;
+    IsComputerConnect : boolean;
+} 
+
 export class Flags{
     private flags: number;
 

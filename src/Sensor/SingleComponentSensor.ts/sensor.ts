@@ -26,26 +26,26 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
         if (worker == null) throw "Worker is null";
         this.serialWorker = worker;
     }
-
+    
     private dt: number | undefined = 12.5 // тиков часов декодера между 2 соседними измерениями осню изм вел.
-
+    
     //Events 
     public get onData() {return this._onTorqueData.asEvent();}
-
+    
     public get onTmp() {return this._onTmpData.asEvent();}
-
+    
     public get onSpeed() {return this._onSpeedData.asEvent();}
-
+    
     public get onClose() {return this._onClose.asEvent();}
-
+    
     public get onMessage() {return this._onMessage.asEvent();}
-
+    
     public async Initialize() {
         if (!this.serialWorker.baseWorker.IsConnected)
-            await this.serialWorker.baseWorker.OpenPort();      
-            this.processbytes(); 
+        await this.serialWorker.baseWorker.OpenPort();      
+        this.processbytes(); 
     }
-
+    
     public async GetHoldingRegisters() : Promise<Defs.HoldingRegisters>
     {
         var command = new DefaultCommand(Defs.READ_HOLDING_REGISTERS, 0, 5);
@@ -53,11 +53,21 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
         var holdingRegisters = new Defs.HoldingRegisters(registers);
         return holdingRegisters;
     }
+    
+    public async SetExternalSensorState(state: boolean) : Promise<void>
+    {
+        await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL, Defs.EXTERNAL_SPEED_SENSOR, state ? Defs.COIL_ON_VALUE: Defs.COIL_OFF_VALUE));
+    } 
+    
+    public async SetUsingFloatState(state: boolean) : Promise<void>
+    {
+        await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL, Defs.IS_FLOAT_USING, state ? Defs.COIL_ON_VALUE: Defs.COIL_OFF_VALUE));
+    } 
 
     public async GetSkInfo() : Promise<SensorSK>
     {
         var command = new SingleCommand(Defs.REPORT_SLAVE_ID);
-
+        
         var data = await this.SendRequesAndWaitResponse<Uint8Array>(command);
 
         var idView = new DataView(data.buffer);
@@ -83,7 +93,8 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
     public SetComputerConnection = async () => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_ON_VALUE));
     public UnsetComputerConnection = async () => this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_OFF_VALUE));
     public SetT0 = async () => await this.SendRequesAndWaitResponse<void>(new MultipleCommand(Defs.PRESET_MULTIPLE_REGISTERS, 3, new Uint8Array([0, 0])));
-    
+    public SetSpeedPeriod = async (speedPerion: number) => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.PRESET_SINGLE_REGISTER, Defs.SPEED_PERIOD, speedPerion));  
+
     public CloseConnection = async () => 
     {
         this.requiredStopStreaming  =true;
