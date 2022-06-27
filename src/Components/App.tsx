@@ -155,7 +155,9 @@ export class App extends React.Component<Props, IState>
             })
 
             this.state.plotViewController.AddChannels(allChannelsInfo.channelGroups.map(g => g.plotChannel));
-            this.props.recordController.SetChannels(allChannelsInfo.channelGroups.map(g => g.savingChannel));
+            let allSavingChannels: Channel[] = [];
+            this.state.groups.forEach(g => g.channelsInfo.channelGroups.forEach(c => allSavingChannels.push(c.savingChannel)));
+            this.props.recordController.SetChannels(allSavingChannels);
             args.sensor.onClose.sub(this.sensorCloseHandler);
 
             notification.success({

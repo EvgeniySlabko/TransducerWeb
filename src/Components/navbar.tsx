@@ -126,7 +126,6 @@ export interface Props {
 			firstStart: true,
 		}));
 	}
-	
 
 	private async handleAddClick() {
 		try

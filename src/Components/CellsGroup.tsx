@@ -1,12 +1,9 @@
 import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISensor';
 import React from 'react';
-import { CellChannel, ChannelDataArgs } from '../Channel/Channel/CellChannel';
 import { Button, Card, Checkbox, Collapse, InputNumber, Menu, Modal, notification } from 'antd';
 import { CloseOutlined, DownOutlined, SettingOutlined } from '@ant-design/icons';
 import { Cell } from './Cell';
 import { Group } from './App';
-
-import { Channel } from '../Channel/Channel/Channel';
 import { ViewController } from '../ViewsControllers/PlotViewController';
 import { PlotPeackController } from '../ViewsControllers/PeacksController';
 import { ParamsStorage } from '../Storage/Storage';

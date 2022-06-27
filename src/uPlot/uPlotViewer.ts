@@ -166,6 +166,7 @@ export class MyUPlotViewer extends MyUPlotBase
     let range : number[];
     let series: uPlot.Series;
     let index = this.count++;
+    let dataRatio = 1;
     
     let sameTypeChannel = this.channels.find(c => c.style.valueType == style.valueType);
     if (sameTypeChannel)

@@ -448,7 +448,7 @@ export class MyUPlotBase
         {
           this.plot.destroy();
           if (this.interval)
-            clearInterval(this.interval);
+          clearInterval(this.interval);
           this.element.innerHTML = '';
         }
           
