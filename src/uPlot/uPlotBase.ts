@@ -35,7 +35,6 @@ export class MyUPlotBase
     protected labels: Label[] = [];
     protected limits: LimitLine[] = [];
 
-
     protected interval: NodeJS.Timer | undefined;
     protected controlarams =  {
       gridTicks: 50,     //делений графика в секунду.

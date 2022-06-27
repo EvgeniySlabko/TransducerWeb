@@ -1,6 +1,7 @@
 import { timers } from "jquery";
 import uPlot, { AlignedData, Axis, Options, Scale, Series } from "uplot";
 import { Channel, ChannelCloseArgs, ChannelDataArgs, ChannelMessageArgs } from "../Channel/Channel/Channel";
+import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
 import { GetApproximateValue } from "../Common/Common";
 import { dataEventArgs, SensorMessage } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ChannelLabel } from "../ViewsControllers/PlotViewController";
@@ -13,13 +14,13 @@ import { Label, MyUPlotBase } from "./uPlotBase";
 export type TraceInfo =
 {
     channel: Channel;
+    requireGap: boolean;  
+    dataBufferIndex: number;
+    curRange: number[];
+    dataRatio: number;
     axis: Axis;
     series: Series;
     scale: Scale;
-    requireGap: boolean;  
-    curRange: number[];
-    dataBufferIndex: number;
-    dataRatio: number;
 }
 
 export class MyUPlot extends MyUPlotBase

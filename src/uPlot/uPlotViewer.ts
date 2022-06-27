@@ -1,6 +1,7 @@
 import uPlot, { AlignedData, Axis, Scale, Series } from "uplot";
 import { Channel } from "../Channel/Channel/Channel";
 import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
+import { GetApproximateValue } from "../Common/Common";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { GetSeries } from "./ComponetFactory/ComponentFactory";
 import { MyUPlotBase } from "./uPlotBase";
@@ -21,7 +22,6 @@ type TraceInfo =
 export class MyUPlotViewer extends MyUPlotBase
 {
   private count: number = 1;
-  private currentChannels: Channel[] = [];
   private channels : TraceInfo[] = [];
   private options: uPlot.Options;
   
@@ -72,7 +72,6 @@ export class MyUPlotViewer extends MyUPlotBase
       var lastValue = lastSection.time[lastSection.time.length - 1];
       maxTimeValues.push(lastValue);
     });
-
 
     var dx = 1 / 5000;
     var toArrayIndex = (time: number) =>{
@@ -166,11 +165,16 @@ export class MyUPlotViewer extends MyUPlotBase
     let range : number[];
     let series: uPlot.Series;
     let index = this.count++;
-    let dataRatio = 1;
-    
+
     let sameTypeChannel = this.channels.find(c => c.style.valueType == style.valueType);
     if (sameTypeChannel)
     {
+      let dataRatio = style.mnogitel / sameTypeChannel.style.mnogitel;
+        this.buff[index] = this.buff[index].map(v => {
+          if (v) return v * dataRatio;
+          return v;
+        })
+
       let scaleName = <string>sameTypeChannel.axis.scale;
       series = GetSeries(scaleName);
       this.options.series.push(series);
@@ -197,7 +201,7 @@ export class MyUPlotViewer extends MyUPlotBase
       axis.side = style.yAxeSide == "left" ? 1 : 3;
       axis.stroke = style.axisColor;
       axis.show = true;
-      axis.label = style.legendTitle;
+      axis.label = style.yTitle;
       axis.grid!.show = style.grid;
       
       //setInterval( () => {this.SetupAxis(index - 1)}, 100);
@@ -264,6 +268,39 @@ export class MyUPlotViewer extends MyUPlotBase
     channel.curRange[0] += dVal;
     channel.curRange[1] += dVal;
     this.Redraw();
+  }
+
+  protected setCursor(){
+    if (!this.plot)
+      return;
+    
+    let left = this.plot?.cursor.left;
+    if (left)
+    {
+      for (let i = 1; i < this.buff.length; i++) {
+          if (!this.legendItems) continue;
+          
+          let isActive = this.legendItems[i].isActive();
+          if (isActive)
+          {
+            let trace = this.channels[i - 1];
+            let xVal = this.plot.posToVal(left, 'x');
+            let nearesrValue = this.buff[i][xVal];
+
+            let tickToGridIndex = (sensorTimeValue: number) => {
+              return Math.floor(sensorTimeValue * 5000); 
+            };
+
+            if (xVal > this.params.th) return undefined;
+            if (xVal < 0) return undefined;
+            let index = tickToGridIndex(xVal);
+            let nearestValue = GetApproximateValue(this.buff[i], index, 5000);
+
+            let strValue = nearestValue ? nearestValue.toFixed(trace.style.legendValueAcurency).toString() : "--"
+            this.legendItems[i].setValue(strValue);
+          } 
+      }
+    }
   }
 }
 
