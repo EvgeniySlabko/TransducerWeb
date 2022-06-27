@@ -25,6 +25,7 @@ const { Panel } = Collapse;
   interface IState {
     accurency: number
     color: string
+    limits: boolean
   }
 
   export class CellModal extends React.Component<Props, IState>{
@@ -35,14 +36,12 @@ const { Panel } = Collapse;
       this.state = {
         accurency: this.props.group.cellChannel.Style.accurency,
         color: this.props.group.cellChannel.Style.fontStyle,
+        limits: this.props.group.plotChannel.Style.drawLimits
       }
     }
 
     colorChangeHandler = (color: string) => {
       this.setState((prev, props) => ({color: color,}));
-      this.props.group.cellChannel.Style.fontStyle = this.state.color;
-      this.props.group.plotChannel.Style.color = this.state.color;
-      this.props.group.savingChannel.Style.color = this.state.color;
     }
 
     onOk = () =>
@@ -50,19 +49,17 @@ const { Panel } = Collapse;
       this.props.group.cellChannel.Style.accurency = this.state.accurency;
       this.props.group.plotChannel.Style.color = this.state.color;
       this.props.group.savingChannel.Style.color = this.state.color;
-
-      this.props.group.cellChannel.Style.accurency = this.state.accurency;
+      this.props.group.cellChannel.Style.fontStyle = this.state.color;
+      this.props.group.plotChannel.Style.drawLimits = this.state.limits;
     }
 
     limitHandler = (state: boolean) =>{
-      this.props.group.plotChannel.Style.drawLimits = state;
+      this.setState((prev, props) => ({limits: state,}));
     }
 
     changeAccurency = (accurency: number) =>
     {
-      this.setState((prev, props) => ({
-        accurency: accurency,
-      }));
+      this.setState((prev, props) => ({accurency: accurency}));
     }
 
     render() {

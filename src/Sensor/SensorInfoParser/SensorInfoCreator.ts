@@ -198,6 +198,14 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
     powerIndexName=0; break;
   }
 
+  switch(stroks)
+    {
+      case "m" : fullInfo.valueRatio = 0.001; break;
+      case "k" : fullInfo.valueRatio = 1000; break;
+      case "M" : fullInfo.valueRatio = 1000000; break;
+      case "mk" : fullInfo.valueRatio = 0.000001; break;
+      default: fullInfo.valueRatio = 1;
+    }
   fullInfo.UnitValueName = stroks + EdIzm;
   fullInfo.MaxSpeed = serviceInfo.MaxSpeed*100;
   var index : number = 0;

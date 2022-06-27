@@ -1,9 +1,8 @@
-
 import { timers } from "jquery";
 import uPlot, { AlignedData, Axis, Options, Scale, Series } from "uplot";
 import { Channel, ChannelCloseArgs, ChannelDataArgs, ChannelMessageArgs } from "../Channel/Channel/Channel";
 import { GetApproximateValue } from "../Common/Common";
-import { SensorMessage } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { dataEventArgs, SensorMessage } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ChannelLabel } from "../ViewsControllers/PlotViewController";
 import { PlotBufferManager } from "./BufferManager";
 import { GetSeries } from "./ComponetFactory/ComponentFactory";
@@ -20,6 +19,7 @@ export type TraceInfo =
     requireGap: boolean;  
     curRange: number[];
     dataBufferIndex: number;
+    dataRatio: number;
 }
 
 export class MyUPlot extends MyUPlotBase
@@ -29,7 +29,6 @@ export class MyUPlot extends MyUPlotBase
   //private currentChannels: Channel[] = [];
   private channels : TraceInfo[] = [];
   
-  private listening: boolean = false;
   private isInit: boolean = false;
   
   private params =  {
@@ -100,6 +99,7 @@ export class MyUPlot extends MyUPlotBase
     let range : number[];
     let series: uPlot.Series;
     let index = this.channels.length + 1;
+    let dataRatio = 1;
     
     let sameTypeChannel = this.channels.find(c => c.channel.Style.valueType == style.valueType);
 
@@ -114,6 +114,8 @@ export class MyUPlot extends MyUPlotBase
       scale = sameTypeChannel.scale;
       range = sameTypeChannel.curRange; 
       
+      dataRatio = channel.Style.mnogitel / sameTypeChannel.channel.Style.mnogitel;
+
       if (channel.Style.range[0] < range[0]) 
         range[0] = channel.Style.range[0];
       if (channel.Style.range[1] > range[1]) 
@@ -128,6 +130,7 @@ export class MyUPlot extends MyUPlotBase
       axis = options.axes![index];
       scale = options.scales![scaleName];
 
+      dataRatio = 1;
       range = [style.range[0], style.range[1]];
 
       axis.side = style.yAxeSide == "left" ? 1 : 3;
@@ -152,8 +155,8 @@ export class MyUPlot extends MyUPlotBase
         axis: axis,
         color: () => channel.Style.color,
         label: channel.Style.legendTitle,
-        range: range,
-        value: limitValue,
+        range: () => range,
+        value: limitValue * dataRatio,
         enabled: () => 
         {
           return (this.legendItems && this.legendItems.at(channelIndex) ? this.legendItems[channelIndex].isActive() : false) &&
@@ -177,6 +180,7 @@ export class MyUPlot extends MyUPlotBase
       requireGap: false,
       curRange: range,
       dataBufferIndex: index,
+      dataRatio: dataRatio,
     }
 
     //this.plot?.axes.
@@ -224,7 +228,11 @@ export class MyUPlot extends MyUPlotBase
       this.bufferManager?.SetGap(curIndex, lastSegmentTime, args.data.time[0]);
     }
 
-    this.bufferManager!.SetRange(curIndex, args.data);
+    let dataArgs: dataEventArgs = {
+      data: args.data.data.map(v => v * this.channels[curIndex].dataRatio),
+      time: args.data.time,
+    } 
+    this.bufferManager!.SetRange(curIndex, dataArgs);
 
     this.ScaleHandler();
   }

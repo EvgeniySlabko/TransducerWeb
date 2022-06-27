@@ -120,6 +120,7 @@ export class SensorSK
 }
 
 export class FullSensorInfo{
+    public valueRatio: number = 1;
     public id: number = 0;
     public SensorId: string = "";
     public Razmernost: number = 0;

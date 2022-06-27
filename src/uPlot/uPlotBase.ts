@@ -13,7 +13,7 @@ export declare class LegendItem {
 export declare class LimitLine{
   label: string;
   axis: uPlot.Axis;
-  range: number[];
+  range: () => number[];
   value: number;
   color: () => string;
   enabled: () => boolean;
@@ -35,6 +35,8 @@ export class MyUPlotBase
     protected labels: Label[] = [];
     protected limits: LimitLine[] = [];
 
+
+    protected interval: NodeJS.Timer | undefined;
     protected controlarams =  {
       gridTicks: 50,     //делений графика в секунду.
       gridDx: 0,          //
@@ -47,9 +49,6 @@ export class MyUPlotBase
     {
         // переотрисовка
         this.element = element;
-        setInterval(() => {
-          this.plot?.redraw(true, true)
-        }, 30);
     }
     
     public async GetScreen() : Promise<string>
@@ -230,12 +229,13 @@ export class MyUPlotBase
         limits.forEach(l => {
           if (!l.enabled()) return;
           let { left, top, width, height } = u.bbox;
-          if (l.value > l.range[1] || l.value < l.range[0]) return;
-          let rangeValue  = l.range[1] - l.range[0];
+          let range = l.range();
+          if (l.value > range[1] || l.value < range[0]) return;
+          let rangeValue  = range[1] - range[0];
           let dr = rangeValue / height;
           
-          let tmpR = [l.range[0] + -l.range[0], l.range[1] + -l.range[0]];
-          let tmpV = l.value + -l.range[0];
+          let tmpR = [range[0] + -range[0], range[1] + -range[0]];
+          let tmpV = l.value + -range[0];
 
           let relVal = tmpV - tmpR[0];
           let limitHeight = relVal * height / rangeValue;
@@ -396,7 +396,9 @@ export class MyUPlotBase
     protected BuildPlot(options: Options, dataBuffer: any)
     {
         this.plot = new uPlot(options, dataBuffer, this.element);
-
+        this.interval = setInterval(() => {
+          this.plot?.redraw(true, true)
+        }, 30);
         setTimeout(() =>
         {
           let legendSeries = this.element.getElementsByClassName("u-series");
@@ -443,8 +445,13 @@ export class MyUPlotBase
     public DestroyPlot()
     {
         if (this.plot)
-            this.plot.destroy();
+        {
+          this.plot.destroy();
+          if (this.interval)
+            clearInterval(this.interval);
           this.element.innerHTML = '';
+        }
+          
     }
 
     protected Redraw()

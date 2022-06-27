@@ -29,7 +29,7 @@ export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo, colorSeed: num
         id: count++,
         sensorId: sensorInfo.id,
         valueName: sensorInfo.ValueName,
-        unitsName: sensorInfo.Unitname,
+        unitsName: sensorInfo.UnitValueName,
         cellStyle:"cell-torque-style",
         fontSize: 15,
         fontStyle: GetColorBySeed(torqueBaseColor, colorSeed),

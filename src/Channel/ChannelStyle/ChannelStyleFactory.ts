@@ -15,14 +15,15 @@ export function CreateTorqueStyle(sensorInfo: FullSensorInfo, colorSeed: number)
     style.legendTitle = sensorInfo.SensorType + ":Torque";
     style.line = "solid";
     style.range = [sensorInfo.MinValue - 0.2 * sensorInfo.MaxValue, sensorInfo.MaxValue + 0.2 * sensorInfo.MaxValue],
-    style.yTitle = "Torque";
-    style.unitName = "sensorInfo.Unitname";
+    style.yTitle = `Torque (${sensorInfo.UnitValueName})`;
+    style.unitName = sensorInfo.Unitname;
     style.valueType = "torque";
     style.yAxeSide = "left";
     style.rescaleRationBottom = rescaleRatio;
     style.rescaleRationTop = rescaleRatio;
     style.visible = true;
     style.width = 1;
+    style.mnogitel = sensorInfo.valueRatio;
     style.legendValueAcurency = sensorInfo.MasEdRazm.toString().length - 1;
     style.drawLimits = true;
     style.minValue = sensorInfo.MinValue;
@@ -40,7 +41,7 @@ export function CreateSpeedStyle(sensorInfo: FullSensorInfo, colorSeed: number) 
     style.legendTitle = sensorInfo.SensorType + ":Speed";
     style.line = "solid";
     style.range = [0, 30000];
-    style.yTitle = "Speed";
+    style.yTitle = `Speed (${sensorInfo.speedUnitsName})`;
     style.unitName = "hz";
     style.valueType = "speed";
     style.yAxeSide = "right";
@@ -49,6 +50,7 @@ export function CreateSpeedStyle(sensorInfo: FullSensorInfo, colorSeed: number) 
     style.visible = true;
     style.width = 1;
     style.legendValueAcurency = 0;
+    style.mnogitel = 1;
     style.maxValue = sensorInfo.MaxSpeed;
 
     return style;
@@ -63,7 +65,7 @@ export function CreatetemperatureStyle(sensorInfo: FullSensorInfo, colorSeed: nu
     style.legendTitle = sensorInfo.SensorType +  ":Tmp";
     style.line = "solid";
     style.range = [-60, 60],
-    style.yTitle = "Tmp";
+    style.yTitle = `Temperature (C)`;
     style.unitName = "Dg";
     style.valueType = "tmp";
     style.yAxeSide = "right";
@@ -71,6 +73,7 @@ export function CreatetemperatureStyle(sensorInfo: FullSensorInfo, colorSeed: nu
     style.rescaleRationTop = rescaleRatio;
     style.visible = false;
     style.width = 1;
+    style.mnogitel = 1;
     style.legendValueAcurency = 1;
 
     return style;
@@ -88,7 +91,7 @@ export function CreatePowerStyle(sensorInfo: FullSensorInfo, colorSeed: number) 
     style.legendTitle = sensorInfo.SensorType + ":Power";
     style.line = "solid";
     style.range = [minPower, maxPower],
-    style.yTitle = "Power";
+    style.yTitle = `Power (W)`;
     style.unitName = sensorInfo.powerUnitsName,
     style.valueType = "power",
     style.yAxeSide = "left",
@@ -96,6 +99,7 @@ export function CreatePowerStyle(sensorInfo: FullSensorInfo, colorSeed: number) 
     style.rescaleRationTop = rescaleRatio;
     style.visible = false;
     style.width = 1;
+    style.mnogitel = 1;
     style.legendValueAcurency = 0;
     style.maxValue = CalculatePower(sensorInfo.MaxSpeed, sensorInfo.MaxValue);
     style.minValue = CalculatePower(sensorInfo.MaxSpeed, sensorInfo.MinValue);

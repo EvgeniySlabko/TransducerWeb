@@ -10,7 +10,7 @@ export class PlotBufferManager
 {
     private buff: (number | null | undefined)[][] = [];
 
-    private initialBufferSize: number = 100000;
+    private initialBufferSize: number = 400000;
 
     private dt: number;
     private idx: number;                                    // последний индекс с данными
@@ -85,6 +85,8 @@ export class PlotBufferManager
 
         let lastTimeVal = data.time[data.time.length - 1];
         let lastIndex = this.tickToGridIndex(lastTimeVal);
+
+        //this.Handle();
         if (lastIndex > this.idx) this.idx = lastIndex;
         if (lastIndex > this.segmentInfo[segmentIndex].lastDataIndex) this.segmentInfo[segmentIndex].lastDataIndex = lastIndex;
 
