@@ -3,7 +3,7 @@ import { Navbar } from './navbar';
 import { GroupsContainer } from './GroupsContainer';
 import { SensorController, SensorControllerArgs } from '../SensorController';
 import { RecordController } from '../RecordController';
-import { ChannelLabel, ViewController } from '../ViewsControllers/PlotViewController';
+import {  ViewController } from '../ViewsControllers/PlotViewController';
 import { AllChannelsInfo, ChannelsGroup, CreateAllChannels } from '../Channel/AllChannelsFactory';
 import { CellChannel, ChannelCloseArgs } from '../Channel/Channel/CellChannel';
 import { Channel } from '../Channel/Channel/Channel';
@@ -13,11 +13,10 @@ import { SensorWorker } from '../Sensor/SensorWorker';
 import { notification } from 'antd';
 import { Snapshot } from '../ReportListener/Snapshot';
 import { getRandomInt } from '../Common/Common';
-import { PeakEventArgs } from '../Channel/SensorDataProveder/PeakAnalyzer';
-import { PeackMode } from './CellsGroup';
 import { PlotPeackController } from '../ViewsControllers/PeacksController';
 import { ParamsStorage } from '../Storage/Storage';
 import { changeGroupColor } from '../Common/ChannelColorChanger';
+import { SaveModal } from './SaveModal';
 
 export interface Props {
     sensorService: SensorController;
@@ -42,6 +41,8 @@ interface IState {
     peackController: PlotPeackController | null;
     viewingReport: boolean;
     recording: boolean;
+    saveDialog: boolean;
+    currentSnapshot: Snapshot | undefined;
 }
 
 export class App extends React.Component<Props, IState>
@@ -58,7 +59,8 @@ export class App extends React.Component<Props, IState>
             peackController: null,
             groups: [],
             viewingReport: false,
-            //currentMaxPeak: 0,
+            saveDialog: false,
+            currentSnapshot: undefined,
         }
 
         //this.plotViewController = new ViewController(document.getElementById('gd'));
@@ -122,8 +124,8 @@ export class App extends React.Component<Props, IState>
         if (this.state.plotViewController)
         {
             let allChannelsInfo = CreateAllChannels(args.sensor, args.fullSensorInfo, getRandomInt(10));
-            //let plotChannels = CreateAllSensorChannelsForPlot(args.sensor, args.fullSensorInfo);
             changeGroupColor(allChannelsInfo.channelGroups, this.state.groups.length);
+            //let plotChannels = CreateAllSensorChannelsForPlot(args.sensor, args.fullSensorInfo);
             this.setState((prev, props) => ({
                 groups: this.state.groups.concat([{
                     channelsInfo: allChannelsInfo,
@@ -217,13 +219,13 @@ export class App extends React.Component<Props, IState>
 	
 	stopRecordingHandler()
 	{
-		var snapshot = this.props.recordController.StopListening();
-		
+        let snapshot = this.props.recordController.StopListening();
 		this.setState((prev, props) => ({
 			recording: false,
+            saveDialog: true,
+            currentSnapshot: snapshot,
 		}));
 		
-		snapshot.ToFile();
 		//saveStaticDataToFile(snapshot);
 	}
 	
@@ -258,7 +260,6 @@ export class App extends React.Component<Props, IState>
                     
             <div key = {2} className = "all">
                 <div className="middle-container">
-
                     {
                         this.state.viewingReport ? <></> :
                         <div className="left-container">
@@ -272,9 +273,17 @@ export class App extends React.Component<Props, IState>
                         </div>
                     }
 
+
                     <div id="gd" className="plot"></div>
                 </div>
-            </div>
+            </div>,
+
+            <SaveModal 
+                key={3}
+                onClose={() => this.setState((prev, props) => ({saveDialog: false}))}
+                snapshot = {this.state.currentSnapshot}
+                visible = {this.state.saveDialog}
+            ></SaveModal>
         ]
     }
 }

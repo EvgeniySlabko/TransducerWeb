@@ -70,10 +70,18 @@ export class ReportListener
         if(this.isListening) throw "Stop listening for getting snapshot";
 
         var trackData = new Array<TrackData>();
-
+        
         this.channelMap.forEach((k, v) => {
-            var dataArr = Array<dataEventArgs>();
-            k.forEach(d => dataArr.push(d));
+            var dataArr : dataEventArgs = 
+            {
+                data: [],
+                time: []
+            }
+            
+            k.forEach(d => {
+                d.data.forEach(d => dataArr.data.push(d))
+                d.time.forEach(t => dataArr.time.push(t))
+            });
 
             trackData.push({
                 data: dataArr,

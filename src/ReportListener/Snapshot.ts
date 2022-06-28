@@ -1,6 +1,5 @@
 
 import FileSaver from "file-saver";
-import { serialize } from "serialize-ts";
 import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
 import { dataEventArgs } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 
@@ -8,7 +7,7 @@ import { dataEventArgs } from "../Sensor/SingleComponentSensor.ts/SensorDefiniti
 export type TrackData =
 {
     style: ChannelStyle;
-    data: Array<dataEventArgs>;
+    data: dataEventArgs;
 }
 
 export class Snapshot
@@ -29,10 +28,8 @@ export class Snapshot
     }
 
     public GetTrackData = () => this.data;
-    public ToFile()
-    {
-        var blob = new Blob(["Welcome to Websparrow.org."], { type: "text/plain;charset=utf-8" });
-        
+    public ToFile(fileName: string)
+    {   
         var parts = new Array<string>();
 
         /*
@@ -51,6 +48,29 @@ export class Snapshot
                 type: "text/plain;charset=utf-8",
                 endings: "native",
             });
-        FileSaver.saveAs(blob, "Report");
+
+        FileSaver.saveAs(blob, fileName);
+    }
+
+    public ToCSV(fileName: string)
+    {
+
+        let rows = new Array<Array<string>>(this.data.length);
+
+        let csvContent = "data:text/csv;charset=utf-8,";
+        let rowArray = new Array<string>();
+        this.data.forEach(t => {
+            rowArray.push(t.style.legendTitle);
+                    for (let i = 0; i < t.data.data.length; i++) {
+                        let strVal = t.data.data[i].toString() + ":" + t.data.time[i].toString();
+                        rowArray.push(strVal);
+                    }
+                }
+            )
+
+        let row = rowArray.reverse().join(";");
+        csvContent += row + "\r\n";
+        
+        FileSaver.saveAs(csvContent, fileName);
     }
 }

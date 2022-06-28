@@ -12,6 +12,7 @@ import { Button, Dropdown, Menu, notification } from 'antd';
 import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { PlotControlPannel } from './PlotControlPannel';
 import { Group } from './App';
+import { SaveModal } from './SaveModal';
 
 export interface Props {
     sensorService: SensorController,
@@ -21,14 +22,15 @@ export interface Props {
 	openReportCallback: (file: File) => void
 	setStreamingModeView: () => void
 	ThereAreConnectedSensors: () => boolean
-	toggleRecording: () => void
 	recordingState: () => boolean;
+	toggleRecording: () => void
 }
 
   interface IState {
 	sensorService: SensorController,
 	recordController: RecordController,
 
+	saveDialog: boolean;
 	clearBtnOn: boolean;
 	playButtonState: boolean;
 	startStop: boolean;
@@ -47,6 +49,7 @@ export interface Props {
 			sensorService: this.props.sensorService,
 			recordController: this.props.recordController,
 
+			saveDialog: false,
 			clearBtnOn: true,
 			playButtonState: true,
 			startStop: false,
@@ -180,12 +183,13 @@ export interface Props {
 			anchor.click();
 		}
 	}
-
+	
 	render(){
 		return (
 			<div className='nav-tab-container'>
 				
 				<div className="btn-group" role="group" aria-label="First group">
+
 					<Button title="Начать измерение" size='large' id="Start" shape="default"
 					icon = 
 					{

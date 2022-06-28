@@ -30,6 +30,7 @@ export declare class Label
 export class MyUPlotBase
 {
     protected element: HTMLElement;
+    protected parent: HTMLElement | null;
     protected plot: uPlot | undefined;
     protected legendItems: LegendItem[] | undefined = undefined; 
     protected labels: Label[] = [];
@@ -48,6 +49,7 @@ export class MyUPlotBase
     {
         // переотрисовка
         this.element = element;
+        this.parent =  this.element.parentElement;
     }
     
     public async GetScreen() : Promise<string>
@@ -61,8 +63,17 @@ export class MyUPlotBase
     }
       
     protected getSize() {    
+      
+      let summaryOthersWidth = 0;
+      let childrens = this.parent!.children; 
+      for (let i = 0; i < childrens.length; i++) {
+        if (childrens[i] != this.element)
+        {
+          summaryOthersWidth += childrens[i].clientWidth;
+        }
+      }
       return {
-          width: document.body.clientWidth - 200,
+          width: this.parent!.clientWidth - summaryOthersWidth,
           height: this.element.clientHeight - 100,
         }
     }
@@ -438,7 +449,9 @@ export class MyUPlotBase
               prev = newVal;
             }
         });
-        }, 100)
+
+        this.plot?.setSize(this.getSize());
+        }, 100);
     }
 
     public DestroyPlot()

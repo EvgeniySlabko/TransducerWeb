@@ -68,8 +68,7 @@ export class MyUPlotViewer extends MyUPlotBase
 
     var maxTimeValues : number[] = [];
     trackData.forEach(t => {
-      var lastSection = t.data[t.data.length - 1];
-      var lastValue = lastSection.time[lastSection.time.length - 1];
+      var lastValue = t.data.time[t.data.time.length - 1];
       maxTimeValues.push(lastValue);
     });
 
@@ -99,20 +98,18 @@ export class MyUPlotViewer extends MyUPlotBase
 
     //проставляем данные
     for (let i = 0; i < trackData.length; i++) {
-      for (let j = 0; j < trackData[i].data.length; j++) {
-        for (let k = 0; k < trackData[i].data[j].time.length; k++) {
-          var times = trackData[i].data[j].time;
-          var vals = trackData[i].data[j].data;
+      for (let k = 0; k < trackData[i].data.time.length; k++) {
+        var time = trackData[i].data.time[k];
+        var val = trackData[i].data.data[k];
 
-          var index = toArrayIndex(times[k]);
-          if (index < maxTimeIndex)
-          {
-            this.buff[i + 1][index] = vals[k];
-          }
-          else
-          {
-            console.log();
-          }
+        var index = toArrayIndex(time);
+        if (index < maxTimeIndex)
+        {
+          this.buff[i + 1][index] = val;
+        }
+        else
+        {
+          console.log();
         }
       }
     }
@@ -146,7 +143,7 @@ export class MyUPlotViewer extends MyUPlotBase
     this.channels = [];
 
     this.options = this.getOptions();
-    this.options.cursor!.points!.size = 8;
+    //this.options.cursor!.points!.size = 8;
     styles.forEach((s, i) => {
       this.SetupChannel(s);
     });
@@ -208,8 +205,11 @@ export class MyUPlotViewer extends MyUPlotBase
       scale.range = () => {return [range[0], range[1]]};
     }
     
+    series.show = style.visible;
     series.stroke = style.color;
+    series.width = style.width;
     series.label = style.legendTitle;
+    series.points!.stroke = style.color;
     this.plot?.addSeries(series, 1);
     //this.plot?.addSeries(series, index);
 

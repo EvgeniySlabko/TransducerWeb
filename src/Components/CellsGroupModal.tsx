@@ -1,13 +1,6 @@
-import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISensor';
 import React from 'react';
-import { CellChannel, ChannelDataArgs } from '../Channel/Channel/CellChannel';
-import { Button, Card, Checkbox, Collapse, Dropdown, InputNumber, Menu, Modal, notification, Radio, Space } from 'antd';
-import { DownOutlined, SettingOutlined } from '@ant-design/icons';
-import { Cell } from './Cell';
+import { Checkbox, Collapse, InputNumber, Modal, notification } from 'antd';
 import { Group } from './App';
-import { IEvent } from 'strongly-typed-events';
-import { Channel } from '../Channel/Channel/Channel';
-import { PeakEventArgs } from '../Channel/SensorDataProveder/PeakAnalyzer';
 import { ViewController } from '../ViewsControllers/PlotViewController';
 import { ParamsStorage } from '../Storage/Storage';
 const { Panel } = Collapse;
@@ -95,6 +88,7 @@ const { Panel } = Collapse;
 
     render() {
       return (
+      
         <Modal title="Параметры датчика" 
         visible={this.props.visible} 
         onCancel={e => this.props.onClose()} 

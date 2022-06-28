@@ -1,18 +1,9 @@
-import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISensor';
 import React from 'react';
-import { CellChannel, ChannelDataArgs } from '../Channel/Channel/CellChannel';
-import { Button, Card, Checkbox, Collapse, Dropdown, InputNumber, Menu, Modal, notification, Radio, Slider, Space } from 'antd';
-import { DownOutlined, SettingOutlined } from '@ant-design/icons';
-import { Cell } from './Cell';
-import { Group } from './App';
-import { IEvent } from 'strongly-typed-events';
-import { Channel } from '../Channel/Channel/Channel';
-import { PeakEventArgs } from '../Channel/SensorDataProveder/PeakAnalyzer';
+import { Checkbox, Collapse, InputNumber, Modal, Slider } from 'antd';
 import { ViewController } from '../ViewsControllers/PlotViewController';
-import { ParamsStorage } from '../Storage/Storage';
-import { ColorChanger } from './ColorChanger';
 import { ChannelsGroup } from '../Channel/AllChannelsFactory';
 import { HexColorPicker } from 'react-colorful';
+
 const { Panel } = Collapse;
 
   export interface Props {
@@ -81,7 +72,7 @@ const { Panel } = Collapse;
             
               <div className='horizontal-flex'>
                 <label className='margin'>Цвет графика: </label>
-                <HexColorPicker defaultValue={this.props.group.cellChannel.Style.fontStyle} onChange={this.colorChangeHandler} />
+                <HexColorPicker color={this.props.group.cellChannel.Style.fontStyle} onChange={this.colorChangeHandler} />
               </div>
             
               <div className='horizontal-flex'>

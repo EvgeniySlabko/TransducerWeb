@@ -97,11 +97,13 @@ const { Panel } = Collapse;
                 </div>
 
                 <div key={3} onClick={e => e.stopPropagation()}>
+                
                 <CellsGroupModal group={this.props.group} 
-                                 onClose={() => this.setState(() =>({modalVisible: false}))} 
-                                 plotViewController = {this.props.plotViewController}
-                                 storage = {this.props.storage}
-                                 visible = {this.state.modalVisible}/>
+                                  onClose={() => this.setState(() =>({modalVisible: false}))} 
+                                  plotViewController = {this.props.plotViewController}
+                                  storage = {this.props.storage}
+                                  visible = {this.state.modalVisible}/>
+
                 </div>
                 </>
               }>

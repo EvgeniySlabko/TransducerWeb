@@ -102,11 +102,13 @@ const { Panel } = Collapse;
               <Button className='horizontal-padding' onClick={event => { event.stopPropagation(); this.onShow(); } } key={1} 
               icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
 
+
               <CellModal 
                 group = {this.props.channelGroup} 
                 plotViewController={this.props.plotViewController} 
                 visible={this.state.modalVisible} 
                 onClose={ this.onModalClose }></CellModal>
+              
               
           </div>
           <div style={
