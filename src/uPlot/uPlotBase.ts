@@ -62,7 +62,7 @@ export class MyUPlotBase
       
     protected getSize() {    
       return {
-          width: this.element.clientWidth - 50,
+          width: document.body.clientWidth - 200,
           height: this.element.clientHeight - 100,
         }
     }
