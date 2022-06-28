@@ -26,8 +26,9 @@
 }
 
 .u-legend.u-inline .u-value { 
-	width: 40px; 
+	width: 50px; 
 	text-align: left; 
+	height: auto;
 } 
 
   /* Clear floats (clearfix hack) */
@@ -49,6 +50,11 @@ li {
 	list-style: none;
 	padding: 0;
 	margin: 0;
+}
+
+table{
+	margin-left: auto !important;
+	margin-right: auto;
 }
 
 .no--select {
@@ -104,7 +110,7 @@ body {
 }
 
 legend{
-    padding: 2px; 
+    padding: 10px; 
 	font-size: 5px;   
 }
 

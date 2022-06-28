@@ -6,7 +6,7 @@ import { ChannelLabel } from "../ViewsControllers/PlotViewController";
 import { PlotBufferManager } from "./BufferManager";
 import { GetSeries } from "./ComponetFactory/ComponentFactory";
 import { AxeRangeChangeHandler } from "./PlotCommon";
-import { Label, MyUPlotBase } from "./uPlotBase";
+import { Label, LegendItem, MyUPlotBase } from "./uPlotBase";
 
 
 export type TraceInfo =
@@ -315,14 +315,16 @@ export class MyUPlot extends MyUPlotBase
     {
       for (let i = 0; i < this.bufferManager!.Segments; i++) {
           if (!this.legendItems) continue;
-          
+
+          let emptyValue = "--";
           let isActive = this.legendItems[i + 1].isActive();
+          this.legendItems[i + 1].setValue(emptyValue);
           if (isActive)
           {
             let trace = this.channels[i];
             let xVal = this.plot.posToVal(left, 'x');
             let nearesrValue = this.bufferManager!.GetSegmentValue(i, xVal);
-            let strValue = nearesrValue ? nearesrValue.toFixed(trace.channel.Style.legendValueAcurency).toString() : "--"
+            let strValue = nearesrValue ? nearesrValue.toFixed(trace.channel.Style.legendValueAcurency).toString() : emptyValue
             this.legendItems[i + 1].setValue(strValue);
           } 
       }
