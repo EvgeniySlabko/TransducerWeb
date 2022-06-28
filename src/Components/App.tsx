@@ -17,6 +17,7 @@ import { PeakEventArgs } from '../Channel/SensorDataProveder/PeakAnalyzer';
 import { PeackMode } from './CellsGroup';
 import { PlotPeackController } from '../ViewsControllers/PeacksController';
 import { ParamsStorage } from '../Storage/Storage';
+import { changeGroupColor } from '../Common/ChannelColorChanger';
 
 export interface Props {
     sensorService: SensorController;
@@ -33,7 +34,6 @@ export interface SensorNode{
     sensor: ISingleComponentSensor,
     fullSensorInfo: FullSensorInfo
     worker: SensorWorker,
-    maxPeack: number,
 }
 
 interface IState {
@@ -116,13 +116,14 @@ export class App extends React.Component<Props, IState>
         let group = this.getGroupBySensor(sensor);
         await group?.node.worker.Close();
     }
-
+    
     NewSensorHandler = (args: SensorControllerArgs) =>
     {
         if (this.state.plotViewController)
         {
             let allChannelsInfo = CreateAllChannels(args.sensor, args.fullSensorInfo, getRandomInt(10));
             //let plotChannels = CreateAllSensorChannelsForPlot(args.sensor, args.fullSensorInfo);
+            changeGroupColor(allChannelsInfo.channelGroups, this.state.groups.length);
             this.setState((prev, props) => ({
                 groups: this.state.groups.concat([{
                     channelsInfo: allChannelsInfo,
@@ -130,7 +131,6 @@ export class App extends React.Component<Props, IState>
                         fullSensorInfo: args.fullSensorInfo,
                         sensor: args.sensor,
                         worker: args.worker,
-                        maxPeack: 0,
                     }
                 }]
                 )
@@ -154,8 +154,10 @@ export class App extends React.Component<Props, IState>
                 this.state.peackController?.AddPeack(channel, args);
             })
 
+            //this.setState((prev, props) => ({}));
             this.state.plotViewController.AddChannels(allChannelsInfo.channelGroups.map(g => g.plotChannel));
             let allSavingChannels: Channel[] = [];
+
             this.state.groups.forEach(g => g.channelsInfo.channelGroups.forEach(c => allSavingChannels.push(c.savingChannel)));
             this.props.recordController.SetChannels(allSavingChannels);
             args.sensor.onClose.sub(this.sensorCloseHandler);

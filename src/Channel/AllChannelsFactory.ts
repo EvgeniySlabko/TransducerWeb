@@ -46,9 +46,9 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     let cellAverager = CreateAverageValueDataSource(offsetSource, 500);
     let plotAverager = CreateAverageValueDataSource(offsetSource, 1);
     
-    let mainPlotChannel = CreateMainChannel(offsetSource, fullSensorInfo, colorSeed);
-    let mainCellChannel = CreateMainCellChannel(cellAverager, fullSensorInfo, colorSeed);
-    let mainSavingChannel = CreateMainChannel(offsetSource, fullSensorInfo, colorSeed);
+    let mainPlotChannel = CreateMainChannel(offsetSource, fullSensorInfo);
+    let mainCellChannel = CreateMainCellChannel(cellAverager, fullSensorInfo);
+    let mainSavingChannel = CreateMainChannel(offsetSource, fullSensorInfo);
     
     channels.push(mainPlotChannel);
     savingChannels.push(mainSavingChannel);
@@ -56,16 +56,16 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
 
     //Speed
     let speedSource = CreateSpeedValueDataSource(sensor);
-    let speedChannel = CreateSpeedChannel(speedSource, fullSensorInfo, colorSeed);
-    let speedCellChannel = CreateSpeedCellChannel(speedSource, fullSensorInfo, colorSeed);
+    let speedChannel = CreateSpeedChannel(speedSource, fullSensorInfo);
+    let speedCellChannel = CreateSpeedCellChannel(speedSource, fullSensorInfo);
     channels.push(speedChannel);
     savingChannels.push(speedChannel);
     cellChannels.push(speedCellChannel);
     
     //Power
     let powerSource = CreatePowerDataSource(mainSource, speedSource);
-    let powerChannel = CreatePowerChannel(powerSource, fullSensorInfo, colorSeed);
-    let powerCellChannel = CreatePowerCellChannel(powerSource, fullSensorInfo, colorSeed);
+    let powerChannel = CreatePowerChannel(powerSource, fullSensorInfo);
+    let powerCellChannel = CreatePowerCellChannel(powerSource, fullSensorInfo);
     
     channels.push(powerChannel);
     savingChannels.push(powerChannel);
@@ -73,8 +73,8 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
 
     //Tmp
     let tmpSource = CreateTemperatureValueDataSource(sensor);
-    let temperatureChannel = CreateTemperatureChannel(tmpSource, fullSensorInfo, colorSeed);
-    let temperatureCellChannel = CreateTemperatureCellChannel(tmpSource, fullSensorInfo, colorSeed);
+    let temperatureChannel = CreateTemperatureChannel(tmpSource, fullSensorInfo);
+    let temperatureCellChannel = CreateTemperatureCellChannel(tmpSource, fullSensorInfo);
     
     channels.push(temperatureChannel);
     savingChannels.push(temperatureChannel);
@@ -115,43 +115,43 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
         getAbsoluteAnalizerState: absoluteAnalizerSource.getState
     }
 
-    function CreateTemperatureChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo, colorSeed: number) : Channel
+    function CreateTemperatureChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo) : Channel
     {
-        return new Channel(source, CreatetemperatureStyle(fullSensorInfo, colorSeed));
+        return new Channel(source, CreatetemperatureStyle(fullSensorInfo));
     }
 
-    function CreateTemperatureCellChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo, colorSeed: number) : CellChannel
+    function CreateTemperatureCellChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo) : CellChannel
     {
-        return new CellChannel(source, CreatetemperatureCellStyle(fullSensorInfo, colorSeed));
+        return new CellChannel(source, CreatetemperatureCellStyle(fullSensorInfo));
     }
 
-    function CreateSpeedChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo, colorSeed: number) : Channel
+    function CreateSpeedChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo) : Channel
     {
-        return new Channel(source, CreateSpeedStyle(fullSensorInfo, colorSeed));
+        return new Channel(source, CreateSpeedStyle(fullSensorInfo));
     }
 
-    function CreateSpeedCellChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo, colorSeed: number) : CellChannel
+    function CreateSpeedCellChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo) : CellChannel
     {
-        return new CellChannel(source, CreateCellSpeedStyle(fullSensorInfo, colorSeed));
+        return new CellChannel(source, CreateCellSpeedStyle(fullSensorInfo));
     }
 
-    function CreateMainChannel(source: ISensorDataProvider, fullSensorInfo: FullSensorInfo, colorSeed: number) : Channel
+    function CreateMainChannel(source: ISensorDataProvider, fullSensorInfo: FullSensorInfo) : Channel
     {
-        return new Channel(source, CreateTorqueStyle(fullSensorInfo, colorSeed));
+        return new Channel(source, CreateTorqueStyle(fullSensorInfo));
     }
 
-    function CreateMainCellChannel(source: ISensorDataProvider, fullSensorInfo: FullSensorInfo, colorSeed: number) : CellChannel
+    function CreateMainCellChannel(source: ISensorDataProvider, fullSensorInfo: FullSensorInfo) : CellChannel
     {
-        return new CellChannel(source, CreateTorqueCellStyle(fullSensorInfo, colorSeed));
+        return new CellChannel(source, CreateTorqueCellStyle(fullSensorInfo));
     }
 
-    function CreatePowerChannel(source: ISensorDataProvider, fullSensorInfo: FullSensorInfo, colorSeed: number) : Channel
+    function CreatePowerChannel(source: ISensorDataProvider, fullSensorInfo: FullSensorInfo) : Channel
     {
-        return new Channel(source, CreatePowerStyle(fullSensorInfo, colorSeed));
+        return new Channel(source, CreatePowerStyle(fullSensorInfo));
     }
 
-    function CreatePowerCellChannel(source: ISensorDataProvider, fullSensorInfo: FullSensorInfo, colorSeed: number) : CellChannel
+    function CreatePowerCellChannel(source: ISensorDataProvider, fullSensorInfo: FullSensorInfo) : CellChannel
     {
-        return new CellChannel(source, CreatePowerCellStyle(fullSensorInfo, colorSeed));
+        return new CellChannel(source, CreatePowerCellStyle(fullSensorInfo));
     }
 }

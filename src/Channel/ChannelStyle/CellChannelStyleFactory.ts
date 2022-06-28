@@ -24,7 +24,7 @@ export function CreateDefaultCellStyle() : CellChannelStyle{
     } 
 }
 
-export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo, colorSeed: number) : CellChannelStyle{
+export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo) : CellChannelStyle{
     return {
         id: count++,
         sensorId: sensorInfo.id,
@@ -32,7 +32,7 @@ export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo, colorSeed: num
         unitsName: sensorInfo.UnitValueName,
         cellStyle:"cell-torque-style",
         fontSize: 15,
-        fontStyle: GetColorBySeed(torqueBaseColor, colorSeed),
+        fontStyle: torqueBaseColor,
         sensorType: sensorInfo.SensorType,
         accurency: sensorInfo.MasEdRazm.toString().length - 1,
         valueType: "torque",
@@ -43,13 +43,13 @@ export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo, colorSeed: num
     }
 }
 
-export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo, colorSeed: number) : CellChannelStyle{
+export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo) : CellChannelStyle{
     return {
         id: count++,
         sensorId: sensorInfo.id,
         valueName: "Скорость вр.",
         unitsName: "rpm",
-        fontStyle: GetColorBySeed(speedBaseColor, colorSeed),
+        fontStyle: speedBaseColor,
         fontSize: 15,
         cellStyle: "cell-speed-style",
         sensorType: sensorInfo.SensorType,
@@ -61,13 +61,13 @@ export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo, colorSeed: numb
     } 
 }
 
-export function CreatetemperatureCellStyle(sensorInfo: FullSensorInfo, colorSeed: number) : CellChannelStyle{
+export function CreatetemperatureCellStyle(sensorInfo: FullSensorInfo) : CellChannelStyle{
     return {
         id: count++,
         sensorId: sensorInfo.id,
         valueName: "Температура",
         unitsName: "C",
-        fontStyle: GetColorBySeed(tmpBaseColor, colorSeed),
+        fontStyle: tmpBaseColor,
         fontSize: 15,
         cellStyle: "cell-tmp-style",
         sensorType: sensorInfo.SensorType,
@@ -77,13 +77,13 @@ export function CreatetemperatureCellStyle(sensorInfo: FullSensorInfo, colorSeed
     }
 }
 
-export function CreatePowerCellStyle(sensorInfo: FullSensorInfo, colorSeed: number) : CellChannelStyle{
+export function CreatePowerCellStyle(sensorInfo: FullSensorInfo) : CellChannelStyle{
     return {
         id: count++,
         sensorId: sensorInfo.id,
         valueName: "Мощность",
         unitsName: sensorInfo.powerUnitsName,
-        fontStyle: GetColorBySeed(powerBaseColor, colorSeed),
+        fontStyle: powerBaseColor,
         fontSize: 15,
         cellStyle: "cell-power-style",
         sensorType: sensorInfo.SensorType,

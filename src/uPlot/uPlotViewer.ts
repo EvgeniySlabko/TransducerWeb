@@ -285,7 +285,6 @@ export class MyUPlotViewer extends MyUPlotBase
           {
             let trace = this.channels[i - 1];
             let xVal = this.plot.posToVal(left, 'x');
-            let nearesrValue = this.buff[i][xVal];
 
             let tickToGridIndex = (sensorTimeValue: number) => {
               return Math.floor(sensorTimeValue * 5000); 

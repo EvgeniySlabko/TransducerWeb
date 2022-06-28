@@ -5,12 +5,12 @@ import { GetColorBySeed } from "./ColorFactory";
 import { powerBaseColor, speedBaseColor, tmpBaseColor, torqueBaseColor } from "./StyleCommon";
 
 
-export function CreateTorqueStyle(sensorInfo: FullSensorInfo, colorSeed: number) : ChannelStyle{
+export function CreateTorqueStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
 
     let style = new ChannelStyle();
     style.sensorId = sensorInfo.id;
     style.grid= true;
-    style.color = GetColorBySeed(torqueBaseColor, colorSeed);
+    style.color = torqueBaseColor;
     style.axisColor = torqueBaseColor;
     style.legendTitle = sensorInfo.SensorType + ":Torque";
     style.line = "solid";
@@ -32,11 +32,11 @@ export function CreateTorqueStyle(sensorInfo: FullSensorInfo, colorSeed: number)
     return style;
 }
 
-export function CreateSpeedStyle(sensorInfo: FullSensorInfo, colorSeed: number) : ChannelStyle{
+export function CreateSpeedStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
     let style = new ChannelStyle();
     style.sensorId = sensorInfo.id;
     style.grid= false;
-    style.color = GetColorBySeed(speedBaseColor, colorSeed);
+    style.color = speedBaseColor;
     style.axisColor = speedBaseColor;
     style.legendTitle = sensorInfo.SensorType + ":Speed";
     style.line = "solid";
@@ -56,11 +56,11 @@ export function CreateSpeedStyle(sensorInfo: FullSensorInfo, colorSeed: number) 
     return style;
 }
 
-export function CreatetemperatureStyle(sensorInfo: FullSensorInfo, colorSeed: number) : ChannelStyle{
+export function CreatetemperatureStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
     let style = new ChannelStyle();
     style.sensorId = sensorInfo.id;
     style.grid= false;
-    style.color = GetColorBySeed(tmpBaseColor, colorSeed);
+    style.color = tmpBaseColor;
     style.axisColor = tmpBaseColor;
     style.legendTitle = sensorInfo.SensorType +  ":Tmp";
     style.line = "solid";
@@ -79,14 +79,14 @@ export function CreatetemperatureStyle(sensorInfo: FullSensorInfo, colorSeed: nu
     return style;
 }
 
-export function CreatePowerStyle(sensorInfo: FullSensorInfo, colorSeed: number) : ChannelStyle{
+export function CreatePowerStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
     let minPower = CalculatePower(sensorInfo.MaxSpeed + 0.1 * sensorInfo.MaxSpeed, sensorInfo.MinValue + 0.1 * sensorInfo.MinValue);
     let maxPower = -minPower;
 
     let style = new ChannelStyle();
     style.sensorId = sensorInfo.id;
     style.grid= false;
-    style.color = GetColorBySeed(powerBaseColor, colorSeed);
+    style.color = powerBaseColor;
     style.axisColor = powerBaseColor;
     style.legendTitle = sensorInfo.SensorType + ":Power";
     style.line = "solid";

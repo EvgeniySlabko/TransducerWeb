@@ -1,8 +1,6 @@
 import { timers } from "jquery";
 import uPlot, { AlignedData, Axis, Options, Scale, Series } from "uplot";
 import { Channel, ChannelCloseArgs, ChannelDataArgs, ChannelMessageArgs } from "../Channel/Channel/Channel";
-import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
-import { GetApproximateValue } from "../Common/Common";
 import { dataEventArgs, SensorMessage } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ChannelLabel } from "../ViewsControllers/PlotViewController";
 import { PlotBufferManager } from "./BufferManager";
