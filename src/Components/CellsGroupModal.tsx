@@ -41,9 +41,9 @@ const { Panel } = Collapse;
 
       try
       {
-        await this.props.group.node.sensor.SetAvgRatio(this.state.avgFactor);
-        await this.props.group.node.sensor.SetSpeedPeriod(this.state.speedPeriod);
-        await this.props.group.node.sensor.SetExternalSensorState(this.state.externalSpeedSensor);
+        await this.props.group.node.worker.SetAverageRatio(this.state.avgFactor);
+        await this.props.group.node.worker.SetSpeedPeriod(this.state.speedPeriod);
+        await this.props.group.node.worker.SetExternalSpeedSensorState(this.state.externalSpeedSensor);
       }
       catch
       {
@@ -91,8 +91,8 @@ const { Panel } = Collapse;
       
         <Modal title="Параметры датчика" 
         visible={this.props.visible} 
-        onCancel={e => this.props.onClose()} 
         onOk={event => { this.onOk(); this.props.onClose(); }}
+        cancelButtonProps={{ style: { display: 'none' } }}
         centered={false}>
 
         <div className='vertical-flex'>
@@ -103,36 +103,26 @@ const { Panel } = Collapse;
             )
           }
         </div>
-        
-        <h5 className='margin'>Остальное:</h5>
-        <Checkbox className='margin' defaultChecked = {false} onChange ={(c) => 
-          {
-            this.setState((prev, props) => ({
-              absoluteAnalizer: c.target.checked,
-            }));
-          }}>Отслеживать максимум.</Checkbox>
           
           {
-              (!this.state.dataReceived) ? <></> :  
+            (!this.state.dataReceived) ? <></> :  
                 <>
-                  <h5 className='margin'>Параметры датчика:</h5>
-
-                  <div className='horizontal-flex'>
-                    <label className='margin vertical-alignment'>Период измерения скорости: </label>
+                  <div key = {1} className='horizontal-flex'>
+                    <label className='margin vertical-align'>Период измерения скорости: </label>
                     <div className='margin horizontal-flex'>
-                      <InputNumber className='margin vertical-alignment' step = {1} size="small" style={{height: "25px" }} defaultValue={this.state.speedPeriod} onChange={this.onSpeedChanged}/>
+                      <InputNumber className='vertical-align' step = {1} size="small" style={{height: "25px" }} defaultValue={this.state.speedPeriod} onChange={this.onSpeedChanged}/>
                       <p className='margin-left'>мс</p>
                     </div>
                   </div>
 
-                  <div className='horizontal-flex'>
-                    <label className='margin vertical-alignment'>Коэффицент усреднения: </label>
-                    <div className='margin'>
-                      <p>{this.state.avgFactor}</p>
+                  <div key = {2} className='horizontal-flex'>
+                    <label className='margin vertical-align'>Коэффицент усреднения: </label>
+                    <div className='margin horizontal-flex'>
+                    <InputNumber className='vertical-align' step = {1} size="small" style={{height: "25px" }} defaultValue={this.state.avgFactor} onChange={this.onAvgChanged}/>
                     </div>
                   </div>
 
-                  <Checkbox className='margin' defaultChecked = {false} onChange ={(c) => 
+                  <Checkbox key = {3} className='margin' defaultChecked = {false} onChange ={(c) => 
                   {
                     this.setState((prev, props) => ({
                       externalSpeedSensor: c.target.checked,
@@ -141,7 +131,14 @@ const { Panel } = Collapse;
                 </>
           }
           
+          <Checkbox className='margin' defaultChecked = {false} onChange ={(c) => 
+            {
+              this.setState((prev, props) => ({
+                absoluteAnalizer: c.target.checked,
+              }));
+            }}>Отслеживать максимум.</Checkbox>
         </Modal>
       )
     }
   }
+  

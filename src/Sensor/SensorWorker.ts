@@ -33,6 +33,7 @@ export class SensorWorker
         await this.sensor.StopStreaming();
         await this.sensor.StopMeasuring(true);
         await this.sensor.SetAvgRatio(1);
+        await this.sensor.SetUsingFloatState(true);
         await this.sensor.SetComputerConnection();
 
         /// configure
@@ -94,6 +95,21 @@ export class SensorWorker
             this.isStreaming = false;
         }
     }
+
+    public async SetExternalSpeedSensorState(state: boolean)
+    {
+        await this.sensor.SetExternalSensorState(state);
+    }  
+
+    public async SetSpeedPeriod (period: number)
+    {
+        await this.sensor.SetSpeedPeriod(period);
+    }  
+
+    public async SetAverageRatio(avg: number)
+    {
+        await this.sensor.SetAvgRatio(avg);
+    }   
 
     public async Close()
     {

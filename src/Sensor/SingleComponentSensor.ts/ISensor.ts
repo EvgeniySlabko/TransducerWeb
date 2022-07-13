@@ -1,6 +1,11 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
 import { dataEventArgs, HoldingRegisters, SensorMessageEventArgs, SensorSK } from "./SensorDefinitions";
 
+export enum SensorDateType {
+  float = 1,
+  integer = 0,
+};
+
 export interface ISingleComponentSensor {
     get onData() : IEvent<ISingleComponentSensor, dataEventArgs>;
 
@@ -28,5 +33,5 @@ export interface ISingleComponentSensor {
     StartMeasuring(waitAnswer: boolean): Promise<void>;
     SetSpeedPeriod(speedPerion: number) : Promise<void>;
     SetUsingFloatState(state: boolean) : Promise<void>;
-    SetExternalSensorState(state: boolean) : Promise<void>    
+    SetExternalSensorState(state: boolean) : Promise<void>   
   }

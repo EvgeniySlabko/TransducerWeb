@@ -1,7 +1,6 @@
 import React from 'react';
 import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Channel/CellChannel';
 import { Button, Checkbox, Collapse, InputNumber, Row, Slider } from 'antd';
-import { ColorChanger } from './ColorChanger';
 import { ViewController } from '../ViewsControllers/PlotViewController';
 import { ChannelsGroup } from '../Channel/AllChannelsFactory';
 import { CellModal } from './CellModal';
@@ -96,18 +95,18 @@ const { Panel } = Collapse;
           <div className='horizontal-flex'>
             
               
-              <div className={`cell-name`} style = {{color: this.props.channelGroup.cellChannel.Style.fontStyle, background: this.state.overload ? "red" : "white"}} >
-                  {this.props.channelGroup.cellChannel.Style.valueName + ` ${"(" + this.props.channelGroup.cellChannel.Style.unitsName + ")"}`}
-              </div>
-              <Button className='horizontal-padding' onClick={event => { event.stopPropagation(); this.onShow(); } } key={1} 
-              icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
+          <div className={`cell-name`} style = {{color: this.props.channelGroup.cellChannel.Style.fontStyle, background: this.state.overload ? "red" : "white"}} >
+              {this.props.channelGroup.cellChannel.Style.valueName + ` ${"(" + this.props.channelGroup.cellChannel.Style.unitsName + ")"}`}
+          </div>
+          <Button className='horizontal-padding' onClick={event => { event.stopPropagation(); this.onShow(); } } key={1} 
+          icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
 
 
-              <CellModal 
-                group = {this.props.channelGroup} 
-                plotViewController={this.props.plotViewController} 
-                visible={this.state.modalVisible} 
-                onClose={ this.onModalClose }></CellModal>
+          <CellModal 
+            group = {this.props.channelGroup} 
+            plotViewController={this.props.plotViewController} 
+            visible={this.state.modalVisible} 
+            onClose={ this.onModalClose }></CellModal>
               
               
           </div>

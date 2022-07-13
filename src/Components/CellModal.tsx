@@ -58,7 +58,7 @@ const { Panel } = Collapse;
         <div onClick={e => e.stopPropagation()}>
           <Modal title="Параметры датчика" 
           visible={this.props.visible} 
-          onCancel={e => this.props.onClose()} 
+          cancelButtonProps={{ style: { display: 'none' } }}
           onOk={event => { this.onOk(); this.props.onClose(); }}
           centered={false}>
             <div className='vertical-flex'>
@@ -78,7 +78,7 @@ const { Panel } = Collapse;
               <div className='horizontal-flex'>
                 <label className='margin vertical-alignment'>Знаков после запятой: </label>
                 <div className='margin'>
-                  <InputNumber className='margin vertical-alignment' step = {1} size="small" style={{height: "25px" }} min={0} max={5} value={this.state.accurency} onChange={this.changeAccurency} />
+                  <InputNumber className='vertical-alignment' step = {1} size="small" style={{height: "25px" }} min={0} max={5} value={this.state.accurency} onChange={this.changeAccurency} />
                 </div>
               </div>
             

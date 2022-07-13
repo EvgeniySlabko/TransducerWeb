@@ -3,7 +3,7 @@ import { EventDispatcher, SimpleEventDispatcher } from "strongly-typed-events";
 import SerialBufferedWorker from "../../IO/serialBuffer";
 import { SensorMessage, SensorMessageEventArgs, SensorSK } from './SensorDefinitions';
 import { DefaultCommand, ISensorCommand, MultipleCommand, SingleCommand } from '../SensorCommand/SensorCommand';
-import { ISingleComponentSensor } from './ISensor';
+import { ISingleComponentSensor, SensorDateType } from './ISensor';
 
 export class SensorComponentSensor  implements ISingleComponentSensor{
 
@@ -89,6 +89,7 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
             msgType: SensorMessage.StartStreaming
         })
     }
+
     public SetAvgRatio = async (avgRatio: number) => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.PRESET_SINGLE_REGISTER, Defs.AVG_RATIO, avgRatio));  
     public SetComputerConnection = async () => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_ON_VALUE));
     public UnsetComputerConnection = async () => this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_OFF_VALUE));

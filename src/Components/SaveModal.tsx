@@ -10,6 +10,7 @@ const { Panel } = Collapse;
     snapshot?: Snapshot,
     visible: boolean;
     onClose: () => void;
+    maxAvgFactor: () => Promise<number>;
   }
 
   interface IState {
@@ -33,10 +34,11 @@ const { Panel } = Collapse;
 
     }
 
-    onCSVDownload = () =>
+    onCSVDownload = async () =>
     {
         //var snapshot = this.props.recordController.StopListening();
-		this.props.snapshot?.ToCSV(this.state.csvName);
+        let minAvgFactor = await this.props.maxAvgFactor();
+		    this.props.snapshot?.ToCSV(this.state.csvName, 1 / (5000 / minAvgFactor));
     }
 
     onReportSaveAS = () =>
@@ -47,7 +49,7 @@ const { Panel } = Collapse;
     onReportDownload = () =>
     {
         //var snapshot = this.props.recordController.StopListening();
-		this.props.snapshot?.ToFile(this.state.reportName);
+		  this.props.snapshot?.ToFile(this.state.reportName);
     }
 
 

@@ -1,6 +1,7 @@
 
 import FileSaver from "file-saver";
 import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
+import { AlignedData } from "../Common/DataAligner";
 import { dataEventArgs } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 
 
@@ -31,17 +32,6 @@ export class Snapshot
     public ToFile(fileName: string)
     {   
         var parts = new Array<string>();
-
-        /*
-        for (let i = 0; i < this.data.length; i++){
-            
-            var styleSerialized = JSON.stringify(this.data[i].style);
-            var dataSerialized= JSON.stringify(this.data[i].data);
-
-            parts.push(styleSerialized);
-            parts.push(dataSerialized);
-        }
-        */
         parts.push(JSON.stringify(this.data));
         var blob = new Blob(parts, 
             {
@@ -52,25 +42,35 @@ export class Snapshot
         FileSaver.saveAs(blob, fileName);
     }
 
-    public ToCSV(fileName: string)
+    public ToCSV(fileName: string, dt: number)
     {
-
-        let rows = new Array<Array<string>>(this.data.length);
+        let alignedData = AlignedData(this.data.map(d => d.data), {dt: dt});
 
         let csvContent = "data:text/csv;charset=utf-8,";
-        let rowArray = new Array<string>();
-        this.data.forEach(t => {
-            rowArray.push(t.style.legendTitle);
-                    for (let i = 0; i < t.data.data.length; i++) {
-                        let strVal = t.data.data[i].toString() + ":" + t.data.time[i].toString();
-                        rowArray.push(strVal);
-                    }
-                }
-            )
 
-        let row = rowArray.reverse().join(";");
-        csvContent += row + "\r\n";
+        let csvRows = new Array<string>();
         
+        let addRow = (title: string, data: (number | null | undefined)[], ration: number) =>
+        {
+            let rowArray = new Array<string>();
+            rowArray.push(title);
+
+            for (let i = 0; i < data.length; i++) {
+                let strVal = data[i] === null || data[i] === undefined  ?
+                            "" : (<number>(data[i]) * ration).toString();
+
+                rowArray.push(strVal);
+            }
+    
+            let row = rowArray.join(";") + "\r\n";
+            csvRows.push(row);
+        }
+
+        addRow("Time", alignedData[0], 1);
+        for (let i = 1; i < alignedData.length; i++) 
+            addRow(this.data[i - 1].style.legendTitle, alignedData[i], this.data[i - 1].style.mnogitel);
+
+        csvContent += csvRows.join();
         FileSaver.saveAs(csvContent, fileName);
     }
 }

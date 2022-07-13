@@ -339,6 +339,7 @@ export class MyUPlot extends MyUPlotBase
       let existsChannel = channel;
       this.plot!.series[i].stroke = () => existsChannel.channel.Style.color;
       this.plot!.series[i].width = existsChannel.channel.Style.width;
+      this.plot!.series[i].points!.stroke = () => existsChannel.channel.Style.color;
     }
   }
 

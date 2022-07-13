@@ -17,6 +17,7 @@ import { PlotPeackController } from '../ViewsControllers/PeacksController';
 import { ParamsStorage } from '../Storage/Storage';
 import { changeGroupColor } from '../Common/ChannelColorChanger';
 import { SaveModal } from './SaveModal';
+import { GetMinAvgFactor } from '../Common/SensorsHelpers';
 
 export interface Props {
     sensorService: SensorController;
@@ -281,6 +282,7 @@ export class App extends React.Component<Props, IState>
             <SaveModal 
                 key={3}
                 onClose={() => this.setState((prev, props) => ({saveDialog: false}))}
+                maxAvgFactor={async () => await GetMinAvgFactor(this.state.groups.map(g => g.node.sensor))}
                 snapshot = {this.state.currentSnapshot}
                 visible = {this.state.saveDialog}
             ></SaveModal>
