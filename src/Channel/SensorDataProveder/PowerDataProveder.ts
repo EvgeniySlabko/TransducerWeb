@@ -11,8 +11,8 @@ export class PowerDataProvider implements ISensorDataProvider
     private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
     private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
 
-    private lastMainValue: number | undefined;
-    private lastMainTime: number | undefined;
+    private lastMainValue: number | undefined = undefined;
+    private lastMainTime: number | undefined = undefined;
 
     constructor(toqueDataSourse: ISensorDataProvider, speedDataSourse: ISensorDataProvider)
     {
@@ -29,7 +29,7 @@ export class PowerDataProvider implements ISensorDataProvider
         });
 
         speedDataSourse.onData.sub((sensor, args) =>{
-            if (this.lastMainValue && this.lastMainTime)
+            if (this.lastMainValue != undefined && this.lastMainTime != undefined)
             {
                 let power = CalculatePower(args.data[0], this.lastMainValue); 
                 this._onData.dispatch(sensor, {

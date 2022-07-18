@@ -40,7 +40,7 @@ export function CreateSpeedStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
     style.axisColor = speedBaseColor;
     style.legendTitle = sensorInfo.SensorType + ":Speed";
     style.line = "solid";
-    style.range = [0, 30000];
+    style.range = [-20, 30000];
     style.yTitle = `Speed (${sensorInfo.speedUnitsName})`;
     style.unitName = "hz";
     style.valueType = "speed";

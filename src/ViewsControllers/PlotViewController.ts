@@ -65,7 +65,14 @@ export class ViewController
     }
 
     public async AddChannels(channels: Channel[])
-    {        
+    {    
+        if (!this.streamingMode)
+        {
+            this.plot.DestroyPlot();
+            this.plot = new MyUPlot(this.element);
+            this.streamingMode = true
+        }
+
         if (this.streamingMode)
         {
             let streamingPlot = <MyUPlot>this.plot;
@@ -89,9 +96,6 @@ export class ViewController
 
     public UploadSnapshot(snapshot: Snapshot)
     {
-        if (this.streamingMode)
-            this.Reset();
-            
         this.plot.DestroyPlot();
         this.plot = new MyUPlotViewer(this.element);    
         let plotViewer = <MyUPlotViewer>this.plot;
@@ -110,6 +114,7 @@ export class ViewController
         else
         {
             let streamingPlot = <MyUPlot>this.plot;
+            this.plot.DestroyPlot();
             streamingPlot.Reset();
         }
     }

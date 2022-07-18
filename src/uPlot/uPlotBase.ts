@@ -1,8 +1,8 @@
 import html2canvas from "html2canvas";
-import uPlot, { AlignedData, Axis, Options, Scale, Series } from "uplot";
-import { getRandomInt, increase_brightness } from "../Common/Common";
-import { GetAxe, GetScale } from "./ComponetFactory/ComponentFactory";
-
+import uPlot, { Axis, Scale, Series } from "uplot";
+import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
+import { increase_brightness, nearestPoint } from "../Common/Common";
+import { GetAxe, GetScale, GetSeries } from "./ComponetFactory/ComponentFactory";
 
 export declare class LegendItem {
   public setValue: (value: string) => void;
@@ -27,31 +27,154 @@ export declare class Label
   value: number;
 }
 
+export type SeriesInfo =
+{
+  style: ChannelStyle;
+  dataBufferIndex: number;
+  curRange: number[];
+  axis: Axis;
+  series: Series;
+  scale: Scale;
+  dataRatio: number;
+}
+
 export class MyUPlotBase
 {
-    protected element: HTMLElement;
-    protected parent: HTMLElement | null;
-    protected plot: uPlot | undefined;
+    protected element: HTMLElement;                               // uplot container
+    protected parent: HTMLElement | null;                         // parent container
+    protected plot: uPlot | undefined;           
+    protected options: uPlot.Options;
+    protected data: uPlot.AlignedData =[[],[]]
     protected legendItems: LegendItem[] | undefined = undefined; 
     protected labels: Label[] = [];
     protected limits: LimitLine[] = [];
+    protected seriesInfos: SeriesInfo[] = [];                     
+    
+    protected interval?: NodeJS.Timer;
+    
+    protected params =  {  
+      gridTicks: 50, 
+      screenSize: () => this.params.range[1] - this.params.range[0],
+      setScreenSize: (size: number) =>
+      {
+        let rangeVal = this.params.range[1] - this.params.range[0];
+        let mid = this.params.range[0] + (rangeVal / 2);
+        this.params.range[0] = mid - size/ 2;
+        this.params.range[1] = mid + size/ 2
+      },
 
-    protected interval: NodeJS.Timer | undefined;
-    protected controlarams =  {
-      gridTicks: 50,     //делений графика в секунду.
-      gridDx: 0,          //
-      screenSize: 5,      //
       t0: 0,
+      th: 0,
       range: [0, 5],
     }
     
     constructor (element: HTMLElement)
     {
-        // переотрисовка
         this.element = element;
         this.parent =  this.element.parentElement;
+        this.options = this.getOptions();
+
+        window.addEventListener("resize", e => {
+          this.plot?.setSize(this.getSize());
+        });
     }
     
+    public ClearLabels = () => this.labels.splice(0, this.labels.length);
+
+    public AddSeries(style: ChannelStyle) : SeriesInfo
+    {
+      let axis: uPlot.Axis;
+      let scale: uPlot.Scale;
+      let range : number[];
+      let series: uPlot.Series;
+      let index = this.seriesInfos.length + 1;
+      let dataRatio = 1;
+      
+      let sameTypeChannel = this.seriesInfos.find(s => s.style.valueType == style.valueType);
+
+      if (sameTypeChannel)
+      {
+        let scaleName = <string>sameTypeChannel.axis.scale;
+
+        series = GetSeries(scaleName);
+        series.scale = scaleName;
+
+        axis = sameTypeChannel.axis;
+        scale = sameTypeChannel.scale;
+        range = sameTypeChannel.curRange; 
+        
+        dataRatio = style.mnogitel / style.mnogitel;
+
+        if (style.range[0] < range[0]) 
+          range[0] = style.range[0];
+        if (style.range[1] > range[1]) 
+          range[1] = style.range[1];
+      }
+      else
+      {
+        let scaleName = "y" + index.toString();              
+        series = GetSeries(scaleName);
+        series.scale = scaleName;
+        
+        axis = this.options.axes![index];
+        scale = this.options.scales![scaleName];
+
+        dataRatio = 1;
+        range = [style.range[0], style.range[1]];
+
+        axis.side = style.yAxeSide == "left" ? 1 : 3;
+        axis.stroke = style.axisColor;
+        axis.show = true;
+        axis.label = style.yTitle;
+        axis.grid!.show = style.grid;
+        scale.range = () => [range[0], range[1]];
+      }
+
+      series.show = style.visible;
+      series.stroke = style.color;
+      series.width = style.width;
+      series.label = style.legendTitle;
+      series.points!.stroke = style.color;
+      this.options.series.push(series);
+      
+
+      let addLimit = (limitValue: number) => {
+          this.limits.push({
+          axis: axis,
+          color: () => style.color,
+          label: style.legendTitle,
+          range: () => range,
+          value: limitValue * dataRatio,
+          enabled: () => 
+          {
+            return (this.legendItems 
+                    && this.legendItems.at(index) ? this.legendItems[index].isActive() : false) 
+                    && style.drawLimits != undefined
+                    && style.drawLimits
+          }
+        })
+      }
+      
+      if (style.maxValue)
+        addLimit(style.maxValue);
+      
+      if (style.minValue)
+        addLimit(style.minValue);
+
+      let info : SeriesInfo = {
+        dataRatio: dataRatio,
+        axis : axis,
+        scale: scale,
+        series: series,
+        curRange: range,
+        dataBufferIndex: index,
+        style: style,
+      }
+
+      this.seriesInfos.push(info);
+      return info;
+    }
+
     public async GetScreen() : Promise<string>
     {
       const canvas = await html2canvas(this.element);
@@ -59,18 +182,16 @@ export class MyUPlotBase
     }
       
     protected SetScale(min: number, max: number){
-      this.controlarams.range = [min, max];
+      this.params.range = [min, max];
     }
       
     protected getSize() {    
       
       let summaryOthersWidth = 0;
-      let childrens = this.parent!.children; 
+      let childrens = this.parent!.children;
       for (let i = 0; i < childrens.length; i++) {
         if (childrens[i] != this.element)
-        {
           summaryOthersWidth += childrens[i].clientWidth;
-        }
       }
       return {
           width: this.parent!.clientWidth - summaryOthersWidth,
@@ -79,12 +200,12 @@ export class MyUPlotBase
     }
       
     private wheelZoomPlugin(opts: any) {
-        let factor = opts.factor || 0.75;
+        let factor = 0.75;
     
         let xMin: number, xMax: number, yMin: number, yMax: number, xRange: number, yRange: number;
     
         function clamp(nRange: number, nMin: number, nMax: number, fRange: number, fMin: number, fMax: number) {
-          if (nMin < 0) nMin = 0;
+          
     
           return [nMin, nMax];
         }
@@ -154,8 +275,8 @@ export class MyUPlotBase
                 if (this.Wheel(e))
                     return;
             
-                xMin = this.controlarams.range[0];
-                xMax = this.controlarams.range[1];
+                xMin = this.params.range[0];
+                xMax = this.params.range[1];
                 //yMin = u.scales.y1.min;
                 //yMax = u.scales.y1.max;
                 xRange = xMax - xMin;
@@ -289,7 +410,6 @@ export class MyUPlotBase
 
     protected getOptions()
     {
-      let range = [0,5];
       return  {  
           width: 100,
           height: 100,
@@ -309,7 +429,7 @@ export class MyUPlotBase
           
           scales: {
               x: {
-                range: () =>  <Scale.Range>this.controlarams.range,
+                range: () =>  <Scale.Range>this.params.range,
 
                 distr: 1,
                 time: false, 
@@ -374,11 +494,7 @@ export class MyUPlotBase
                     this.SelectCommited();
                     let min = u.posToVal(u.select.left, 'x');
                     let max = u.posToVal(u.select.left + u.select.width, 'x');
-
-                    // zoom to selection
                     this.SetScale(min, max);
-                    //console.log(min, max);
-                    // reset selection
                     u.setSelect(
                     {
                         width: 0, 
@@ -398,20 +514,36 @@ export class MyUPlotBase
     protected InitAxes()
     {
         let axisDivs = this.element.getElementsByClassName("u-axis");
-        for (let i = 0; i < axisDivs.length; i++) {
+        for (let i = 0; i < axisDivs.length; i++)
             this.SetupAxis(i);
-        }
     }
     
-    protected BuildPlot(options: Options, dataBuffer: any)
+    protected BuildPlot()
     {
-        this.plot = new uPlot(options, dataBuffer, this.element);
-        this.interval = setInterval(() => {
-          this.plot?.redraw(true, true)
-        }, 30);
-        setTimeout(() =>
+        this.plot = new uPlot(this.options, this.data, this.element);
+        
+        this.interval = setInterval(() => this.plot?.redraw(true, true), 30); // отрисовка
+        
+        setTimeout(() => this.InitLegend(), 100);
+        setTimeout(() => this.InitAxes(), 100);
+    }
+
+    public DestroyPlot()
+    {
+        if (this.plot)
         {
-          let legendSeries = this.element.getElementsByClassName("u-series");
+          this.plot.destroy();
+          this.options = this.getOptions(),
+          this.data = [[],[]]
+          if (this.interval)
+          clearInterval(this.interval);
+          this.element.innerHTML = '';
+        }
+    }
+
+    private InitLegend()
+    {
+      let legendSeries = this.element.getElementsByClassName("u-series");
           this.legendItems = new Array<LegendItem>();
           let e = this.element.getElementsByClassName("u-over")[0];
           e.addEventListener("mouseleave", () =>
@@ -451,19 +583,6 @@ export class MyUPlotBase
         });
 
         this.plot?.setSize(this.getSize());
-        }, 100);
-    }
-
-    public DestroyPlot()
-    {
-        if (this.plot)
-        {
-          this.plot.destroy();
-          if (this.interval)
-          clearInterval(this.interval);
-          this.element.innerHTML = '';
-        }
-          
     }
 
     protected Redraw()
@@ -471,8 +590,50 @@ export class MyUPlotBase
         this.plot?.redraw();
     }
     
-    protected setCursor(){}
+    protected Wheel(e: number) : boolean
+    {
+        return false;
+    }
+      
+    private AxisRangeChanged(index: number, dy: number)
+    {
+      let range = this.seriesInfos[index- 1].curRange
+      let curRangeVal = range[1] - range[0];
 
+      //вычисляем относительное смещение 
+      let dVal = curRangeVal * dy;
+
+      range[0] += dVal;
+      range[1] += dVal;
+    }
+   
+    protected setCursor(){
+      if (!this.plot || !this.legendItems)
+        return;
+      
+      const findTime =  5;
+      let left = this.plot?.cursor.left as number;
+      let xVal = this.plot.posToVal(left, 'x');
+      let dt = 1 / this.params.gridTicks;
+      let maxCount = findTime / dt;
+      let index = Math.floor(xVal / dt);
+      
+      if (left && this.legendItems && xVal < this.params.th && xVal > this.params.t0)
+      {
+        // let curValues = GetApproximateValues(this.data, xVal);
+        
+        for (let i = 0; i < this.data.length - 1; i++)
+        {
+              let nearestVal = nearestPoint(this.data[i + 1], index, maxCount);
+              let seriesInfo = this.seriesInfos[i];
+              let strValue = nearestVal !== undefined && nearestVal !== null ? nearestVal!.toFixed(seriesInfo.style.legendValueAcurency).toString() : "--";
+              if (this.legendItems)
+                this.legendItems[i + 1].setValue(strValue);
+            
+        };
+      }
+    }
+    
     protected SeriesDraw(i: number){}
 
     protected SelectCommited(){}
@@ -480,14 +641,20 @@ export class MyUPlotBase
     protected DbClick(e: any){}
     
     protected AxisWheel(dy: number){}
-    
-    protected AxisZoom(index: number, dy: number){}
-    
-    protected AxisRangeChanged(index: number, dy: number){}
-    
-    protected Wheel(e: number) : boolean
-    {
-        return false;
+  
+    protected AxisZoom(index: number, dy: number): void {
+      let dir = dy > 0 ? 1 : -1; 
+          
+      let series = this.seriesInfos[index- 1];
+      let curRange = series.curRange;
+      
+      let rangeVal = curRange[1] - curRange[0];
+      let dyTop = series.style.rescaleRationTop * rangeVal;
+      let dyBottom = series.style.rescaleRationBottom * rangeVal;
+      let newRange = [curRange[0] - dyBottom * dir, curRange[1] + dyTop * dir];
+  
+      series.curRange[0] = newRange[0];
+      series.curRange[1] = newRange[1];
     }
 
     private SetupAxis = (i: number) =>
@@ -497,17 +664,14 @@ export class MyUPlotBase
 
         let dragStart = false;
         let yCoord = 0;
-        let initialRange = new Array<number>(2);
-        
+
         divAxis.addEventListener('mousedown', (e: any) => {
-        dragStart = true;
-        yCoord = e.clientY;
-        //initialRange[0] = this.channels[index- 1].curRange[0];
-        //initialRange[1] = this.channels[index- 1].curRange[1];
+          dragStart = true;
+          yCoord = e.clientY;
         });
 
         document.addEventListener('mouseup', (e: any) => {
-        dragStart = false;
+          dragStart = false;
         });
 
         divAxis.addEventListener('mouseleave', (e: any) => {
@@ -522,7 +686,6 @@ export class MyUPlotBase
             let cursorDy = curY - yCoord;
             yCoord = curY
             let l = cursorDy / divHeigh;
-            
             this.AxisRangeChanged(i, l);
         }
         });

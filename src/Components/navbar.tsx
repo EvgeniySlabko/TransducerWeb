@@ -10,94 +10,47 @@ import { ViewController } from '../ViewsControllers/PlotViewController';
 import { Snapshot } from '../ReportListener/Snapshot';
 import { Button, Dropdown, Menu, notification } from 'antd';
 import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { PlotControlPannel } from './PlotControlPannel';
 import { Group } from './App';
-import { SaveModal } from './SaveModal';
 
 export interface Props {
     sensorService: SensorController,
 	recordController: RecordController,
-	plotViewController: ViewController | null
+	plotViewController? : ViewController,
 	groups: Group[],
+	recordingState: boolean;
+	enable: boolean
+	streaming: boolean,
+	reportVieving: boolean,
+
+
+	clear: () => void
+	toggleStreaming: () => void,
 	openReportCallback: (file: File) => void
 	setStreamingModeView: () => void
-	ThereAreConnectedSensors: () => boolean
-	recordingState: () => boolean;
 	toggleRecording: () => void
 }
 
   interface IState {
-	sensorService: SensorController,
-	recordController: RecordController,
-
 	saveDialog: boolean;
-	clearBtnOn: boolean;
-	playButtonState: boolean;
 	startStop: boolean;
-	firstStart: boolean;
-	viewingReport: boolean;
   }
 
   export class Navbar extends React.Component<Props, IState>
   {
-
 	constructor(prop: Props)
 	{
 		super(prop);
 
 		this.state = {
-			sensorService: this.props.sensorService,
-			recordController: this.props.recordController,
-
 			saveDialog: false,
-			clearBtnOn: true,
-			playButtonState: true,
 			startStop: false,
-			firstStart: true,
-			viewingReport: false,
 		  };
 
-		this.handleStartClick = this.handleStartClick.bind(this);
 		this.handleAddClick = this.handleAddClick.bind(this);
 		this.handleClearClick = this.handleClearClick.bind(this);
 		this.handleFakerClick = this.handleFakerClick.bind(this);
 	}
 	
-	starthandler = async () =>
-	{
-		let started = await this.state.sensorService.StartAll();
-		if (!started) return;
-
-		this.setState((prev, props) => ({
-			playButtonState: false,
-			clearBtnOn: false,
-			
-		  }));
-
-		if (this.state.firstStart) 
-		{
-			this.setState((prev, props) => ({
-					firstStart: false,
-				}));
-
-			await this.state.sensorService.SetT0();
-		}
-
-		this.setState((prev, props) => ({
-			startStop: true,
-		}));
-	}
-
-	async stophandler()
-	{
-		await this.state.sensorService.StopAll();
-		this.setState((prev, props) => ({
-			clearBtnOn: true,
-			playButtonState: true,
-			startStop: false,
-		  }));
-	}
-
 	handleOpenFile = async () =>{
 		
 		let input = document.createElement('input');
@@ -105,29 +58,20 @@ export interface Props {
 		input.onchange = async () => {
 			if(input.files && input.files?.length != 1) return;
 				let file = input.files?.item(0);
-			if (!file) return;
+				if (!file) return;
 			
 			this.props.openReportCallback(file);
-			this.setState((prev, props) => ({
-				viewingReport: true,
-			}));
 		};
 
 		input.click();
 	}
 
-	handleStartClick = async () => {
-		this.state.startStop ? await this.stophandler() : await this.starthandler();
-	}
-
 	handleClearClick() {
-
+		
 		this.props.plotViewController?.Clear();
 		this.props.plotViewController?.ClearLabels();
 		this.props.groups.forEach(g => g.channelsInfo.resetAbsoluteAnalizer());
-		this.setState((prev, props) => ({
-			firstStart: true,
-		}));
+		this.props.clear();
 	}
 
 	private async handleAddClick() {
@@ -135,7 +79,7 @@ export interface Props {
 		{
 			let port = await navigator.serial.requestPort();    //запрашиваем выбор порта у пользователя
 			var sensor = await CreateSerialSensor(port);
-			await this.state.sensorService.AddSensor(sensor);
+			await this.props.sensorService.AddSensor(sensor);
 		}
 		catch(e: any)
 		{
@@ -152,28 +96,10 @@ export interface Props {
 
 	async handleFakerClick() {
 		let facker = new Facker();
-		await this.state.sensorService.AddSensor(facker);
+		await this.props.sensorService.AddSensor(facker);
 	}
 
-	getSnapshotBeforeUpdate()
-	{
-		if (!this.props.ThereAreConnectedSensors())
-		{
-			if (!this.state.clearBtnOn || !this.state.playButtonState)
-			{
-				this.setState((prev, props) => ({
-					clearBtnOn: true,
-					playButtonState: true,
-					startStop: false,
-				}));
-				
-				//console.log();
-			}
-		}
-	}
-
-	handleScreen = async () =>
-	{
+	handleScreen = async () => {
 		let screen = await this.props.plotViewController?.MakeScreen();
 		if (screen)
 		{
@@ -190,47 +116,44 @@ export interface Props {
 				
 				<div className="btn-group" role="group" aria-label="First group">
 
-					<Button title="Начать измерение" size='large' id="Start" shape="default"
-					icon = 
-					{
-						this.state.viewingReport ? <ArrowLeftOutlined /> : 
-						this.state.playButtonState?  <CaretRightOutlined/> : <PauseOutlined />
-						
-					} onClick=
-					{
-						this.state.viewingReport ? () => { 
-							this.setState((prev, props) => ({
-								viewingReport: false,
-							}));	
-							
-							this.props.setStreamingModeView();
-						}: this.handleStartClick
-					}></Button>
-
-					<Button title="Очистить результаты" size='large' 
-					disabled = 
-					{
-						!this.state.clearBtnOn || this.state.viewingReport
-					} id="clear" shape="default"  
-					icon={<BorderOutlined />} onClick={this.handleClearClick}></Button>
-
-					<Button title="Добавить датчик" size='large' 
-					disabled = 
-					{
-						!this.state.clearBtnOn || this.state.viewingReport
+					<Button title="Начать измерение" size='large' id="Start" shape="default" disabled = {!this.props.enable && !this.props.reportVieving}
+					icon = {
+						this.props.reportVieving ? <ArrowLeftOutlined /> : 
+						this.props.streaming?  <PauseOutlined /> : <CaretRightOutlined/>
 					} 
-					id="open" shape="default"  
-					icon={<PlusCircleOutlined />} onClick={this.handleAddClick}></Button>
+					onClick= {
+						 this.props.toggleStreaming
+					}/>
+
+					<Button title="Очистить результаты" 
+					disabled = { !this.props.enable || this.props.streaming } 
+					size='large' 
+					id="clear"
+					shape="default"  
+					icon={<BorderOutlined />} 
+					onClick={this.handleClearClick}/>
+
+					<Button title="Добавить датчик" 
+					size='large' 
+					disabled = { this.props.streaming || this.props.reportVieving } 
+					id="open" 
+					shape="default"  
+					icon={<PlusCircleOutlined />} 
+					onClick={this.handleAddClick}/>
 
 					<Button title="Начать запись в файл" size='large' id="StartRec" 
-					disabled = {this.state.viewingReport || !this.props.ThereAreConnectedSensors()}
-					icon={<AimOutlined style={{ color: this.props.recordingState() ? "red": "inherit" }}/>} shape="default"  onClick={this.props.toggleRecording}
-					style={{ borderColor: this.props.recordingState() ? "red": "#d9d9d9" }}
-					></Button>
+					disabled = { !this.props.enable || (this.props.streaming && !this.props.recordingState) }
+					icon={<AimOutlined style={{ color: this.props.recordingState ? "red": "inherit" }}/>} 
+					shape="default"  
+					onClick={this.props.toggleRecording}
+					style={{ borderColor: this.props.recordingState ? "red": "#d9d9d9" }}/>
 
-					<Button title="Сделать скриншотю" size='large' 
-					id="screen" shape="default"  
-					icon={<CameraOutlined />} onClick={this.handleScreen}></Button>
+					<Button title="Сделать скриншотю" 
+					size='large' 
+					id="screen" 
+					shape="default"  
+					icon={<CameraOutlined />} 
+					onClick={this.handleScreen}/>
 
 					<Dropdown overlay=
 					{
@@ -238,7 +161,7 @@ export interface Props {
 							items={[
 							{
 								key: '1',
-								disabled: this.state.viewingReport,
+								disabled: this.props.enable,
 								label: (
 								<a  onClick={this.handleFakerClick} target="_blank" rel="noopener noreferrer">
 									Add faker
@@ -256,7 +179,7 @@ export interface Props {
 							]}
 						/>
 					} arrow>
-						<Button size='large' icon={<BarsOutlined />}></Button>
+						<Button size='large' icon={<BarsOutlined />}/>
 					</Dropdown>
 
 				</div>

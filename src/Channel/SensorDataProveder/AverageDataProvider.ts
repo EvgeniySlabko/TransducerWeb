@@ -58,6 +58,8 @@ export class AverageSensorDataProvider implements ISensorDataProvider
     private reset = () =>
     {
         this.averageCount = 0;
+        this.t0 = 0;
+        this.th = 0
         this.averageValue = 0;
     }
 

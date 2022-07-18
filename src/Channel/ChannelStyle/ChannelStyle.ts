@@ -19,7 +19,7 @@ export class ChannelStyle{
     visible: boolean = true;
     width: number = 1;
     legendValueAcurency: number = 2;
-    drawLimits: boolean = false;
+    drawLimits?: boolean = false;
     mnogitel: number  = 1;
     minValue?: number;
     maxValue?: number;

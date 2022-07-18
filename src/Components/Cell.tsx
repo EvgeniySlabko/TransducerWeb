@@ -5,12 +5,14 @@ import { ViewController } from '../ViewsControllers/PlotViewController';
 import { ChannelsGroup } from '../Channel/AllChannelsFactory';
 import { CellModal } from './CellModal';
 import { SettingOutlined } from '@ant-design/icons';
+import { CellValue } from './CellValue';
 
 const { Panel } = Collapse;
 
   export interface Props {
    channelGroup: ChannelsGroup;
-   plotViewController: ViewController | null;
+   plotViewController?: ViewController;
+   allowSettings: boolean,
   }
 
    interface IState {
@@ -94,34 +96,31 @@ const { Panel } = Collapse;
 
           <div className='horizontal-flex'>
             
-              
-          <div className={`cell-name`} style = {{color: this.props.channelGroup.cellChannel.Style.fontStyle, background: this.state.overload ? "red" : "white"}} >
-              {this.props.channelGroup.cellChannel.Style.valueName + ` ${"(" + this.props.channelGroup.cellChannel.Style.unitsName + ")"}`}
-          </div>
-          <Button className='horizontal-padding' onClick={event => { event.stopPropagation(); this.onShow(); } } key={1} 
-          icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
+            <div className={`cell-name`} 
+                style = {{color: this.props.channelGroup.cellChannel.Style.fontStyle, background: this.state.overload ? "red" : "white"}} >
+                {this.props.channelGroup.cellChannel.Style.valueName + ` ${"(" + this.props.channelGroup.cellChannel.Style.unitsName + ")"}`}
+            </div>
+            
+            <Button className='horizontal-padding'
+            disabled = {!this.props.allowSettings} 
+            onClick={event => { event.stopPropagation(); this.onShow(); } } 
+            key={1} 
+            icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
 
 
-          <CellModal 
-            group = {this.props.channelGroup} 
-            plotViewController={this.props.plotViewController} 
-            visible={this.state.modalVisible} 
-            onClose={ this.onModalClose }></CellModal>
-              
-              
-          </div>
-          <div style={
-            {
-              display: "flex",
-              height: this.state.hide ? "0px" : "auto"
-            }
-          }>
-            <div className='right-column' 
-            style={{color:  this.props.channelGroup.cellChannel.Style.fontStyle, 
-            fontSize: `${this.props.channelGroup.cellChannel.Style.fontSize.toString()}px`}}>{this.state.value}</div>
-
+            <CellModal 
+              group = {this.props.channelGroup} 
+              plotViewController={this.props.plotViewController} 
+              visible={this.state.modalVisible} 
+              onClose={ this.onModalClose }/>
             
           </div>
+
+          <CellValue fontSize={this.props.channelGroup.cellChannel.Style.fontSize}
+          fontStyle={this.props.channelGroup.cellChannel.Style.fontStyle}
+          hide={this.state.hide}
+          value={this.state.value}/>
+          
         </div>
       )
     }

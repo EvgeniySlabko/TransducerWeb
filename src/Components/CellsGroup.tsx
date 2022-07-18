@@ -1,7 +1,7 @@
 import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISensor';
 import React from 'react';
 import { Button, Card, Checkbox, Collapse, InputNumber, Menu, Modal, notification } from 'antd';
-import { CloseOutlined, DownOutlined, SettingOutlined } from '@ant-design/icons';
+import { CloseOutlined, SettingOutlined } from '@ant-design/icons';
 import { Cell } from './Cell';
 import { Group } from './App';
 import { ViewController } from '../ViewsControllers/PlotViewController';
@@ -14,11 +14,11 @@ const { Panel } = Collapse;
 
   export interface Props {
     group: Group,
-    plotViewController: ViewController | null;
+    plotViewController?: ViewController;
     sensorRemove: (sensor: ISingleComponentSensor) => void,
     setThreshold: (upperThreshold: number, lowerThreshold: number) => void;
-    peackController: PlotPeackController | null;
     storage: ParamsStorage;
+    allowSettings: boolean;
   }
 
   interface IState {
@@ -81,37 +81,46 @@ const { Panel } = Collapse;
     
     render() {
       return (
-        <Collapse defaultActiveKey={['1']}>
-              <Panel  key="1" header=
+        <Collapse defaultActiveKey={['0']}>
+              <Panel  key = {0} header=
               {
                 <>
-                <Button className='horizontal-padding' key={1} onClick={event => { event.stopPropagation(); this.onShow(); } } 
-                 icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
+                <Button key={1} 
+                className='horizontal-padding' 
+                onClick={event => { event.stopPropagation(); this.onShow(); } } 
+                disabled={!this.props.allowSettings}
+                icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
 
-                <Button className='horizontal-padding' key={2} onClick={event =>{ event.stopPropagation(); this.setZeroClick()}} >{">0<"}</Button>
-                <Button className='horizontal-padding' key={4} icon={<CloseOutlined onClick={event => { event.stopPropagation(); this.props.sensorRemove(this.props.group.node.sensor); } } />}></Button>
+                <Button key={2} 
+                className='horizontal-padding'
+                onClick={ event =>{ event.stopPropagation(); this.setZeroClick()}} >{">0<"}</Button>
+
+                <Button key={3} 
+                        className='horizontal-padding' 
+                        icon={<CloseOutlined onClick={event => { event.stopPropagation(); this.props.sensorRemove(this.props.group.node.sensor); } } />}/>
                 
-                <div className='vertical-flex'>
+                <div key={4} className='vertical-flex'>
                   <h6 className='cell-group-title'>{this.props.group.node.fullSensorInfo.SensorType}</h6>
                   <h6 className='cell-group-title'>ID: {this.props.group.node.fullSensorInfo.SensorId}</h6>
                 </div>
 
-                <div key={3} onClick={e => e.stopPropagation()}>
+                <div key={5} onClick={e => e.stopPropagation()}>
                 
-                <CellsGroupModal group={this.props.group} 
-                                  onClose={() => this.setState(() =>({modalVisible: false}))} 
-                                  plotViewController = {this.props.plotViewController}
-                                  storage = {this.props.storage}
-                                  visible = {this.state.modalVisible}/>
-
+                  <CellsGroupModal key={6} 
+                                    group={this.props.group} 
+                                    onClose={() => this.setState(() =>({modalVisible: false}))} 
+                                    plotViewController = {this.props.plotViewController}
+                                    storage = {this.props.storage}
+                                    visible = {this.state.modalVisible}/>
                 </div>
                 </>
               }>
                 
               {
-              this.props.group.channelsInfo.channelGroups.filter(c => c.cellChannel.Style.visible)
-                                                         .map(c => 
-                                                         <Cell key={c.cellChannel.Style.id}
+              this.props.group.channelsInfo.channelGroups.filter(c => c.cellChannel.Style.visible).map(c => 
+                                                         <Cell 
+                                                          allowSettings={this.props.allowSettings}
+                                                          key={c.cellChannel.Style.id}
                                                           channelGroup={c} 
                                                           plotViewController={this.props.plotViewController}
                                                           ></Cell>)

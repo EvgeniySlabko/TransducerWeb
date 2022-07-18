@@ -38,12 +38,13 @@ export interface SensorNode{
 
 interface IState {
     groups: Group[],
-    plotViewController: ViewController | null;
-    peackController: PlotPeackController | null;
+    plotViewController?: ViewController;
     viewingReport: boolean;
     recording: boolean;
     saveDialog: boolean;
+    streaming: boolean;
     currentSnapshot: Snapshot | undefined;
+    firstStart: boolean;
 }
 
 export class App extends React.Component<Props, IState>
@@ -56,17 +57,18 @@ export class App extends React.Component<Props, IState>
 
         this.state = {
             recording: false,
-            plotViewController: null,
-            peackController: null,
+            plotViewController: undefined,
             groups: [],
             viewingReport: false,
             saveDialog: false,
+            streaming: false,
             currentSnapshot: undefined,
+            firstStart: true,
         }
 
         //this.plotViewController = new ViewController(document.getElementById('gd'));
         this.sensorManualCloseHandler = this.sensorManualCloseHandler.bind(this);
-        this.props.sensorService.onDispatch.addListener("Add", this.NewSensorHandler)
+        this.props.sensorService.onDispatch.addListener("Add", this.newSensorHandler)
     }
 
     getGroupByPlotChannel = (channel: Channel) => this.state.groups.find(g => g.channelsInfo.channelGroups.find(g => g.plotChannel == channel));
@@ -87,11 +89,10 @@ export class App extends React.Component<Props, IState>
         return undefined;
     }
 
-    componentDidMount() {
+    componentDidMount = () => {
         let plotController = new ViewController(document.getElementById('gd'));
         this.setState((prev, props) => ({
             plotViewController: plotController,
-            peackController: new PlotPeackController(plotController)
         }));
     }
 
@@ -103,6 +104,9 @@ export class App extends React.Component<Props, IState>
         {
             if (this.state.recording)
                 this.stopRecordingHandler();
+                this.setState((prev, props) => ({
+                    streaming: false,
+                }));
         }
 
         this.setState((prev, props) => ({}));
@@ -120,7 +124,7 @@ export class App extends React.Component<Props, IState>
         await group?.node.worker.Close();
     }
     
-    NewSensorHandler = (args: SensorControllerArgs) =>
+    newSensorHandler = (args: SensorControllerArgs) =>
     {
         if (this.state.plotViewController)
         {
@@ -152,10 +156,7 @@ export class App extends React.Component<Props, IState>
             } 
             )
 
-            allChannelsInfo.peackDetected.sub((channel, args) =>
-            {
-                this.state.peackController?.AddPeack(channel, args);
-            })
+            
 
             //this.setState((prev, props) => ({}));
             this.state.plotViewController.AddChannels(allChannelsInfo.channelGroups.map(g => g.plotChannel));
@@ -172,24 +173,22 @@ export class App extends React.Component<Props, IState>
         }
     }
 
-    OpenFileHandler = async (file: File)  =>
+    openFileHandler = async (file: File)  =>
     {
         var snapshot = new Snapshot();
         await snapshot.FromFile(file);
         if (!this.state.viewingReport)
-        {
             this.state.groups.forEach(async (g) => this.props.sensorService.RemoveSensor(g.node.sensor));
-        }
 
         try{
             this.state.plotViewController?.UploadSnapshot(snapshot); 
         }
-        catch(ex)
-        {
+        catch(ex){
             notification.error({
                 message: `Не удалось открыть отчет: ${ex}`,
                 duration: 3,
             });
+
             return;
         }
         
@@ -203,13 +202,12 @@ export class App extends React.Component<Props, IState>
         });
     }
     
-    async startRecordingHandler()
+    startRecordingHandler = async() =>
 	{
 		try{
 			this.props.recordController.StartListening();
 		}
-		catch(ex)
-		{
+		catch(ex){
 			
 		}
 
@@ -218,27 +216,31 @@ export class App extends React.Component<Props, IState>
 		}));
 	}
 	
-	stopRecordingHandler()
+	stopRecordingHandler = async () =>
 	{
+        if (this.state.streaming)
+            await this.stophandler();
+
         let snapshot = this.props.recordController.StopListening();
 		this.setState((prev, props) => ({
 			recording: false,
             saveDialog: true,
+            streaming: false,
             currentSnapshot: snapshot,
 		}));
-		
-		//saveStaticDataToFile(snapshot);
 	}
 	
-	handleRecClick = async () => {
-		this.state.recording ? this.stopRecordingHandler() : this.startRecordingHandler();
-	}
+	handleRecClick = async () =>
+    {
+        this.state.recording ? this.stopRecordingHandler() : this.startRecordingHandler();
+    } 
 
     streamingModeViewHandler = () =>
     {
         this.state.plotViewController?.Reset();
         this.setState((prev, props) => ({
             viewingReport: false,
+            streaming: false,
         }));
 
         notification.success({
@@ -247,45 +249,97 @@ export class App extends React.Component<Props, IState>
         });
     }
     
+	starthandler = async () =>
+	{
+		let started = await this.props.sensorService.StartAll();
+		if (!started) return;
+
+		this.setState((prev, props) => ({
+			streaming: true,
+		  }));
+
+		if (this.state.firstStart) 
+		{
+			this.setState((prev, props) => ({
+					firstStart: false,
+				}));
+
+			await this.props.sensorService.SetT0();
+		}
+
+		this.setState((prev, props) => ({
+			streaming: true,
+		}));
+	}
+
+	stophandler = async () =>
+	{
+		await this.props.sensorService.StopAll();
+		this.setState((prev, props) => ({
+			streaming: false,
+		  }));
+	}
+	
+	handleStartClick = async () => {
+        this.state.viewingReport ?
+        
+            this.setState((prev, props) => ({
+                viewingReport: false,
+              }))
+        :
+		this.state.streaming ? await this.stophandler() : await this.starthandler();
+	}
+
+    clear = () =>{
+        if (this.state.recording)
+        {
+            this.stopRecordingHandler();
+        }
+
+        this.setState((prev, props) => ({
+			firstStart: true,
+            recording: false,
+		  }));
+    }
+
     render(){
         return [
-            <Navbar key = {1} sensorService={this.props.sensorService} 
+            <Navbar key = {1} 
+                    sensorService={this.props.sensorService} 
                     recordController={this.props.recordController}
-                    openReportCallback = { async (file) => await this.OpenFileHandler(file)}
-                    ThereAreConnectedSensors = {() => this.state.groups.length > 0}
+                    openReportCallback = { async (file) => await this.openFileHandler(file)}
+                    enable = {this.state.groups.length > 0}
+                    streaming = {this.state.streaming}
+                    toggleStreaming = {this.handleStartClick}
                     groups = {this.state.groups}
+                    reportVieving = {this.state.viewingReport}
+                    clear = {this.clear}
                     toggleRecording = {this.handleRecClick}
-                    recordingState = {() => this.state.recording}
+                    recordingState = {this.state.recording}
                     setStreamingModeView = { this.streamingModeViewHandler }
-                    plotViewController={this.state.plotViewController}></Navbar>,
+                    plotViewController={this.state.plotViewController}/>,
                     
             <div key = {2} className = "all">
                 <div className="middle-container">
                     {
                         this.state.viewingReport ? <></> :
                         <div className="left-container">
-                            <GroupsContainer 
-                            storage={this.props.storage}
-                            peackController={this.state.peackController}
+                            <GroupsContainer storage={this.props.storage}
+                            allowSettings = {!this.state.streaming}
                             plotViewController={this.state.plotViewController}
                             groups = {this.state.groups} 
-                            sensorRemove = {this.sensorManualCloseHandler}
-                            />
+                            sensorRemove = {this.sensorManualCloseHandler}/>
                         </div>
                     }
-
-
-                    <div id="gd" className="plot"></div>
+                    <div id="gd" className="plot"/>
                 </div>
             </div>,
 
-            <SaveModal 
-                key={3}
-                onClose={() => this.setState((prev, props) => ({saveDialog: false}))}
+            <SaveModal key={3}
+                onClose={() => this.setState({saveDialog: false})}
                 maxAvgFactor={async () => await GetMinAvgFactor(this.state.groups.map(g => g.node.sensor))}
                 snapshot = {this.state.currentSnapshot}
-                visible = {this.state.saveDialog}
-            ></SaveModal>
+                visible = {this.state.saveDialog}/>
         ]
     }
 }

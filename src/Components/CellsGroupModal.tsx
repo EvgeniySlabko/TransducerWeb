@@ -3,11 +3,12 @@ import { Checkbox, Collapse, InputNumber, Modal, notification } from 'antd';
 import { Group } from './App';
 import { ViewController } from '../ViewsControllers/PlotViewController';
 import { ParamsStorage } from '../Storage/Storage';
+import { MenuItem } from './MenuItem';
 const { Panel } = Collapse;
 
   export interface Props {
     group: Group,
-    plotViewController: ViewController | null;
+    plotViewController?: ViewController;
     visible: boolean;
     storage: ParamsStorage;
     onClose: () => void;
@@ -95,43 +96,35 @@ const { Panel } = Collapse;
         cancelButtonProps={{ style: { display: 'none' } }}
         centered={false}>
 
-        <div className='vertical-flex'>
-          <h5 className='margin'>Отображение каналов:</h5>
+        <MenuItem className='vertical-flex' label='Отображение каналов:' children={
+          <div className='vertical-flex'>
           {
             this.props.group.channelsInfo.channelGroups.map((g, i) => 
-              <Checkbox defaultChecked = {g.cellChannel.Style.visible} onChange={e => g.cellChannel.Style.visible = e.target.checked}>{g.cellChannel.Style.valueName} </Checkbox>
+              <Checkbox key={i}  defaultChecked = {g.cellChannel.Style.visible} onChange={e => g.cellChannel.Style.visible = e.target.checked}>{g.cellChannel.Style.valueName} </Checkbox>
             )
           }
         </div>
+        }/>
           
           {
             (!this.state.dataReceived) ? <></> :  
                 <>
-                  <div key = {1} className='horizontal-flex'>
-                    <label className='margin vertical-align'>Период измерения скорости: </label>
-                    <div className='margin horizontal-flex'>
-                      <InputNumber className='vertical-align' step = {1} size="small" style={{height: "25px" }} defaultValue={this.state.speedPeriod} onChange={this.onSpeedChanged}/>
-                      <p className='margin-left'>мс</p>
-                    </div>
-                  </div>
-
-                  <div key = {2} className='horizontal-flex'>
-                    <label className='margin vertical-align'>Коэффицент усреднения: </label>
-                    <div className='margin horizontal-flex'>
-                    <InputNumber className='vertical-align' step = {1} size="small" style={{height: "25px" }} defaultValue={this.state.avgFactor} onChange={this.onAvgChanged}/>
-                    </div>
-                  </div>
+                <MenuItem key={1} label='Период измерения скорости:' children={
+                  <InputNumber className='vertical-align' step = {1} size="small" style={{height: "25px" }} defaultValue={this.state.speedPeriod} onChange={this.onSpeedChanged}/>
+                }/>
+                
+                <MenuItem key={2} label='Коэффицент усреднения:' children={
+                  <InputNumber className='vertical-align' step = {1} size="small" style={{height: "25px" }} defaultValue={this.state.avgFactor} onChange={this.onAvgChanged}/>
+                }/>
 
                   <Checkbox key = {3} className='margin' defaultChecked = {false} onChange ={(c) => 
                   {
-                    this.setState((prev, props) => ({
-                      externalSpeedSensor: c.target.checked,
-                    }));
+                    this.setState((prev, props) => ({ externalSpeedSensor: c.target.checked }));
                   }}>Внешний датчик скорости</Checkbox>
                 </>
           }
           
-          <Checkbox className='margin' defaultChecked = {false} onChange ={(c) => 
+          <Checkbox key = {6} className='margin' defaultChecked = {false} onChange ={(c) => 
             {
               this.setState((prev, props) => ({
                 absoluteAnalizer: c.target.checked,

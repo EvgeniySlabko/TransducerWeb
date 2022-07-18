@@ -1,3 +1,5 @@
+import { AlignedData } from "uplot";
+
 export async function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -18,31 +20,33 @@ export function getRandomInt(max: number) {
     return Math.floor(Math.random() * max);
   }
 
-
-export function GetApproximateValue(arr: (number | null | undefined)[], index: number, maxPoints: number) : number | undefined
+export function nearestPoint(arr: (number | null | undefined)[] , index: number, maxCount: number) : number | undefined | null
 {
-    if (arr[index] != undefined && arr[index] != null)
-        return <number>arr[index];
+    if (arr[index] === null)
+        return undefined; 
+    if (arr[index] !== undefined)
+        return arr[index] as number; 
+    
 
     let left = index;
     let right = index;
     let curIter = 0
     do
     {
+        if (arr[left] !== undefined) 
+            return arr[left];
+
         if (left != 0)
             left -=1;
         
+        if (arr[right] !== undefined) 
+            return arr[right];
+
         if (right != arr.length - 1)
             right += 1;
         
         curIter += 1;
-    } while((!arr[right] && !arr[left]) && curIter <= maxPoints);
-
-    if (arr[left] != undefined)
-        return <number>arr[left];
-
-    if (arr[right] != undefined)
-        return <number>arr[right];
+    } while(curIter <= maxCount);
 
     return undefined;
 }

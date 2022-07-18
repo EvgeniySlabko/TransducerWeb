@@ -27,6 +27,7 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
         this.serialWorker = worker;
     }
     
+    private avgRatio: number = 1;
     private dt: number | undefined = 12.5 // тиков часов декодера между 2 соседними измерениями осню изм вел.
     
     //Events 
@@ -42,8 +43,10 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
     
     public async Initialize() {
         if (!this.serialWorker.baseWorker.IsConnected)
-        await this.serialWorker.baseWorker.OpenPort();      
+        await this.serialWorker.baseWorker.OpenPort();  
         this.processbytes(); 
+        let holdingRegisters = await this.GetHoldingRegisters();
+        this.avgRatio = holdingRegisters.AverageRatio;
     }
     
     public async GetHoldingRegisters() : Promise<Defs.HoldingRegisters>
@@ -90,7 +93,10 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
         })
     }
 
-    public SetAvgRatio = async (avgRatio: number) => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.PRESET_SINGLE_REGISTER, Defs.AVG_RATIO, avgRatio));  
+    public SetAvgRatio = async (avgRatio: number) => {
+        await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.PRESET_SINGLE_REGISTER, Defs.AVG_RATIO, avgRatio));  
+        this.avgRatio = avgRatio;
+    }
     public SetComputerConnection = async () => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_ON_VALUE));
     public UnsetComputerConnection = async () => this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_OFF_VALUE));
     public SetT0 = async () => await this.SendRequesAndWaitResponse<void>(new MultipleCommand(Defs.PRESET_MULTIPLE_REGISTERS, 3, new Uint8Array([0, 0])));
@@ -240,11 +246,12 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
                         time: new Array(dataCount),
                     }
                     
+                    let interval = 1 / (this.baseFrequency / this.avgRatio);
                     for (let i = 0; i < dataCount; i++) {
                         var value = torqView.getFloat32((2 + (i * 4)), true);
                         
                         torqArgs.data[i] = value;
-                        torqArgs.time[i] = calculatedTime + (i * 0.0002);
+                        torqArgs.time[i] = calculatedTime + (i * interval);
                     }
 
                     this._onTorqueData.dispatch(this, torqArgs);
@@ -281,9 +288,9 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
                     var dataMsg = await this.serialWorker.Read(size - 4);
                     const msgView = new DataView(dataMsg.buffer);
                     var msgCount = msgView.getUint16(0, true);
-                    //console.log("Process M: ",dataMsg);
                     for (let i = 0; i < msgCount; i++) {
                         var msg = msgView.getUint16(2 + (i * 2));
+                        console.log("Message: ", msg);
                     }
                     break;
     
@@ -291,11 +298,12 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
                     return false;
             }
     
-            return true;
+        return true;
     }
         
     private async processbytes() {
-        var dataType: number ;
+
+    let dataType: number ;
     try
     {
         //let nextIteration = async () => await this.processbytes();

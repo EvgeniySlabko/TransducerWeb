@@ -46,7 +46,7 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     let cellAverager = CreateAverageValueDataSource(offsetSource, 500);
     let plotAverager = CreateAverageValueDataSource(offsetSource, 1);
     
-    let mainPlotChannel = CreateMainChannel(offsetSource, fullSensorInfo);
+    let mainPlotChannel = CreateMainChannel(plotAverager, fullSensorInfo);
     let mainCellChannel = CreateMainCellChannel(cellAverager, fullSensorInfo);
     let mainSavingChannel = CreateMainChannel(offsetSource, fullSensorInfo);
     

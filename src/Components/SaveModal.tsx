@@ -98,10 +98,10 @@ const { Panel } = Collapse;
             
             <div className='vertical-flex'>
                 {
-                    this.props.snapshot?.GetTrackData().map(t => 
-                        {
-                            return <Checkbox defaultChecked = {true}>{t.style.legendTitle}</Checkbox>
-                        })
+                  this.props.snapshot?.GetTrackData().map(t => 
+                      {
+                          return <Checkbox defaultChecked = {true}>{t.style.legendTitle}</Checkbox>
+                      })
                 }
             </div>
             </div>

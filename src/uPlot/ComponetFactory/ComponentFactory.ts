@@ -42,7 +42,7 @@ export function GetAxe(scale: string, side: number)
         },
         scale: scale,
         show: false,
-        
+
         ticks: 10,
         space: 20,
         side: side,
