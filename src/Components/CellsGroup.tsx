@@ -5,7 +5,6 @@ import { CloseOutlined, SettingOutlined } from '@ant-design/icons';
 import { Cell } from './Cell';
 import { Group } from './App';
 import { ViewController } from '../ViewsControllers/PlotViewController';
-import { PlotPeackController } from '../ViewsControllers/PeacksController';
 import { ParamsStorage } from '../Storage/Storage';
 import { CellsGroupModal } from './CellsGroupModal';
 const { Panel } = Collapse;
@@ -97,6 +96,7 @@ const { Panel } = Collapse;
 
                 <Button key={3} 
                         className='horizontal-padding' 
+                        disabled={!this.props.allowSettings}
                         icon={<CloseOutlined onClick={event => { event.stopPropagation(); this.props.sensorRemove(this.props.group.node.sensor); } } />}/>
                 
                 <div key={4} className='vertical-flex'>

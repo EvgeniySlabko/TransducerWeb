@@ -2,15 +2,10 @@
 <html>
 	<head>
 		<meta charset="utf-8" />
-		<title>Demo Progressive Web Application</title>
+		<title>Transducer</title>
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<meta
-		name="description"
-		content="This a Demo Progressive Web Application which will work in offline, has a splash screen add to home screen etc,."
-		/>
-		
-		<!-- Latest compiled and minified CSS -->
-		<link rel="stylesheet" href="./src/css/css/bootstrap-grid.rtl.min.css">
+		<meta name="Transducer" content="Transducer application."/>
+		<meta http-equiv="content-language" content="ru">
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<meta name="theme-color" content="#29434d" />
 		<meta name="msapplication-TileColor" content="#29434d" />
@@ -19,79 +14,12 @@
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 		<meta name="apple-mobile-web-app-title" content="Progressive Web Application" />
-		<meta name="application-name" content="Progressive Web Application" />	
-	<script defer src="bundle.js"></script></head>
+		<meta name="application-name" content="Transducer" />	
+	<link rel="icon" href="favicon-32x32.png"><script defer src="bundle.js"></script></head>
  
 	
 	<body>
-		<ul class="nav nav-tabs">
-			<li class="nav-item" >
-				<div class="control-buttons">
-					<div class="btn-group mr-2" role="group" aria-label="First group">
-						<button type="button" title="Начать измерение" class="btn btn-outline-primary" id="Start"><span id = "StartStopSpan" class="glyphicon glyphicon-play"></span></button>
-						<button type="button" title="Очистить результаты" class="btn btn-outline-primary" id="clear"><span id = "StartStopSpan" class="glyphicon glyphicon-stop"></span</button>
-						<button type="button" title="Добавить датчик" class="btn btn-outline-primary" id="open"><span id = "StartStopSpan" class="glyphicon glyphicon-plus"></span</button>
-						<button type="button"  title="Начать запись в файл" class="btn btn-outline-primary" id="StartRec"><span id = "StartStopSpan" class="glyphicon glyphicon-record"></span></button>
-					</div>
-				</div>
-			</li>
-
-			<li class="nav-item" >
-				<div class="zoom-buttons">
-					<div class="btn-group mr-2" role="group" aria-label="First group">
-						<button type="button" title="поднять выбранную ось вверх" class="btn btn-outline-primary" id="pushAxisUp"><span id = "StartStopSpan" class="glyphicon glyphicon-chevron-up"></span></button>
-						<button type="button" title="поднять выбранную ось вверх" class="btn btn-outline-primary" id="pushAxisUp"><span id = "StartStopSpan" class="glyphicon glyphicon-chevron-down"></span></button>
-					</div>
-				</div>
-			</li>
-
-			
-			<li class="nav-item dropdown">
-			  <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Dropdown</a>
-			  <ul class="dropdown-menu">
-				<li><button class="dropdown-item" id="Facker" >Add facker</button></li>
-				<li><button id="file-input-button">Open</button>
-				
-			  </ul>
-			</li>
-			<li class="nav-item">
-			  <a class="nav-link" href="#">Link</a>
-			</li>
-		  </ul>
-
-		  
-		<div class = "all">
-			
-	
-			<div class="middle-container">
-				<div class="left-container">
-
-					<div id="cell-container" class="cell-container">
-						
-					</div>
-
-					<div id="sensor-container" class="sensors-container">
-						<!--
-						<div class ="sensor-cell">
-							<div class = "sensor-name">Имя датчика</div>
-							
-
-							<div class = "sensor-control-panel">
-								<button class="btn btn-outline-primary sensor-pannel-button"><span id = "StartStopSpan" class="glyphicon glyphicon-play"></span></button>
-								<button class="btn btn-outline-primary sensor-pannel-button"><span id = "StartStopSpan" class="glyphicon glyphicon-remove"></span></button>
-							</div>
-						</div>
-					-->
-					</div>
-				</div>
-				<div id="gd" class="plot"></div>
-			</div>
-		</div>
-
-		<!--
-		<div id="drop_zone" >
-			<p>Drag one or more files to this Drop Zone ...</p>
-		</div>
-			-->
-		</div><script>var exports = {};</script>		
+		<div id = "root" style="height: 100%;">
+		</div><script>var exports = {};</script>	
+	</body>	
 </html>

@@ -73,11 +73,8 @@ const { Panel } = Collapse;
                 <div className='horizontal-flex'>
 
 
-                <Input className='margin' defaultValue={this.state.csvName} placeholder="Имя отчета" />  
-
-                
-                    <Button 
-                    onClick={event => this.onCSVDownload } className='margin'  
+                  <Input className='margin' style={{height: "32px"}} defaultValue={this.state.csvName} placeholder="Имя отчета" />  
+                    <Button onClick={event => this.onCSVDownload } className='margin'  
                     icon={<VerticalAlignBottomOutlined onClick={ this.onCSVDownload } />}></Button>
              
                 </div>
@@ -85,25 +82,17 @@ const { Panel } = Collapse;
 
             <div className='vertical-flex margin'>
                 <label className='margin vertical-alignment'>Сохранить в формате отчета: </label>
-
                 <div className='horizontal-flex'>
-                    <Input className='margin' defaultValue={this.state.reportName} placeholder="Имя отчета" />
+                    <Input className='margin' style={{height: "32px"}} defaultValue={this.state.reportName} placeholder="Имя отчета" />
      
-                    <Button 
-                    onClick={event => this.onReportDownload } className='margin'  
-                    icon={<VerticalAlignBottomOutlined onClick={ this.onReportDownload } />}></Button>
+                    <Button onClick={event => this.onReportDownload } 
+                    icon={<VerticalAlignBottomOutlined 
+                    onClick={ this.onReportDownload } />}></Button>
                 </div>
             
             </div>
             
-            <div className='vertical-flex'>
-                {
-                  this.props.snapshot?.GetTrackData().map(t => 
-                      {
-                          return <Checkbox defaultChecked = {true}>{t.style.legendTitle}</Checkbox>
-                      })
-                }
-            </div>
+            
             </div>
           </Modal>
         </div>
@@ -113,6 +102,14 @@ const { Panel } = Collapse;
 
 
   /*
+  <div className='vertical-flex'>
+                {
+                  this.props.snapshot?.GetTrackData().map(t => 
+                      {
+                          return <Checkbox defaultChecked = {true}>{t.style.legendTitle}</Checkbox>
+                      })
+                }
+            </div>
   <InputNumber step={0.01 * this.props.group.node.fullSensorInfo.MaxValue}
             style={{ width: "auto" }}
             min={0} max={this.props.group.node.fullSensorInfo.MaxValue}

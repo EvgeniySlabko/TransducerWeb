@@ -11,6 +11,7 @@ export function AlignedData(data: dataEventArgs[], params: DataAlignParams) : (n
     let timeToIndex = (time: number) => Math.floor(time / params.dt);
 
     let firstTime = GetFirstTime(data);
+    if (firstTime < 0) firstTime = 0;
     let lastTime = GetLastTime(data);
     let lastIndex = timeToIndex(lastTime);
     let firstIndex= timeToIndex(firstTime);

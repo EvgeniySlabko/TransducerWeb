@@ -21,6 +21,7 @@ export class MyUPlot extends MyUPlotBase
   private channels : TraceInfo[] = [];
 
   private streaming: boolean = true;
+  private screenOffset: number = 30;    // отступ справа в процентах 
   constructor(element: HTMLElement)
   {
     super(element);
@@ -123,9 +124,10 @@ export class MyUPlot extends MyUPlotBase
   
   private ScaleHandler = () =>
   {
-    var max = this.plot?.scales["x"].max;
-    if (max == null) {max = 0};
-    if (this.bufferManager!.GetLastTime() > max - (this.params.screenSize() / 2) + 0.03 && this.streaming)
+    let max = this.params.range[1];
+    let maxTime = this.bufferManager!.GetLastTime();
+    
+    if (maxTime > max - (this.params.screenSize() * this.screenOffset / 100) + 0.03 && this.streaming)
     {
       this.SetCurrentScale();
     }
@@ -155,6 +157,13 @@ export class MyUPlot extends MyUPlotBase
     this.BuildPlot();
     this.plot!.setSize(this.getSize());
     this.SetScale(0, this.params.screenSize());
+    setTimeout(() => {
+      this.plot!.over.addEventListener("mousedown", (e: any) => {
+        if (e.button == 2) {
+          this.streaming = false;
+        }
+    }) 
+    }, 100);
   }
 
   public AddLabel(channelLabel: ChannelLabel)
@@ -190,8 +199,13 @@ export class MyUPlot extends MyUPlotBase
   private SetCurrentScale()
   {
     let lastTime = this.bufferManager!.GetLastTime();
-    let newMax = lastTime + this.params.screenSize() / 2;
-    let newMin = lastTime - this.params.screenSize() / 2;
+    
+    let newMax = (lastTime);
+    let newMin = (lastTime - this.params.screenSize());
+    let xRange = newMax - newMin;
+    let timeOffset = (this.screenOffset / 100) * xRange;
+    newMax += timeOffset;
+    newMin += timeOffset;
     this.SetScale(newMin, newMax);
   }
 

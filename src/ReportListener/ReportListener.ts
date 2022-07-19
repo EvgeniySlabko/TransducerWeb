@@ -40,8 +40,6 @@ export class ReportListener
 
     public StopListening()
     {
-        if(!this.isInit) throw "There are no channels for listening";
-
         this.isListening = false;
     }
 

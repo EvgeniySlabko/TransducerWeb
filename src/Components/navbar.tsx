@@ -9,7 +9,7 @@ import { RecordController } from '../RecordController';
 import { ViewController } from '../ViewsControllers/PlotViewController';
 import { Snapshot } from '../ReportListener/Snapshot';
 import { Button, Dropdown, Menu, notification } from 'antd';
-import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, FolderOpenOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { Group } from './App';
 
 export interface Props {
@@ -121,8 +121,7 @@ export interface Props {
 						this.props.reportVieving ? <ArrowLeftOutlined /> : 
 						this.props.streaming?  <PauseOutlined /> : <CaretRightOutlined/>
 					} 
-					onClick= {
-						 this.props.toggleStreaming
+					onClick= { this.props.reportVieving ? this.props.setStreamingModeView : this.props.toggleStreaming
 					}/>
 
 					<Button title="Очистить результаты" 
@@ -148,14 +147,30 @@ export interface Props {
 					onClick={this.props.toggleRecording}
 					style={{ borderColor: this.props.recordingState ? "red": "#d9d9d9" }}/>
 
-					<Button title="Сделать скриншотю" 
+					<Button title="Сделать скриншот" 
 					size='large' 
 					id="screen" 
 					shape="default"  
 					icon={<CameraOutlined />} 
 					onClick={this.handleScreen}/>
 
-					<Dropdown overlay=
+					<Button title="Открыть отчет" 
+					size='large' 
+					id="openfile" 
+					shape="default"  
+					icon={<FolderOpenOutlined />} 
+					onClick={this.handleOpenFile}/>
+
+					
+
+				</div>
+			</div>
+		)
+    }
+  }
+
+  /*
+  <Dropdown overlay=
 					{
 						<Menu
 							items={[
@@ -181,9 +196,4 @@ export interface Props {
 					} arrow>
 						<Button size='large' icon={<BarsOutlined />}/>
 					</Dropdown>
-
-				</div>
-			</div>
-		)
-    }
-  }
+  */

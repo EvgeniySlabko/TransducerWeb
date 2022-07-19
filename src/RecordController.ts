@@ -25,7 +25,6 @@ export class RecordController
     {
         this.listener.StopListening();
         var snapshot = this.listener.GetSnapshot();
-        this.listener.Reset();
         return snapshot;
     }
 

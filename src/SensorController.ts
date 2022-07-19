@@ -121,7 +121,6 @@ export class SensorController
         if (this.sensors.length == 0) return false;
 
         this.sensors.forEach(async node => {
-            await node.worker.StartReading();
             await node.worker.StartStreaming();
         });
 
@@ -132,7 +131,6 @@ export class SensorController
     {
         this.sensors.forEach(async node => {
             await node.worker.StopStreaming();
-            await node.worker.StopReading();
             //await node.worker.StopReading();
         });
     }

@@ -13,7 +13,6 @@ import { SensorWorker } from '../Sensor/SensorWorker';
 import { notification } from 'antd';
 import { Snapshot } from '../ReportListener/Snapshot';
 import { getRandomInt } from '../Common/Common';
-import { PlotPeackController } from '../ViewsControllers/PeacksController';
 import { ParamsStorage } from '../Storage/Storage';
 import { changeGroupColor } from '../Common/ChannelColorChanger';
 import { SaveModal } from './SaveModal';
@@ -132,6 +131,7 @@ export class App extends React.Component<Props, IState>
             changeGroupColor(allChannelsInfo.channelGroups, this.state.groups.length);
             //let plotChannels = CreateAllSensorChannelsForPlot(args.sensor, args.fullSensorInfo);
             this.setState((prev, props) => ({
+                firstStart: true,
                 groups: this.state.groups.concat([{
                     channelsInfo: allChannelsInfo,
                     node: {
@@ -155,8 +155,6 @@ export class App extends React.Component<Props, IState>
                 })
             } 
             )
-
-            
 
             //this.setState((prev, props) => ({}));
             this.state.plotViewController.AddChannels(allChannelsInfo.channelGroups.map(g => g.plotChannel));
@@ -224,6 +222,7 @@ export class App extends React.Component<Props, IState>
         let snapshot = this.props.recordController.StopListening();
 		this.setState((prev, props) => ({
 			recording: false,
+            firstStart: true,
             saveDialog: true,
             streaming: false,
             currentSnapshot: snapshot,
@@ -238,14 +237,16 @@ export class App extends React.Component<Props, IState>
     streamingModeViewHandler = () =>
     {
         this.state.plotViewController?.Reset();
+        this.state.plotViewController?.SetChannels([]);
         this.setState((prev, props) => ({
             viewingReport: false,
             streaming: false,
+            firstStart: true,
         }));
 
-        notification.success({
+        notification.info({
             message: "Режим графика реального времени.",
-            duration: 2,
+            duration: 4,
         });
     }
     

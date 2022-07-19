@@ -9,6 +9,8 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
 
     private baseFrequency: number = 5000;
     private decoderClock: number = 62500;
+
+    private timeBase: number = 0;
     public serialWorker: SerialBufferedWorker;
 
     private _onTorqueData = new EventDispatcher<ISingleComponentSensor, Defs.dataEventArgs>();
@@ -54,6 +56,8 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
         var command = new DefaultCommand(Defs.READ_HOLDING_REGISTERS, 0, 5);
         var registers = await this.SendRequesAndWaitResponse<number[]>(command);
         var holdingRegisters = new Defs.HoldingRegisters(registers);
+        let th = holdingRegisters.TimeHigh;
+        let tl = holdingRegisters.TimeLow;
         return holdingRegisters;
     }
     
@@ -99,12 +103,19 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
     }
     public SetComputerConnection = async () => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_ON_VALUE));
     public UnsetComputerConnection = async () => this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.FORCE_SINGLE_COIL,Defs.COMPUTER_CONNECTION, Defs.COIL_OFF_VALUE));
-    public SetT0 = async () => await this.SendRequesAndWaitResponse<void>(new MultipleCommand(Defs.PRESET_MULTIPLE_REGISTERS, 3, new Uint8Array([0, 0])));
+    public SetT0 = async () => 
+    {
+        //await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.PRESET_SINGLE_REGISTER, 3, 0));
+        //await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.PRESET_SINGLE_REGISTER, 4, 0));
+
+        let holdingRegisters = await this.GetHoldingRegisters();
+        this.timeBase = holdingRegisters.TimeLow + (holdingRegisters.TimeHigh << 16);
+    }
     public SetSpeedPeriod = async (speedPerion: number) => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(Defs.PRESET_SINGLE_REGISTER, Defs.SPEED_PERIOD, speedPerion));  
 
     public CloseConnection = async () => 
     {
-        this.requiredStopStreaming  =true;
+        this.requiredStopStreaming  = true;
         await this.serialWorker.Close(); 
         this._onClose.dispatch(this, "Соединение закрыто");
     }
@@ -219,7 +230,7 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
         });
     }
 
-    private CalculateTime = (timeL: number, timeH: number):  number => (timeL + (timeH << 16));
+    private CalculateTime = (timeL: number, timeH: number):  number => ((timeL + (timeH << 16) - this.timeBase) / this.decoderClock);
 
 
     private async ProcessStreamingData(command: number): Promise<boolean> {
@@ -231,7 +242,8 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
             size = view.getUint16(0, true);
             timeL = view.getUint16(2, true);
             timeH = view.getUint16(4, true);
-            var calculatedTime = this.CalculateTime(timeL, timeH) / 62500;
+            let calculatedTime = this.CalculateTime(timeL, timeH);
+
             switch (command) {
                 case Defs.packageType.torque:
                     var datatorque = await this.serialWorker.Read(size - 4);

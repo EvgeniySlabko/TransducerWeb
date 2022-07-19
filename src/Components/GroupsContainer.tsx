@@ -5,7 +5,6 @@ import { Collapse, Dropdown, Menu, notification, Radio, Space } from 'antd';
 import { Group, SensorNode } from './App';
 import { CellsGroup, PeackMode } from './CellsGroup';
 import { ViewController } from '../ViewsControllers/PlotViewController';
-import { PlotPeackController } from '../ViewsControllers/PeacksController';
 import { ParamsStorage } from '../Storage/Storage';
 const { Panel } = Collapse;
 

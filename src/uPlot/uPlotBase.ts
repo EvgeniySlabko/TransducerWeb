@@ -244,18 +244,17 @@ export class MyUPlotBase
     
                   let left0 = e.clientX;
     
-                  let scXMin0 = u.scales.x.min;
-                  let scXMax0 = u.scales.x.max;
+                  let scXMin0 = this.params.range[0];
+                  let scXMax1 = this.params.range[1];
     
                   let xUnitsPerPx = u.posToVal(1, 'x') - u.posToVal(0, 'x');
     
-                  function onmove(e: any) {
+                  let onmove = (e: any) => {
                     e.preventDefault();
     
                     let left1 = e.clientX;
-                      //let top1 = e.clientY;
-    
-                    let dx = xUnitsPerPx * (left1 - left0);
+                      let dx = xUnitsPerPx * (left1 - left0);
+                      this.SetScale(scXMin0 - dx, scXMax1 - dx);
                   }
     
                   function onup(e: any) {
@@ -456,6 +455,16 @@ export class MyUPlotBase
               {
                   show: true,
                   space: 100,
+                  values: (u, vals, space) => vals.map(v =>
+                    {
+                      let rounded = v.toFixed(4).replace(/0*$/,"");
+                      if (rounded[rounded.length - 1] == ".")
+                      {
+                        rounded = rounded.replace(".","");
+                      }
+
+                      return rounded;
+                    })
                   //side: 0,
               } as Axis, //x axe
               GetAxe("y1", 1),

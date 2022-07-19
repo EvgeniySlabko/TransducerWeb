@@ -60,7 +60,7 @@ export class MyUPlotViewer extends MyUPlotBase
         var val = trackData[i].data.data[k];
 
         var index = toArrayIndex(time);
-        if (index < maxTimeIndex)
+        if (index < maxTimeIndex && index >= 0)
           this.data[i + 1][index] = val;
       }
     }

@@ -55,15 +55,6 @@ export class ViewController
         }
     }
 
-    public ClearLabels()
-    {
-        if (this.streamingMode)
-        {
-            let streamingPlot = <MyUPlot>this.plot;
-            streamingPlot.ClearLabels();
-        }
-    }
-
     public async AddChannels(channels: Channel[])
     {    
         if (!this.streamingMode)
@@ -131,6 +122,17 @@ export class ViewController
             /// To do check listening
             let streamingPlot = <MyUPlot>this.plot;
             streamingPlot.Clear();
+            streamingPlot.ClearLabels();
+        }
+    }
+
+    public ClearLabels()
+    {
+        if (this.streamingMode)
+        {
+            /// To do check listening
+            let streamingPlot = <MyUPlot>this.plot;
+            streamingPlot.ClearLabels();
         }
     }
 }
