@@ -135,6 +135,8 @@ legend{
 .nav-tab-container{
 	width: 100%;
 	align-items: flex-start;
+	display: flex;
+	flex-flow: row;
 }
 
 .uplot .cursor-pt {
@@ -187,3 +189,14 @@ legend{
 	display: inline-block !important;
 	vertical-align: middle !important;	
 }
+
+.cell-control-panel-row{
+	display: flex;
+	flex-flow: row;
+	align-items: flex-end;
+	height: 40px;
+	position: relative;
+	z-index: 10;
+	top: 13px; left: 0px;
+}
+

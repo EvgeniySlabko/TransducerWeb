@@ -642,7 +642,35 @@ export class MyUPlotBase
         };
       }
     }
-    
+    // Show controls
+    public Move(step: number)
+    {
+
+    }
+
+    public Push(step: number)
+    {
+      
+    }
+
+    public Zoom(step: number)
+    {
+      
+    }
+
+    public HorizontalAlign()
+    {
+      
+    }
+
+    public VerticalAlign(step: number)
+    {
+      this.seriesInfos.forEach(s => 
+        {
+          
+        })
+    }
+
     protected SeriesDraw(i: number){}
 
     protected SelectCommited(){}

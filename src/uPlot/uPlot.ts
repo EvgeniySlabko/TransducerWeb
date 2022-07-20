@@ -2,8 +2,7 @@ import { Channel, ChannelCloseArgs, ChannelDataArgs, ChannelMessageArgs } from "
 import { dataEventArgs, SensorMessage } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ChannelLabel } from "../ViewsControllers/PlotViewController";
 import { PlotBufferManager } from "./BufferManager";
-import { AxeRangeChangeHandler } from "./PlotCommon";
-import { Label, LegendItem, MyUPlotBase, SeriesInfo } from "./uPlotBase";
+import { Label, MyUPlotBase, SeriesInfo } from "./uPlotBase";
 
 
 export type TraceInfo =

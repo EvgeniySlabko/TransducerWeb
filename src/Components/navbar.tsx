@@ -11,6 +11,7 @@ import { Snapshot } from '../ReportListener/Snapshot';
 import { Button, Dropdown, Menu, notification } from 'antd';
 import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, FolderOpenOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { Group } from './App';
+import { PlotControlPanel } from './ControlPanel/PlotControlPanel';
 
 export interface Props {
     sensorService: SensorController,
@@ -161,9 +162,9 @@ export interface Props {
 					icon={<FolderOpenOutlined />} 
 					onClick={this.handleOpenFile}/>
 
-					
-
 				</div>
+				
+				<PlotControlPanel plotViewController={this.props.plotViewController}/>
 			</div>
 		)
     }

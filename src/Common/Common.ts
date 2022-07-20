@@ -20,6 +20,7 @@ export function getRandomInt(max: number) {
     return Math.floor(Math.random() * max);
   }
 
+
 export function nearestPoint(arr: (number | null | undefined)[] , index: number, maxCount: number) : number | undefined | null
 {
     if (arr[index] === null)
