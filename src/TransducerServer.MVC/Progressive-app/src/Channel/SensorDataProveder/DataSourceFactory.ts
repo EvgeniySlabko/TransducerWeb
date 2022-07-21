@@ -1,5 +1,6 @@
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
 import { AbsolutePeakAnalyzer } from "./AbsolutePeakAnalyzer";
+import { Amplifier } from "./Amplifier";
 import { AverageSensorDataProvider } from "./AverageDataProvider";
 import { BufferedSensorDataProvider } from "./BufferedDataProvider";
 import { DataSourseType, ISensorDataProvider } from "./ISensorDataProvider";
@@ -26,6 +27,11 @@ export function CreateTemperatureValueDataSource(sensor: ISingleComponentSensor)
 export function CreateAverageValueDataSource(baseSource: ISensorDataProvider, avgFactor: number) : AverageSensorDataProvider
 {
     return new AverageSensorDataProvider(baseSource, avgFactor);
+}
+
+export function CreateAmplifiredDataSource(baseSource: ISensorDataProvider, ratio: number) : Amplifier
+{
+    return new Amplifier(baseSource, ratio);
 }
 
 export function CreateOffsetDataSource(baseSource: ISensorDataProvider, offset: number) : OffsetDataProvider

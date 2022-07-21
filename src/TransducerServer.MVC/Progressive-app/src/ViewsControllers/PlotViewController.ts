@@ -135,4 +135,9 @@ export class ViewController
             streamingPlot.ClearLabels();
         }
     }
+
+    public VerticalAlign = () => this.plot.VerticalAlign()
+    public HorizontalAlign = () => this.plot.HorizontalAlign()
+    public ZoomX = (step: number) => this.plot.ZoomX(step)
+    public ZoomY = (step: number) => this.plot.ZoomY(step)
 }

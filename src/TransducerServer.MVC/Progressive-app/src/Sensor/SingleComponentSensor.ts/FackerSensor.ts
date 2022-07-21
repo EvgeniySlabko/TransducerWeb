@@ -1,10 +1,21 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
+import { SinGenerator } from "./Generators/SinGennerator";
+import { SmoothGenerator } from "./Generators/SmoothGenerator";
 import { ISingleComponentSensor } from "./ISensor";
 import SensorComponentSensor from "./sensor";
 import { dataEventArgs, HoldingRegisters, SensorMessage, SensorMessageEventArgs, SensorSK } from "./SensorDefinitions";
 
 export class Facker implements ISingleComponentSensor
 {
+    private generator: SmoothGenerator
+    private sinGenerator: SinGenerator;
+    private intervals = [];
+    constructor()
+    {
+        this.generator = new SmoothGenerator(100);
+        this.sinGenerator = new SinGenerator();
+    }
+
     SetUsingFloatState(state: boolean): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
             resolve();
@@ -107,10 +118,10 @@ export class Facker implements ISingleComponentSensor
         }
 
         this.mainInterval = setInterval(() => {
-            var values = new Array(100);
-            var times = new Array(100);
+            var values = new Array(1);
+            var times = new Array(1);
             for (let i = 0; i < 100; i++) {
-                values[i] = Math.random() * 60;
+                values[i] = this.sinGenerator.GenerateNext(1)[0] * 60;
                 times[i] = currentTime();
             }
 
@@ -134,12 +145,12 @@ export class Facker implements ISingleComponentSensor
 
         this.speedInterval = setInterval(() => {
             var speedArgs: dataEventArgs = {
-                data: [Math.random() * 30000],
+                data: [this.generator.GenerateNext(1)[0] * 30000],
                 time: [currentTime()],
             }
             
             this._onSpeedData.dispatch(this, speedArgs);
-        });
+        }, 100);
 
         this._onMessage.dispatch(this, {
             msgType: SensorMessage.StartStreaming
@@ -185,6 +196,7 @@ export class Facker implements ISingleComponentSensor
     CloseConnection(): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
             this._onClose.dispatch(this, "Соединение закрыто");
+            this.ClearIntervals()
             resolve();
             });
     }
@@ -196,4 +208,6 @@ export class Facker implements ISingleComponentSensor
         if (this.tmpInterval) clearInterval(this.tmpInterval);
     }
 }
+
+
     

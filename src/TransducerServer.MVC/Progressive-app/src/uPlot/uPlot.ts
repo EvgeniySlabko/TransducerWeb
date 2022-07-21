@@ -112,7 +112,7 @@ export class MyUPlot extends MyUPlotBase
     }
 
     let dataArgs: dataEventArgs = {
-      data: args.data.data.map(v => v * this.channels[curIndex].seriesInfo.dataRatio),
+      data: args.data.data,
       time: args.data.time,
     } 
 
@@ -231,6 +231,12 @@ export class MyUPlot extends MyUPlotBase
     }
 
     return false;
+  }
+
+  public HorizontalAlign()
+  {
+    this.streaming = false;
+    super.HorizontalAlign();
   }
 }
 

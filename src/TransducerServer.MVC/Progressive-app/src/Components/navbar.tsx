@@ -162,6 +162,24 @@ export interface Props {
 					icon={<FolderOpenOutlined />} 
 					onClick={this.handleOpenFile}/>
 
+				<Dropdown overlay=
+					{
+						<Menu
+							items={[
+							{
+								key: '1',
+								disabled: this.props.streaming || this.props.reportVieving,
+								label: (
+								<a  onClick={this.handleFakerClick} target="_blank" rel="noopener noreferrer">
+									Add faker
+								</a>
+								),
+							}
+							]}
+						/>
+					} arrow>
+						<Button size='large' icon={<BarsOutlined />}/>
+					</Dropdown>
 				</div>
 				
 				<PlotControlPanel plotViewController={this.props.plotViewController}/>

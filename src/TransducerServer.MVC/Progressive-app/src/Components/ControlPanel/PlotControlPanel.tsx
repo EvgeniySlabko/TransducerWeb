@@ -7,7 +7,6 @@ import { Group } from '../App';
 import { ViewController } from '../../ViewsControllers/PlotViewController';
 const { Panel } = Collapse;
 
-  export type PeackMode = "none" | "absolute" | "relative";
 
   export interface Props {
     plotViewController?: ViewController;
@@ -18,6 +17,8 @@ const { Panel } = Collapse;
 
   export class PlotControlPanel extends React.Component<Props, IState>{
     
+    step: number = 20;
+
     constructor(prop: Props)
     {
       super(prop);
@@ -57,19 +58,36 @@ const { Panel } = Collapse;
             <Button key={5} 
                     style = {{height: "20px", width: "20px"}}
                     className='horizontal-padding' 
+                    onClick={() => this.props.plotViewController?.ZoomX(this.step)}
                     icon={<ZoomInOutlined />} />
             <Button key={6} 
                     style = {{height: "20px", width: "20px"}}
                     className='horizontal-padding' 
+                    onClick={() => this.props.plotViewController?.ZoomX(-this.step)}
                     icon={<ZoomOutOutlined />} />
             <Button key={7} 
                     style = {{height: "20px", width: "20px"}}
+                    onClick={this.props.plotViewController?.HorizontalAlign}
                     className='horizontal-padding' 
                     icon={<ColumnWidthOutlined />} />
-            <Button key={8} 
-                    style = {{height: "20px", width: "20px"}}
-                    className='horizontal-padding' 
-                    icon={<ColumnHeightOutlined />} />
+        </div>
+
+        <div style={{marginLeft: "10px"}}>
+                <Button key={5} 
+                        style = {{height: "20px", width: "20px"}}
+                        className='horizontal-padding' 
+                        onClick={() => this.props.plotViewController?.ZoomY(this.step)}
+                        icon={<ZoomInOutlined />} />
+                <Button key={6} 
+                        style = {{height: "20px", width: "20px"}}
+                        className='horizontal-padding' 
+                        onClick={() => this.props.plotViewController?.ZoomY(-this.step)}
+                        icon={<ZoomOutOutlined />} />
+                <Button key={8} 
+                        style = {{height: "20px", width: "20px"}}
+                        className='horizontal-padding' 
+                        onClick={this.props.plotViewController?.VerticalAlign}
+                        icon={<ColumnHeightOutlined />} />
         </div>
 
         <div style={{marginLeft: "10px"}}>

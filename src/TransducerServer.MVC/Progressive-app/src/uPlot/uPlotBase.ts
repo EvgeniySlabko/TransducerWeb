@@ -2,6 +2,7 @@ import html2canvas from "html2canvas";
 import uPlot, { Axis, Scale, Series } from "uplot";
 import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
 import { increase_brightness, nearestPoint } from "../Common/Common";
+import { groupBy } from "../Common/GroupBy";
 import { GetAxe, GetScale, GetSeries } from "./ComponetFactory/ComponentFactory";
 
 export declare class LegendItem {
@@ -35,7 +36,6 @@ export type SeriesInfo =
   axis: Axis;
   series: Series;
   scale: Scale;
-  dataRatio: number;
 }
 
 export class MyUPlotBase
@@ -88,7 +88,6 @@ export class MyUPlotBase
       let range : number[];
       let series: uPlot.Series;
       let index = this.seriesInfos.length + 1;
-      let dataRatio = 1;
       
       let sameTypeChannel = this.seriesInfos.find(s => s.style.valueType == style.valueType);
 
@@ -102,8 +101,6 @@ export class MyUPlotBase
         axis = sameTypeChannel.axis;
         scale = sameTypeChannel.scale;
         range = sameTypeChannel.curRange; 
-        
-        dataRatio = style.mnogitel / style.mnogitel;
 
         if (style.range[0] < range[0]) 
           range[0] = style.range[0];
@@ -119,7 +116,6 @@ export class MyUPlotBase
         axis = this.options.axes![index];
         scale = this.options.scales![scaleName];
 
-        dataRatio = 1;
         range = [style.range[0], style.range[1]];
 
         axis.side = style.yAxeSide == "left" ? 1 : 3;
@@ -144,7 +140,7 @@ export class MyUPlotBase
           color: () => style.color,
           label: style.legendTitle,
           range: () => range,
-          value: limitValue * dataRatio,
+          value: limitValue,
           enabled: () => 
           {
             return (this.legendItems 
@@ -162,7 +158,6 @@ export class MyUPlotBase
         addLimit(style.minValue);
 
       let info : SeriesInfo = {
-        dataRatio: dataRatio,
         axis : axis,
         scale: scale,
         series: series,
@@ -653,22 +648,51 @@ export class MyUPlotBase
       
     }
 
-    public Zoom(step: number)
+    public ZoomX(step: number = 20) // в процентах
     {
-      
+      let ratio = step / 100;
+      let screenSize = this.params.screenSize()
+      this.params.range[0] += ratio * screenSize;
+      this.params.range[1] -= ratio * screenSize;
+    }
+
+    public ZoomY(step: number = 20) // в процентах
+    {
+      let grouped = groupBy(this.seriesInfos, s => s.style.valueType);
+      let ratio = step / 100;
+      grouped.forEach(g =>{
+        let range = g[1][0].curRange[1] - g[1][0].curRange[0];
+        g[1][0].curRange[0] += ratio * range;
+        g[1][0].curRange[1] -= ratio * range;
+      })
     }
 
     public HorizontalAlign()
     {
-      
+      this.params.range[0] = 0;
+      this.params.range[1] = this.params.th + 3;
     }
 
-    public VerticalAlign(step: number)
+    public VerticalAlign()
     {
-      this.seriesInfos.forEach(s => 
-        {
-          
-        })
+        let groupedByType = groupBy(this.seriesInfos, (e) => e.style.valueType);
+        groupedByType.forEach(g =>
+          {
+            let maxRange: number[] = [0, 0];
+
+            // Find max y range element/
+            g[1].forEach(el =>
+              {
+                if (Math.abs(el.style.range[0]) > Math.abs(maxRange[0]))
+                    maxRange[0] = el.style.range[0];
+                
+                if (Math.abs(el.style.range[1]) > Math.abs(maxRange[1]))
+                  maxRange[1] = el.style.range[1];
+              })
+
+              g[1][0].curRange[0] = maxRange[0];
+              g[1][0].curRange[1] = maxRange[1];
+          });
     }
 
     protected SeriesDraw(i: number){}

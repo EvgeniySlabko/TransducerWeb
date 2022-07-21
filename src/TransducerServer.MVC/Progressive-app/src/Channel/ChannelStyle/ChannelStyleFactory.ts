@@ -8,13 +8,16 @@ import { powerBaseColor, speedBaseColor, tmpBaseColor, torqueBaseColor } from ".
 export function CreateTorqueStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
 
     let style = new ChannelStyle();
+    let maxValScaled = sensorInfo.MaxValue * sensorInfo.valueRatio;
+    let minValScaled = sensorInfo.MinValue * sensorInfo.valueRatio;
+
     style.sensorId = sensorInfo.id;
     style.grid= true;
     style.color = torqueBaseColor;
     style.axisColor = torqueBaseColor;
     style.legendTitle = sensorInfo.SensorType + ":Torque";
     style.line = "solid";
-    style.range = [sensorInfo.MinValue - 0.2 * sensorInfo.MaxValue, sensorInfo.MaxValue + 0.2 * sensorInfo.MaxValue],
+    style.range = [minValScaled - 0.2 * maxValScaled, maxValScaled + 0.2 * maxValScaled],
     style.yTitle = `Torque (${sensorInfo.UnitValueName})`;
     style.unitName = sensorInfo.Unitname;
     style.valueType = "torque";
@@ -26,8 +29,8 @@ export function CreateTorqueStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
     style.mnogitel = sensorInfo.valueRatio;
     style.legendValueAcurency = sensorInfo.MasEdRazm.toString().length - 1;
     style.drawLimits = true;
-    style.minValue = sensorInfo.MinValue;
-    style.maxValue = sensorInfo.MaxValue;
+    style.minValue = minValScaled;
+    style.maxValue = maxValScaled;
     
     return style;
 }

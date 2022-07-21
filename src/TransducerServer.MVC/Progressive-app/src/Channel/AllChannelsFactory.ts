@@ -5,7 +5,7 @@ import { CellChannel } from "./Channel/CellChannel";
 import { Channel } from "./Channel/Channel";
 import { CreateCellSpeedStyle, CreatePowerCellStyle, CreatetemperatureCellStyle, CreateTorqueCellStyle } from "./ChannelStyle/CellChannelStyleFactory";
 import { CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "./ChannelStyle/ChannelStyleFactory";
-import { CreateAbsoluteAnalizerSource, CreateAverageValueDataSource, CreateDetectorSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "./SensorDataProveder/DataSourceFactory";
+import { CreateAbsoluteAnalizerSource, CreateAmplifiredDataSource, CreateAverageValueDataSource, CreateDetectorSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "./SensorDataProveder/DataSourceFactory";
 import { ISensorDataProvider } from "./SensorDataProveder/ISensorDataProvider";
 import { PeakEventArgs } from "./SensorDataProveder/PeakAnalyzer";
 import { SensorDataProvider } from "./SensorDataProveder/SensorDataProvider";
@@ -40,15 +40,17 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     //Torque
     let mainSource = CreateMainValueDataSource(sensor);
     let offsetSource =  CreateOffsetDataSource(mainSource, 0);
-    let analizerSource = CreateDetectorSource(offsetSource, 0.1 * fullSensorInfo.MaxValue, 0.4);
-    let absoluteAnalizerSource = CreateAbsoluteAnalizerSource(offsetSource);
+    let applifiredDataSource = CreateAmplifiredDataSource(offsetSource, fullSensorInfo.valueRatio);
+
+    let analizerSource = CreateDetectorSource(applifiredDataSource, 0.1 * fullSensorInfo.MaxValue, 0.4);
+    let absoluteAnalizerSource = CreateAbsoluteAnalizerSource(applifiredDataSource);
     
     let cellAverager = CreateAverageValueDataSource(offsetSource, 500);
-    let plotAverager = CreateAverageValueDataSource(offsetSource, 1);
+    let plotAverager = CreateAverageValueDataSource(applifiredDataSource, 1);
     
     let mainPlotChannel = CreateMainChannel(plotAverager, fullSensorInfo);
+    let mainSavingChannel = CreateMainChannel(applifiredDataSource, fullSensorInfo);
     let mainCellChannel = CreateMainCellChannel(cellAverager, fullSensorInfo);
-    let mainSavingChannel = CreateMainChannel(offsetSource, fullSensorInfo);
     
     channels.push(mainPlotChannel);
     savingChannels.push(mainSavingChannel);
