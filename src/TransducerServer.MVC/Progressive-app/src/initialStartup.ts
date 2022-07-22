@@ -3,7 +3,6 @@ import { RecordController } from "./RecordController";
 import { SensorController } from "./SensorController";
 import { ParamsStorage } from "./Storage/Storage";
 
-
 // Хронить сернсоры. Дает себытия подключения отключения
 export var sensorService: SensorController = new SensorController();
 

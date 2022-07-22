@@ -66,7 +66,7 @@ export class SensorWorker
         if (this.isStreaming)
         {
             await this.sensor.StopMeasuring(true);
-            await sleep(50);
+            await sleep(100);
             await this.sensor.StopStreaming();
             await this.startReading();
             this.isStreaming = false;

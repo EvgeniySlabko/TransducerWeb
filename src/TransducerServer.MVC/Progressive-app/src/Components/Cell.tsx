@@ -100,19 +100,18 @@ const { Panel } = Collapse;
                 style = {{color: this.props.channelGroup.cellChannel.Style.fontStyle, background: this.state.overload ? "red" : "white"}} >
                 {this.props.channelGroup.cellChannel.Style.valueName + ` ${"(" + this.props.channelGroup.cellChannel.Style.unitsName + ")"}`}
             </div>
-            
+              
             <Button className='horizontal-padding'
-            disabled = {!this.props.allowSettings} 
             onClick={event => { event.stopPropagation(); this.onShow(); } } 
             key={1} 
             icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
 
 
             <CellModal 
-              group = {this.props.channelGroup} 
-              plotViewController={this.props.plotViewController} 
-              visible={this.state.modalVisible} 
-              onClose={ this.onModalClose }/>
+            group = {this.props.channelGroup} 
+            plotViewController={this.props.plotViewController} 
+            visible={this.state.modalVisible} 
+            onClose={ this.onModalClose }/>
             
           </div>
 

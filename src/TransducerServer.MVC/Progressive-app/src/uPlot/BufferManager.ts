@@ -10,7 +10,7 @@ export class PlotBufferManager
 {
     private buff: AlignedData = [[],[]];
 
-    private initialBufferSize: number = 400000;
+    private initialBufferSize: number = 300000;
 
     private dt: number;
     private idx: number;                                    

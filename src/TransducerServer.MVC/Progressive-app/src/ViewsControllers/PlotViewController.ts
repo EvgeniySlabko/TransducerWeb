@@ -140,4 +140,27 @@ export class ViewController
     public HorizontalAlign = () => this.plot.HorizontalAlign()
     public ZoomX = (step: number) => this.plot.ZoomX(step)
     public ZoomY = (step: number) => this.plot.ZoomY(step)
+    public MoveX = (step: number) => this.plot.MoveX(step)
+    public PressLeft = () =>
+    {
+      this.plot.PressLeft();
+    }
+
+    public PressRight = () =>
+    {
+        this.plot.PressRight();
+    }
+    public SetStreaming = () => 
+    {
+        if (this.streamingMode) 
+        {
+            let currentPlot = this.plot as MyUPlot;
+            currentPlot.SetStreaming();
+        }
+        
+    }
+    public get IsStreaming() : boolean 
+    {
+        return this.streamingMode ? (this.plot as MyUPlot).StreamingState : false;
+    }
 }

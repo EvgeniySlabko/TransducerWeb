@@ -81,6 +81,7 @@ export class MyUPlotBase
     
     public ClearLabels = () => this.labels.splice(0, this.labels.length);
 
+
     public AddSeries(style: ChannelStyle) : SeriesInfo
     {
       let axis: uPlot.Axis;
@@ -519,7 +520,7 @@ export class MyUPlotBase
     {
         let axisDivs = this.element.getElementsByClassName("u-axis");
         for (let i = 0; i < axisDivs.length; i++)
-            this.SetupAxis(i);
+            this.SetupYAxis(i);
     }
     
     protected BuildPlot()
@@ -599,13 +600,25 @@ export class MyUPlotBase
         return false;
     }
       
-    private AxisRangeChanged(index: number, dy: number)
+    private YAxisRangeChanged(index: number, dy: number)
     {
       let range = this.seriesInfos[index- 1].curRange
       let curRangeVal = range[1] - range[0];
 
       //вычисляем относительное смещение 
       let dVal = curRangeVal * dy;
+
+      range[0] += dVal;
+      range[1] += dVal;
+    }
+
+    private XAxisRangeChanged(dx: number)
+    {
+      let range = this.params.range
+      let curRangeVal = range[1] - range[0];
+
+      //вычисляем относительное смещение 
+      let dVal = curRangeVal * dx;
 
       range[0] += dVal;
       range[1] += dVal;
@@ -656,6 +669,14 @@ export class MyUPlotBase
       this.params.range[1] -= ratio * screenSize;
     }
 
+    public MoveX(step: number) // в процентах
+    {
+      let ratio = step / 100;
+      let screenSize = this.params.screenSize();
+      this.params.range[0] += ratio * screenSize;
+      this.params.range[1] += ratio * screenSize;
+    }
+
     public ZoomY(step: number = 20) // в процентах
     {
       let grouped = groupBy(this.seriesInfos, s => s.style.valueType);
@@ -670,7 +691,7 @@ export class MyUPlotBase
     public HorizontalAlign()
     {
       this.params.range[0] = 0;
-      this.params.range[1] = this.params.th + 3;
+      this.params.range[1] = this.params.th === 0 ? 5 : this.params.th;
     }
 
     public VerticalAlign()
@@ -695,6 +716,20 @@ export class MyUPlotBase
           });
     }
 
+    public PressLeft()
+    {
+      let screenSize = this.params.screenSize();
+      this.params.range[1] = this.params.t0 + screenSize; 
+      this.params.range[0] = this.params.t0;
+    }
+
+    public PressRight()
+    {
+      let screenSize = this.params.screenSize();
+      this.params.range[1] = this.params.th;
+      this.params.range[0] = this.params.th - screenSize;
+    }
+
     protected SeriesDraw(i: number){}
 
     protected SelectCommited(){}
@@ -702,10 +737,10 @@ export class MyUPlotBase
     protected DbClick(e: any){}
     
     protected AxisWheel(dy: number){}
-  
+    
     protected AxisZoom(index: number, dy: number): void {
       let dir = dy > 0 ? 1 : -1; 
-          
+      
       let series = this.seriesInfos[index- 1];
       let curRange = series.curRange;
       
@@ -718,43 +753,57 @@ export class MyUPlotBase
       series.curRange[1] = newRange[1];
     }
 
-    private SetupAxis = (i: number) =>
+    private SetupYAxis = (i: number) =>
     {
-        let axisDivs = this.element.getElementsByClassName("u-axis");
-        let divAxis = axisDivs[i];
+      let axisDivs = this.element.getElementsByClassName("u-axis");
+      let divAxis = axisDivs[i];
 
-        let dragStart = false;
-        let yCoord = 0;
+      let dragStart = false;
+      let yCoord = 0;
+      let xCoord = 0;
 
-        divAxis.addEventListener('mousedown', (e: any) => {
-          dragStart = true;
-          yCoord = e.clientY;
-        });
+      divAxis.addEventListener('mousedown', (e: any) => {
+        dragStart = true;
+        yCoord = e.clientY;
+        xCoord = e.clientX;
+      });
 
-        document.addEventListener('mouseup', (e: any) => {
-          dragStart = false;
-        });
+      document.addEventListener('mouseup', (e: any) => {
+        dragStart = false;
+      });
 
-        divAxis.addEventListener('mouseleave', (e: any) => {
-        //dragStart = false;
-        });
+      divAxis.addEventListener('mouseleave', (e: any) => {
+      //dragStart = false;
+      });
 
-        document.addEventListener('mousemove', (e: any) => {
-        if (dragStart)
-        {
-            let curY = e.clientY;;
-            let divHeigh = divAxis.clientHeight;  
-            let cursorDy = curY - yCoord;
-            yCoord = curY
-            let l = cursorDy / divHeigh;
-            this.AxisRangeChanged(i, l);
+      document.addEventListener('mousemove', (e: any) => {
+      if (dragStart)
+      {
+        if (i == 0){
+          let curX = e.clientX;
+          let divWidth = divAxis.clientWidth;  
+          let cursorDx = curX - xCoord;
+          xCoord = curX
+          let l = cursorDx / divWidth;
+          this.XAxisRangeChanged(-l);
         }
-        });
+        else{
+          let curY = e.clientY;
+          let divHeigh = divAxis.clientHeight;  
+          let cursorDy = curY - yCoord;
+          yCoord = curY
+          let l = cursorDy / divHeigh;
+          this.YAxisRangeChanged(i, l);
+        }
+      }
+      });
 
-        let index = i; 
+      if (i != 0)
+      {
         divAxis.addEventListener('mousewheel', (e: any) => {
           e.preventDefault();
           this.AxisZoom(i, e.deltaY);
         });
+      }
     }
-}
+  }

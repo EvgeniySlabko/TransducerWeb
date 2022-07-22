@@ -50,14 +50,14 @@ export class Snapshot
 
         let csvRows = new Array<string>();
         
-        let addRow = (title: string, data: (number | null | undefined)[], ration: number) =>
+        let addRow = (title: string, data: (number | null | undefined)[]) =>
         {
             let rowArray = new Array<string>();
             rowArray.push(title);
 
             for (let i = 0; i < data.length; i++) {
                 let strVal = data[i] === null || data[i] === undefined  ?
-                            "" : (<number>(data[i]) * ration).toString();
+                            "" : (<number>(data[i])).toString();
 
                 rowArray.push(strVal);
             }
@@ -66,9 +66,9 @@ export class Snapshot
             csvRows.push(row);
         }
 
-        addRow("Time", alignedData[0], 1);
+        addRow("Time", alignedData[0]);
         for (let i = 1; i < alignedData.length; i++) 
-            addRow(this.data[i - 1].style.legendTitle, alignedData[i], this.data[i - 1].style.mnogitel);
+            addRow(this.data[i - 1].style.legendTitle, alignedData[i]);
 
         csvContent += csvRows.join();
         FileSaver.saveAs(csvContent, fileName);

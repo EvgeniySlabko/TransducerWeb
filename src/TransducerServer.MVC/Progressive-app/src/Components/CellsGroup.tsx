@@ -88,16 +88,17 @@ const { Panel } = Collapse;
                 className='horizontal-padding' 
                 onClick={event => { event.stopPropagation(); this.onShow(); } } 
                 disabled={!this.props.allowSettings}
-                icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
+                icon={<SettingOutlined />} />
 
                 <Button key={2} 
                 className='horizontal-padding'
                 onClick={ event =>{ event.stopPropagation(); this.setZeroClick()}} >{">0<"}</Button>
 
                 <Button key={3} 
+                        onClick={event => { event.stopPropagation(); this.props.sensorRemove(this.props.group.node.sensor); } }
                         className='horizontal-padding' 
                         disabled={!this.props.allowSettings}
-                        icon={<CloseOutlined onClick={event => { event.stopPropagation(); this.props.sensorRemove(this.props.group.node.sensor); } } />}/>
+                        icon={<CloseOutlined />}/>
                 
                 <div key={4} className='vertical-flex'>
                   <h6 className='cell-group-title'>{this.props.group.node.fullSensorInfo.SensorType}</h6>

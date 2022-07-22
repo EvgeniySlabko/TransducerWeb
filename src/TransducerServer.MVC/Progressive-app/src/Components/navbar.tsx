@@ -182,7 +182,9 @@ export interface Props {
 					</Dropdown>
 				</div>
 				
-				<PlotControlPanel plotViewController={this.props.plotViewController}/>
+				<PlotControlPanel 
+				plotViewController={this.props.plotViewController}
+				reportVieving = {this.props.reportVieving}/>
 			</div>
 		)
     }

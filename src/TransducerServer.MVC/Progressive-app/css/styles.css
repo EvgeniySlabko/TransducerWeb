@@ -65,12 +65,12 @@ table{
 }
 
 .left-container{
-	flex-basis: 200px;
+	flex-basis: 220px;
 	flex-grow: 0;
 	flex-shrink: 0;
 	overflow-y: auto;
 	overflow-x: hidden;
-	height: 100vh;
+	height: 92%;
 	display: flex;
 	flex-direction: column;
 }
@@ -121,6 +121,9 @@ legend{
 
 .ant-collapse-header{
 	padding: 0px !important;
+	justify-content: space-around !important;
+	flex-wrap: nowrap !important;
+	align-items: center !important;
 }
 
 .navbar
@@ -200,3 +203,49 @@ legend{
 	top: 13px; left: 0px;
 }
 
+:root {
+	--code-color: darkred;
+	--code-bg-color: #aaaaaa;
+	--code-font-size: 14px;
+	--code-line-height: 1.4;
+	--scroll-bar-color: #c5c5c5;
+	--scroll-bar-bg-color: #f6f6f6;
+}
+
+pre {
+	color: var(--code-color);
+	font-size: var(--code-font-size);
+	line-height: var(--code-line-height);
+	background-color: var(--code-bg-color);
+}
+
+.code-block {
+	max-height: 100px;
+	overflow: auto;
+	padding: 8px 7px 5px 15px;
+	margin: 0px 0px 0px 0px;
+	border-radius: 7px;
+}
+
+/* Scrole */
+::-webkit-scrollbar-corner { background: rgba(0,0,0,0.5); }
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--scroll-bar-color) var(--scroll-bar-bg-color);
+}
+
+*::-webkit-scrollbar {
+	width: 12px;
+	height: 12px;
+}
+
+*::-webkit-scrollbar-track {
+	background: var(--scroll-bar-bg-color);
+}
+
+*::-webkit-scrollbar-thumb {
+	background-color: var(--scroll-bar-color);
+	border-radius: 20px;
+	border: 3px solid var(--scroll-bar-bg-color);
+}

@@ -18,7 +18,7 @@ export function CreateTorqueStyle(sensorInfo: FullSensorInfo) : ChannelStyle{
     style.legendTitle = sensorInfo.SensorType + ":Torque";
     style.line = "solid";
     style.range = [minValScaled - 0.2 * maxValScaled, maxValScaled + 0.2 * maxValScaled],
-    style.yTitle = `Torque (${sensorInfo.UnitValueName})`;
+    style.yTitle = `Torque (${sensorInfo.Unitname})`;
     style.unitName = sensorInfo.Unitname;
     style.valueType = "torque";
     style.yAxeSide = "left";

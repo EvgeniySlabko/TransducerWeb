@@ -218,7 +218,7 @@ export class MyUPlot extends MyUPlotBase
         this.SetCurrentScale();
       }
   }
-
+  
   protected Wheel(e: any): boolean {
     if (this.streaming)
     {
@@ -232,6 +232,26 @@ export class MyUPlot extends MyUPlotBase
 
     return false;
   }
+
+  public PressLeft()
+  {
+    this.streaming = false;
+    super.PressLeft();
+  }
+
+  public PressRight()
+  {
+    this.streaming = false;
+    super.PressRight();
+  }
+
+  public SetStreaming(state: boolean = true)
+  {
+    this.streaming = state;
+    if (this.streaming) this.SetCurrentScale();
+  }
+  
+  public get StreamingState() {return this.streaming};
 
   public HorizontalAlign()
   {
