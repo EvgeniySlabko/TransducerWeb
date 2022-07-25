@@ -44,13 +44,19 @@ export class MyUPlotBase
     protected parent: HTMLElement | null;                         // parent container
     protected plot: uPlot | undefined;           
     protected options: uPlot.Options;
-    protected data: uPlot.AlignedData =[[],[]]
     protected legendItems: LegendItem[] | undefined = undefined; 
     protected labels: Label[] = [];
     protected limits: LimitLine[] = [];
-    protected seriesInfos: SeriesInfo[] = [];                     
-    
+    protected seriesInfos: SeriesInfo[] = []; 
+    private _data: uPlot.AlignedData =[[],[]]
+
     protected interval?: NodeJS.Timer;
+
+    protected get data() : uPlot.AlignedData
+    {
+      return this._data
+    }
+    
     
     protected params =  {  
       gridTicks: 50, 
@@ -79,6 +85,14 @@ export class MyUPlotBase
         });
     }
     
+    timeToIndex = (time: number) : number =>
+    {
+      let firstBufferTime = this.data[0][0];
+      let firsIndex = Math.floor(firstBufferTime / this.params.gridTicks);
+      let curIndex = Math.floor(time / this.params.gridTicks);
+      return curIndex - firsIndex; 
+    }
+
     public ClearLabels = () => this.labels.splice(0, this.labels.length);
 
 
@@ -527,7 +541,19 @@ export class MyUPlotBase
     {
         this.plot = new uPlot(this.options, this.data, this.element);
         
-        this.interval = setInterval(() => this.plot?.redraw(true, true), 30); // отрисовка
+        this.interval = setInterval(() => 
+        {
+          let currentPlotBuffer = this._data;
+          let currentBuffer = this.data;
+          
+          if (currentPlotBuffer !== currentBuffer)
+          {
+            this.plot?.setData(currentBuffer, false);
+            this._data = currentBuffer;
+          }
+          
+          this.plot?.redraw(true, true);
+        }, 30); // отрисовка
         
         setTimeout(() => this.InitLegend(), 100);
         setTimeout(() => this.InitAxes(), 100);
@@ -538,8 +564,7 @@ export class MyUPlotBase
         if (this.plot)
         {
           this.plot.destroy();
-          this.options = this.getOptions(),
-          this.data = [[],[]]
+          this.options = this.getOptions();
           if (this.interval)
           clearInterval(this.interval);
           this.element.innerHTML = '';
@@ -633,7 +658,7 @@ export class MyUPlotBase
       let xVal = this.plot.posToVal(left, 'x');
       let dt = 1 / this.params.gridTicks;
       let maxCount = findTime / dt;
-      let index = Math.floor(xVal / dt);
+      let index = this.timeToIndex(xVal);
       
       if (left && this.legendItems && xVal < this.params.th && xVal > this.params.t0)
       {
@@ -646,7 +671,6 @@ export class MyUPlotBase
               let strValue = nearestVal !== undefined && nearestVal !== null ? nearestVal!.toFixed(seriesInfo.style.legendValueAcurency).toString() : "--";
               if (this.legendItems)
                 this.legendItems[i + 1].setValue(strValue);
-            
         };
       }
     }

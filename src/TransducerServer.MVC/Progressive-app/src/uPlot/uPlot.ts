@@ -29,6 +29,11 @@ export class MyUPlot extends MyUPlotBase
     this.SetScale(0, this.params.screenSize());
   }
 
+  protected get data() : uPlot.AlignedData
+  {
+    return this.bufferManager ? this.bufferManager.Source : [[],[]]
+  }
+
   public Reset()
   {
     this.channels.forEach((c, index) => {
@@ -117,6 +122,8 @@ export class MyUPlot extends MyUPlotBase
     } 
 
     this.bufferManager!.SetRange(curIndex, dataArgs);
+    //this.plot?.setData(this.bufferManager!.Source, false);
+
     this.params.th = this.bufferManager!.GetLastTime();
     this.ScaleHandler();
   }
@@ -140,8 +147,7 @@ export class MyUPlot extends MyUPlotBase
   private BuildNewPlot = (channels: Channel[]) =>
   {
     this.DestroyPlot();
-    this.bufferManager = new PlotBufferManager(channels.length, 1 / this.params.gridTicks);
-    this.data = this.bufferManager.Source;
+    this.bufferManager = new PlotBufferManager(channels.length, 1 / this.params.gridTicks, () => [this.params.range[0], this.params.range[1]]);
     this.options = this.getOptions();
     this.channels = [];
 

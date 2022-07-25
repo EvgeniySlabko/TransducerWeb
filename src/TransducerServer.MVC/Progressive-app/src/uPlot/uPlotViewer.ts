@@ -13,11 +13,17 @@ export class MyUPlotViewer extends MyUPlotBase
     this.SetScale(0, this.params.screenSize());
   }
 
+  private rData: uPlot.AlignedData =[[],[]]
+  protected get data() : uPlot.AlignedData
+  {
+    return this.rData
+  }
+
   public FromSnapshot(snapshot: Snapshot)
   {
     var trackData = snapshot.GetTrackData();
 
-    this.data = [[]]
+    this.rData = [[]]
     
     for (let i = 0; i < trackData.length; i++) {
         this.data.push(new Array());

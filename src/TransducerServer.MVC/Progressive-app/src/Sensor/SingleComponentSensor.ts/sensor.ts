@@ -302,7 +302,7 @@ export class SensorComponentSensor  implements ISingleComponentSensor{
                     var msgCount = msgView.getUint16(0, true);
                     for (let i = 0; i < msgCount; i++) {
                         var msg = msgView.getUint16(2 + (i * 2));
-                        console.log("Message: ", msg);
+                        //console.log("Message: ", msg);
                     }
                     break;
     

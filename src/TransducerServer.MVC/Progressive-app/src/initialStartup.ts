@@ -2,6 +2,10 @@ import { ViewController as PlotViewController } from "./ViewsControllers/PlotVie
 import { RecordController } from "./RecordController";
 import { SensorController } from "./SensorController";
 import { ParamsStorage } from "./Storage/Storage";
+import * as fs from 'fs';
+
+
+
 
 // Хронить сернсоры. Дает себытия подключения отключения
 export var sensorService: SensorController = new SensorController();
