@@ -9,7 +9,7 @@ import { RecordController } from '../RecordController';
 import { ViewController } from '../ViewsControllers/PlotViewController';
 import { Snapshot } from '../ReportListener/Snapshot';
 import { Button, Dropdown, Menu, notification } from 'antd';
-import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, FolderOpenOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { Group } from './App';
 import { PlotControlPanel } from './ControlPanel/PlotControlPanel';
 
@@ -29,6 +29,7 @@ export interface Props {
 	openReportCallback: (file: File) => void
 	setStreamingModeView: () => void
 	toggleRecording: () => void
+	export: () => void
 }
 
   interface IState {
@@ -162,22 +163,15 @@ export interface Props {
 					icon={<FolderOpenOutlined />} 
 					onClick={this.handleOpenFile}/>
 
-					<Button title="Открыть отчет" 
-					size='large' 
-					id="openfile" 
-					shape="default"  
-					icon={<FolderOpenOutlined />} 
-					onClick={async () =>
 					{
-						const result = await window.showSaveFilePicker({
-							suggestedName: "Report",
-							types: [{
-								description: 'Text file',
-								accept: {'text/plain': ['.txt']},
-							  }],
-						});
-						console.log(result.name);
-					}}/>
+						!this.props.reportVieving ? <></> :
+						<Button title="Открыть отчет" 
+						size='large' 
+						id="openfile" 
+						shape="default"  
+						icon={<FileSyncOutlined />} 
+						onClick={this.props.export}/>
+					}
 
 
 				<Dropdown overlay=
@@ -203,6 +197,7 @@ export interface Props {
 				<PlotControlPanel 
 				plotViewController={this.props.plotViewController}
 				reportVieving = {this.props.reportVieving}/>
+			
 			</div>
 		)
     }

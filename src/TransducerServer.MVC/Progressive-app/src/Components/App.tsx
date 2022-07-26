@@ -12,10 +12,10 @@ import { FullSensorInfo } from '../Sensor/SingleComponentSensor.ts/SensorDefinit
 import { SensorWorker } from '../Sensor/SensorWorker';
 import { notification } from 'antd';
 import { Snapshot } from '../ReportListener/Snapshot';
-import { getRandomInt } from '../Common/Common';
+import { CreateTxtFileDialog, getRandomInt } from '../Common/Common';
 import { ParamsStorage } from '../Storage/Storage';
 import { changeGroupColor } from '../Common/ChannelColorChanger';
-import { SaveModal } from './SaveModal';
+import { SaveModal } from './SaveModal/SaveModal';
 import { GetMinAvgFactor } from '../Common/SensorsHelpers';
 
 export interface Props {
@@ -44,6 +44,7 @@ interface IState {
     streaming: boolean;
     currentSnapshot: Snapshot | undefined;
     firstStart: boolean;
+    currentFile: FileSystemFileHandle | undefined;
 }
 
 export class App extends React.Component<Props, IState>
@@ -63,6 +64,7 @@ export class App extends React.Component<Props, IState>
             streaming: false,
             currentSnapshot: undefined,
             firstStart: true,
+            currentFile: undefined
         }
 
         //this.plotViewController = new ViewController(document.getElementById('gd'));
@@ -192,6 +194,7 @@ export class App extends React.Component<Props, IState>
         
         this.setState((prev, props) => ({
             viewingReport: true,
+            currentSnapshot: snapshot,
         }));
 
         notification.success({
@@ -204,9 +207,14 @@ export class App extends React.Component<Props, IState>
 	{
 		try{
 			this.props.recordController.StartListening();
+            let currentFile = await CreateTxtFileDialog();
+
+            this.setState((prev, props) => ({
+                currentFile: currentFile,
+            }));
 		}
 		catch(ex){
-			
+			return;
 		}
 
 		this.setState((prev, props) => ({
@@ -218,14 +226,18 @@ export class App extends React.Component<Props, IState>
 	{
         if (this.state.streaming)
             await this.stophandler();
-
+        
+            
         let snapshot = this.props.recordController.StopListening();
+        if (this.state.currentFile) await snapshot.ToFile(this.state.currentFile);
+
 		this.setState((prev, props) => ({
 			recording: false,
-            saveDialog: true,
+            //saveDialog: true,
             streaming: false,
             currentSnapshot: snapshot,
 		}));
+
 	}
 	
 	handleRecClick = async () =>
@@ -302,6 +314,13 @@ export class App extends React.Component<Props, IState>
 		  }));
     }
 
+    export = () =>
+    {
+        this.setState((prev, props) => ({
+			saveDialog: true,
+		  }));
+    }
+
     render(){
         return [
             <Navbar key = {1} 
@@ -314,6 +333,7 @@ export class App extends React.Component<Props, IState>
                     groups = {this.state.groups}
                     reportVieving = {this.state.viewingReport}
                     clear = {this.clear}
+                    export = {this.export}
                     toggleRecording = {this.handleRecClick}
                     recordingState = {this.state.recording}
                     setStreamingModeView = { this.streamingModeViewHandler }

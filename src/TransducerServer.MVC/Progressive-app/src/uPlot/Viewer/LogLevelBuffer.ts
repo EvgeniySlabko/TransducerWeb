@@ -6,8 +6,8 @@ export class LogLevelBugger
 {
     private levels: number = 6;
     private compressionRatio: number = 1.5 //коэффицент изменения коэффицента усреднения на 1 level.
-    private logLevel0Treshold = 15; //пороговое значение range после которого начинают действовать уровни логирования
-    private logLevelRatio = 300; //пороговое значение range после которого начинают действовать уровни логирования
+    private logLevel0Treshold = 10; //пороговое значение range после которого начинают действовать уровни логирования
+    private logLevelRatio = 150; //пороговое значение range после которого начинают действовать уровни логирования
 
     private logLevelCalculate: (range: [number, number]) => number = (range) =>
     {
@@ -50,7 +50,7 @@ export class LogLevelBugger
     {
         let range = this.rangeGetter();
         let logLevel = this.logLevelCalculate([range[0], range[1]])
-        console.log(logLevel);
+        // console.log(logLevel);
         return this.data[logLevel];
     }
 

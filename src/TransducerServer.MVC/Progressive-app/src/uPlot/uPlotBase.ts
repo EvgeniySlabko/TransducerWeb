@@ -88,7 +88,7 @@ export class MyUPlotBase
     {
       let firstBufferTime = this.data[0][0];
       let firsIndex = Math.floor(firstBufferTime / this.params.gridTicks);
-      let curIndex = Math.floor(time / this.params.gridTicks);
+      let curIndex = Math.floor(time / (1 / this.params.gridTicks));
       return curIndex - firsIndex; 
     }
 

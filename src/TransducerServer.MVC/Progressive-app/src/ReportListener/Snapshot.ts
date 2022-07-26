@@ -29,7 +29,7 @@ export class Snapshot
     }
 
     public GetTrackData = () => this.data;
-    public ToFile(fileName: string)
+    public async ToFile(stream: FileSystemFileHandle)
     {   
         var parts = new Array<string>();
         parts.push(JSON.stringify(this.data));
@@ -39,10 +39,13 @@ export class Snapshot
                 endings: "native",
             });
 
-        FileSaver.saveAs(blob, fileName);
+        let writable = await stream.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        //FileSaver.saveAs(blob, fileName);
     }
 
-    public ToCSV(fileName: string, dt: number)
+    public async ToCSV(fileName: string, dt: number, stream: FileSystemFileHandle)
     {
         let alignedData = AlignedData(this.data.map(d => d.data), {dt: dt});
 
@@ -71,6 +74,9 @@ export class Snapshot
             addRow(this.data[i - 1].style.legendTitle, alignedData[i]);
 
         csvContent += csvRows.join();
-        FileSaver.saveAs(csvContent, fileName);
+
+        let writable = await stream.createWritable();
+        await writable.write(csvContent);
+        await writable.close();
     }
 }

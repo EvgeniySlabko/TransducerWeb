@@ -91,4 +91,29 @@ export function increase_brightness(hex: string, percent: number){
        ((0|(1<<8) + b + (256 - b) * percent / 100).toString(16)).substr(1);
 }
 
+export async function CreateTxtFileDialog(fileName?: string)
+{
+    const result = await window.showSaveFilePicker({
+        suggestedName: fileName ? fileName : "Report.txt",
+        types: [{
+            description: 'Text file',
+            accept: {'text/plain': ['.txt']},
+          }],
+    });
+
+    return result;
+}
+
+export async function CreateCsvFileDialog(fileName?: string)
+{
+    const result = await window.showSaveFilePicker({
+        suggestedName: fileName ? fileName : "Report.csv",
+        types: [{
+            description: "CSV file",
+            accept: {"text/csv": [".csv"]}
+          }]
+    });
+
+    return result;
+}
 
