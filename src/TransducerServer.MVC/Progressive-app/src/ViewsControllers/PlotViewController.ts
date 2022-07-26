@@ -1,7 +1,7 @@
 import { MyUPlot } from "../uPlot/uPlot";
 import { Channel } from "../Channel/Channel/Channel";
 import { Snapshot } from "../ReportListener/Snapshot";
-import { MyUPlotViewer } from "../uPlot/uPlotViewer";
+import { MyUPlotViewer } from "../uPlot/Viewer/uPlotViewer";
 import { Label } from "../uPlot/uPlotBase";
 
 export declare class ChannelLabel

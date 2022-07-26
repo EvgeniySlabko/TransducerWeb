@@ -1,7 +1,6 @@
 import { CalculatePower } from "../../Common/Common";
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ChannelStyle } from "./ChannelStyle";
-import { GetColorBySeed } from "./ColorFactory";
 import { powerBaseColor, speedBaseColor, tmpBaseColor, torqueBaseColor } from "./StyleCommon";
 
 

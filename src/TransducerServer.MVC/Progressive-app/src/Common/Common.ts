@@ -52,6 +52,26 @@ export function nearestPoint(arr: (number | null | undefined)[] , index: number,
     return undefined;
 }
 
+export function getEmptyAlignedData(startTime: number, dt: number, segments:number, length: number) : AlignedData
+{
+    let currentTime = startTime;
+    let timeArr = new Array<number>(length);
+    for (let i = 0; i < length; i++) {
+        timeArr[i] = currentTime;
+        currentTime += dt;
+    }
+
+    let dataArrs = new Array<(undefined | null | number)[]>(segments);
+    for (let i = 0; i < dataArrs.length; i++) {
+        dataArrs[i] = new Array<(undefined | null | number)>(length);
+        for (let j = 0; j < dataArrs.length; j++) {
+            dataArrs[i][j] = undefined;
+        }
+    }
+
+    return [timeArr, ...dataArrs];
+}
+
 export function increase_brightness(hex: string, percent: number){
     // strip the leading # if it's there
     hex = hex.replace(/^\s*#|\s*$/g, '');
@@ -70,3 +90,5 @@ export function increase_brightness(hex: string, percent: number){
        ((0|(1<<8) + g + (256 - g) * percent / 100).toString(16)).substr(1) +
        ((0|(1<<8) + b + (256 - b) * percent / 100).toString(16)).substr(1);
 }
+
+

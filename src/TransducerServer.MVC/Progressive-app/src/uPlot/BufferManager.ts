@@ -186,8 +186,6 @@ export class PlotBufferManager
         if (indexInFrame2 >= 0)
         {
             let frameIndex2 = Math.floor((index -  (this.frameSize / 2))/ this.frameSize);
-            
-            //console.log(indexInFrame2);
             this.frames2[frameIndex2][segmentIndex + 1][indexInFrame2] = value;
         }
     }

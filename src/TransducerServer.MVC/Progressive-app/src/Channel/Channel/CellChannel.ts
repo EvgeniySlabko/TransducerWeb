@@ -26,8 +26,6 @@ export type ChannelCloseArgs =
 export class CellChannel
 {
     private style: CellChannelStyle;
-    private traceId: number | undefined;
-    private isAttached: boolean = false;
 
     private _onData = new EventDispatcher<CellChannel, ChannelDataArgs>();
     private _onMessage = new EventDispatcher<CellChannel,ChannelMessageArgs>();

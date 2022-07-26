@@ -222,7 +222,6 @@ export class App extends React.Component<Props, IState>
         let snapshot = this.props.recordController.StopListening();
 		this.setState((prev, props) => ({
 			recording: false,
-            firstStart: true,
             saveDialog: true,
             streaming: false,
             currentSnapshot: snapshot,

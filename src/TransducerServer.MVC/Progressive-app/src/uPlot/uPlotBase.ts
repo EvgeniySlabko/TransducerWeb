@@ -57,7 +57,6 @@ export class MyUPlotBase
       return this._data
     }
     
-    
     protected params =  {  
       gridTicks: 50, 
       screenSize: () => this.params.range[1] - this.params.range[0],
@@ -670,7 +669,15 @@ export class MyUPlotBase
               let seriesInfo = this.seriesInfos[i];
               let strValue = nearestVal !== undefined && nearestVal !== null ? nearestVal!.toFixed(seriesInfo.style.legendValueAcurency).toString() : "--";
               if (this.legendItems)
-                this.legendItems[i + 1].setValue(strValue);
+              {
+                try
+                {
+                  this.legendItems[i + 1].setValue(strValue);
+                  
+                }
+                catch{}
+                
+              }
         };
       }
     }
@@ -720,24 +727,24 @@ export class MyUPlotBase
 
     public VerticalAlign()
     {
-        let groupedByType = groupBy(this.seriesInfos, (e) => e.style.valueType);
-        groupedByType.forEach(g =>
-          {
-            let maxRange: number[] = [0, 0];
+      let groupedByType = groupBy(this.seriesInfos, (e) => e.style.valueType);
+      groupedByType.forEach(g =>
+        {
+          let maxRange: number[] = [0, 0];
 
-            // Find max y range element/
-            g[1].forEach(el =>
-              {
-                if (Math.abs(el.style.range[0]) > Math.abs(maxRange[0]))
-                    maxRange[0] = el.style.range[0];
-                
-                if (Math.abs(el.style.range[1]) > Math.abs(maxRange[1]))
-                  maxRange[1] = el.style.range[1];
-              })
+          // Find max y range element/
+          g[1].forEach(el =>
+            {
+              if (Math.abs(el.style.range[0]) > Math.abs(maxRange[0]))
+                  maxRange[0] = el.style.range[0];
+              
+              if (Math.abs(el.style.range[1]) > Math.abs(maxRange[1]))
+                maxRange[1] = el.style.range[1];
+            })
 
-              g[1][0].curRange[0] = maxRange[0];
-              g[1][0].curRange[1] = maxRange[1];
-          });
+            g[1][0].curRange[0] = maxRange[0];
+            g[1][0].curRange[1] = maxRange[1];
+        });
     }
 
     public PressLeft()

@@ -1,9 +1,7 @@
 import { ChannelStyle } from "../ChannelStyle/ChannelStyle";
 import { ISensorDataProvider } from "../SensorDataProveder/ISensorDataProvider";
-import { EventDispatcher, IEvent } from "strongly-typed-events";
+import { EventDispatcher } from "strongly-typed-events";
 import { dataEventArgs, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
-import { type } from "jquery";
-import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
 //import { CreateDefaultStyle } from "./ChannelStyleFactory";
 

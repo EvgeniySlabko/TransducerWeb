@@ -108,7 +108,6 @@ export class ReportListener
         }
     }
 
-
     private CloseHandler = (channel: Channel, args: ChannelCloseArgs) =>
     {
         if (this.channelMap.has(channel))

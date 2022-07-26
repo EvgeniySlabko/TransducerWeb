@@ -162,6 +162,24 @@ export interface Props {
 					icon={<FolderOpenOutlined />} 
 					onClick={this.handleOpenFile}/>
 
+					<Button title="Открыть отчет" 
+					size='large' 
+					id="openfile" 
+					shape="default"  
+					icon={<FolderOpenOutlined />} 
+					onClick={async () =>
+					{
+						const result = await window.showSaveFilePicker({
+							suggestedName: "Report",
+							types: [{
+								description: 'Text file',
+								accept: {'text/plain': ['.txt']},
+							  }],
+						});
+						console.log(result.name);
+					}}/>
+
+
 				<Dropdown overlay=
 					{
 						<Menu
