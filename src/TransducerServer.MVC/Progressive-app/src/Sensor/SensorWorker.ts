@@ -1,17 +1,14 @@
 import { sleep } from "../Common/Common";
-import { ISingleComponentSensor } from "./SingleComponentSensor.ts/ISensor";
-import SensorComponentSensor from "./SingleComponentSensor.ts/sensor";
+import { ISingleComponentSensor } from "./SingleComponentSensor.ts/ISingleComponentSensor";
 
 // отвечает за логику работы с датчиком
-export class SensorWorker
-{
+export class SensorWorker {
     private sensor: ISingleComponentSensor;
     private isInit: boolean = false;
     private isReading: boolean = false;
     private isStreaming: boolean = false;
 
-    constructor(sensor: ISingleComponentSensor, alreadyInit: boolean = false)
-    {
+    constructor(sensor: ISingleComponentSensor, alreadyInit: boolean = false) {
         this.isInit = alreadyInit;
         this.sensor = sensor;
     }
@@ -28,43 +25,37 @@ export class SensorWorker
         return this.isStreaming;
     }
 
-    public async Initialize()
-    {
+    public async Initialize() {
         await this.sensor.Initialize();
         await this.sensor.StopStreaming();
         await this.sensor.SetComputerConnection();
         await this.sensor.SetT0();
         await this.sensor.SetAvgRatio(1);
         await this.sensor.SetUsingFloatState(true);
-        /// configure
+        await this.startReading();
 
         this.isStreaming = false;
         this.isInit = true;
     }
 
-    public async  SetT0()
-    {
+    public async SetT0() {
         if (!this.isInit) throw "Sersor is not initialized";
 
         await this.sensor.SetT0();
     }
 
-    public async StartStreaming()
-    {
+    public async StartStreaming() {
         if (!this.isInit) throw "Sersor is not initialized";
 
-        if (!this.isStreaming)
-        {
+        if (!this.isStreaming) {
             await this.sensor.StartStreaming();
             this.isStreaming = true;
         }
     }
 
-    public async StopStreaming()
-    {
+    public async StopStreaming() {
         if (!this.isInit) throw "Sersor is not initialized";
-        if (this.isStreaming)
-        {
+        if (this.isStreaming) {
             await this.sensor.StopMeasuring(true);
             await sleep(100);
             await this.sensor.StopStreaming();
@@ -73,35 +64,35 @@ export class SensorWorker
         }
     }
 
-    public async SetExternalSpeedSensorState(state: boolean)
-    {
+    public async SetExternalSpeedSensorState(state: boolean) {
         await this.sensor.SetExternalSensorState(state);
-    }  
-
-    public async SetSpeedPeriod (period: number)
-    {
-        await this.sensor.SetSpeedPeriod(period);
-    }  
-
-    public async SetAverageRatio(avg: number)
-    {
-        await this.sensor.SetAvgRatio(avg);
-    }   
-
-    public async Close()
-    {
-        if (!this.isInit) throw "Sersor is not initialized";
-
-        await this.sensor.StopStreaming();
-        await this.sensor.CloseConnection();
-        this.isStreaming = false;
-        this.isReading = false;
     }
 
-    startReading = async () =>
-    {
+    public async SetSpeedPeriod(period: number) {
+        await this.sensor.SetSpeedPeriod(period);
+    }
+
+    public async SetAverageRatio(avg: number) {
+        await this.sensor.SetAvgRatio(avg);
+    }
+
+    public async Close() {
+        if (!this.isInit) throw "Sersor is not initialized";
+
+        try
+        {
+            await this.sensor.StopStreaming();
+        }
+        finally
+        {
+            await this.sensor.CloseConnection();
+            this.isStreaming = false;
+            this.isReading = false;
+        }
+    }
+
+    startReading = async () => {
         await this.sensor.StartMeasuring(false);
-        await sleep(60);
         await this.sensor.StartMeasuring(true);
     }
 }

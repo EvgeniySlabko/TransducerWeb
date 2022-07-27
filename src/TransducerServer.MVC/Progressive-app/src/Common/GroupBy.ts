@@ -1,5 +1,5 @@
 
-export function groupBy<T, K> (arr: T[], keySelector: (el: T) => K) : [K, T[]][] {
+export function groupBy<T, K>(arr: T[], keySelector: (el: T) => K): [K, T[]][] {
 
     let result = new Array<[K, T[]]>();
     arr.forEach(el => {
@@ -8,8 +8,8 @@ export function groupBy<T, K> (arr: T[], keySelector: (el: T) => K) : [K, T[]][]
         if (index != -1)
             result[index][1].push(el);
         else
-            result.push([key, [el]]);            
+            result.push([key, [el]]);
     });
 
     return result;
-  };
+};

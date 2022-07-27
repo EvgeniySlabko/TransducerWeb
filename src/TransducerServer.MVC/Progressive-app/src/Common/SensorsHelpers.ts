@@ -1,17 +1,14 @@
-import { SensorWorker } from "../Sensor/SensorWorker";
-import { ISingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/ISensor";
+import { ISingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
 
-export async function GetMinAvgFactor(sensors: ISingleComponentSensor[])
-{
+export async function GetMinAvgFactor(sensors: ISingleComponentSensor[]) {
     let avgFactors = [1];
 
-    sensors.forEach(async (s)  => {
-        try
-        {
+    sensors.forEach(async (s) => {
+        try {
             let regs = await s.GetHoldingRegisters();
             avgFactors.push(regs.AverageRatio);
         }
-        catch{
+        catch {
             console.log("Error while getting holding registers");
         }
     });

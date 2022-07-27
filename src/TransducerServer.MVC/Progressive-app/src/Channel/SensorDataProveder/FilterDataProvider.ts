@@ -1,3 +1,6 @@
+//TO DO filter
+
+/*
 import { EventDispatcher, IEvent, ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
 import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor";
@@ -6,7 +9,6 @@ import { ISensorDataProvider } from "./ISensorDataProvider";
 
 //буферизирует данные
 
-/*
 export class FilterDataProvider implements ISensorDataProvider
 {
     private _onData = new EventDispatcher<ISingleComponentSensor, dataEventArgs>();

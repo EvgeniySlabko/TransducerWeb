@@ -1,103 +1,100 @@
 import React from 'react';
 import { Checkbox, Collapse, InputNumber, Modal, Slider } from 'antd';
-import { ViewController } from '../ViewsControllers/PlotViewController';
+import { PlotsManager } from '../uPlot/plotsManager';
 import { ChannelsGroup } from '../Channel/AllChannelsFactory';
 import { HexColorPicker } from 'react-colorful';
 import { MenuItem } from './MenuItem';
 
 const { Panel } = Collapse;
 
-  export interface Props {
-    group: ChannelsGroup,
-    plotViewController?: ViewController;
-    visible: boolean;
-    onClose: () => void;
+export interface Props {
+  group: ChannelsGroup,
+  plotsManager?: PlotsManager;
+  visible: boolean;
+  onClose: () => void;
+}
+
+interface IState {
+  accurency: number
+  color: string
+  limits?: boolean
+}
+
+export class CellModal extends React.Component<Props, IState>{
+
+  constructor(prop: Props) {
+    super(prop);
+    this.state = {
+      accurency: this.props.group.cellChannel.Style.accurency,
+      color: this.props.group.cellChannel.Style.fontStyle,
+      limits: this.props.group.plotChannel.Style.drawLimits
+    }
   }
 
-  interface IState {
-    accurency: number
-    color: string
-    limits?: boolean
+  colorChangeHandler = (color: string) => {
+    this.setState((prev, props) => ({ color: color, }));
   }
 
-  export class CellModal extends React.Component<Props, IState>{
-    
-    constructor(prop: Props)
-    {
-      super(prop);
-      this.state = {
-        accurency: this.props.group.cellChannel.Style.accurency,
-        color: this.props.group.cellChannel.Style.fontStyle,
-        limits: this.props.group.plotChannel.Style.drawLimits
-      }
-    }
+  onOk = () => {
+    this.props.group.cellChannel.Style.accurency = this.state.accurency;
+    this.props.group.plotChannel.Style.color = this.state.color;
+    this.props.group.savingChannel.Style.color = this.state.color;
+    this.props.group.cellChannel.Style.fontStyle = this.state.color;
 
-    colorChangeHandler = (color: string) => {
-      this.setState((prev, props) => ({color: color,}));
-    }
+    this.props.group.plotChannel.Style.drawLimits = this.state.limits;
+    this.props.group.savingChannel.Style.drawLimits = this.state.limits;
+  }
 
-    onOk = () =>
-    {
-      this.props.group.cellChannel.Style.accurency = this.state.accurency;
-      this.props.group.plotChannel.Style.color = this.state.color;
-      this.props.group.savingChannel.Style.color = this.state.color;
-      this.props.group.cellChannel.Style.fontStyle = this.state.color;
-        
-      this.props.group.plotChannel.Style.drawLimits = this.state.limits;
-      this.props.group.savingChannel.Style.drawLimits = this.state.limits;
-    }
+  limitHandler = (state: boolean) => {
+    this.setState((prev, props) => ({ limits: state, }));
+  }
 
-    limitHandler = (state: boolean) =>{
-      this.setState((prev, props) => ({limits: state,}));
-    }
+  changeAccurency = (accurency: number) => {
+    this.setState((prev, props) => ({ accurency: accurency }));
+  }
 
-    changeAccurency = (accurency: number) =>
-    {
-      this.setState((prev, props) => ({accurency: accurency}));
-    }
-
-    render() {
-      return (
-        <div onClick={e => e.stopPropagation()}>
-          <Modal title="Параметры датчика" 
-          visible={this.props.visible} 
+  render() {
+    return (
+      <div onClick={e => e.stopPropagation()}>
+        <Modal title="Параметры датчика"
+          visible={this.props.visible}
           cancelButtonProps={{ style: { display: 'none' } }}
           onOk={event => { this.onOk(); this.props.onClose(); }}
           centered={false}>
-            <div className='vertical-flex'>
+          <div className='vertical-flex'>
 
-              <MenuItem label='Шрифт:' children={
-                <Slider style={{width: "200px"}} 
-                defaultValue={this.props.group.cellChannel.Style.fontSize} 
-                disabled={false} min = {10} max = {50} 
-                onChange = {(e) => { this.props.group.cellChannel.Style.fontSize = e; }} />
-              }/>
-            
-              <MenuItem label='Цвет графика:' children={
-                <HexColorPicker color={this.props.group.cellChannel.Style.fontStyle} onChange={this.colorChangeHandler} />
-              }/>
-            
-              <MenuItem label='Знаков после запятой:' children={
-                <InputNumber className='vertical-alignment' step = {1} size="small" style={{height: "25px" }} min={0} max={5} value={this.state.accurency} onChange={this.changeAccurency} />
-              }/>
+            <MenuItem label='Шрифт:' children={
+              <Slider style={{ width: "200px" }}
+                defaultValue={this.props.group.cellChannel.Style.fontSize}
+                disabled={false} min={10} max={50}
+                onChange={(e) => { this.props.group.cellChannel.Style.fontSize = e; }} />
+            } />
 
-              <MenuItem label='Пределы измерений:' children={
-                <Checkbox disabled={this.props.group.cellChannel.Style.limits === undefined}
-                defaultChecked = {this.state != undefined && this.props.group.plotChannel.Style.drawLimits}
-                onChange={(s) => this.limitHandler(s.target.checked)}/>
-              }/>
-            
+            <MenuItem label='Цвет графика:' children={
+              <HexColorPicker color={this.props.group.cellChannel.Style.fontStyle} onChange={this.colorChangeHandler} />
+            } />
+
+            <MenuItem label='Знаков после запятой:' children={
+              <InputNumber className='vertical-alignment' step={1} size="small" style={{ height: "25px" }} min={0} max={5} value={this.state.accurency} onChange={this.changeAccurency} />
+            } />
+
+            <MenuItem label='Пределы измерений:' children={
+              <Checkbox disabled={this.props.group.cellChannel.Style.limits === undefined}
+                defaultChecked={this.state != undefined && this.props.group.plotChannel.Style.drawLimits}
+                onChange={(s) => this.limitHandler(s.target.checked)} />
+            } />
+
           </div>
-          </Modal>
-        </div>
-      )
-    }
+        </Modal>
+      </div>
+    )
   }
+}
 
 
-  /*
-  <InputNumber step={0.01 * this.props.group.node.fullSensorInfo.MaxValue}
-            style={{ width: "auto" }}
-            min={0} max={this.props.group.node.fullSensorInfo.MaxValue}
-            value={this.state.treshold} onChange={this.tresholdChanged} />
-  */
+/*
+<InputNumber step={0.01 * this.props.group.node.fullSensorInfo.MaxValue}
+          style={{ width: "auto" }}
+          min={0} max={this.props.group.node.fullSensorInfo.MaxValue}
+          value={this.state.treshold} onChange={this.tresholdChanged} />
+*/

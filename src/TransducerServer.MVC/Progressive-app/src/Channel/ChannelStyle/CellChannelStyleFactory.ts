@@ -2,10 +2,10 @@
 import { CalculatePower } from "../../Common/Common";
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { CellChannelStyle } from "./CellChannelStyle";
-import { powerBaseColor, speedBaseColor, tmpBaseColor, torqueBaseColor } from "./StyleCommon";
+import { powerBaseColor, speedBaseColor, tmpBaseColor, torqueBaseColor } from "./ColorsDefinitions";
 
 let count: number = 0;
-export function CreateDefaultCellStyle() : CellChannelStyle{
+export function CreateDefaultCellStyle(): CellChannelStyle {
     return {
         id: count++,
         sensorId: Math.random(),
@@ -18,16 +18,16 @@ export function CreateDefaultCellStyle() : CellChannelStyle{
         accurency: 2,
         valueType: "torque",
         visible: true,
-    } 
+    }
 }
 
-export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo) : CellChannelStyle{
+export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo): CellChannelStyle {
     return {
         id: count++,
         sensorId: sensorInfo.id,
         valueName: sensorInfo.ValueName,
         unitsName: sensorInfo.UnitValueName,
-        cellStyle:"cell-torque-style",
+        cellStyle: "cell-torque-style",
         fontSize: 15,
         fontStyle: torqueBaseColor,
         sensorType: sensorInfo.SensorType,
@@ -40,7 +40,7 @@ export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo) : CellChannelS
     }
 }
 
-export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo) : CellChannelStyle{
+export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo): CellChannelStyle {
     return {
         id: count++,
         sensorId: sensorInfo.id,
@@ -55,10 +55,10 @@ export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo) : CellChannelSt
         maxValue: sensorInfo.MaxSpeed,
         limits: false,
         visible: true,
-    } 
+    }
 }
 
-export function CreatetemperatureCellStyle(sensorInfo: FullSensorInfo) : CellChannelStyle{
+export function CreatetemperatureCellStyle(sensorInfo: FullSensorInfo): CellChannelStyle {
     return {
         id: count++,
         sensorId: sensorInfo.id,
@@ -74,7 +74,7 @@ export function CreatetemperatureCellStyle(sensorInfo: FullSensorInfo) : CellCha
     }
 }
 
-export function CreatePowerCellStyle(sensorInfo: FullSensorInfo) : CellChannelStyle{
+export function CreatePowerCellStyle(sensorInfo: FullSensorInfo): CellChannelStyle {
     return {
         id: count++,
         sensorId: sensorInfo.id,
@@ -90,5 +90,5 @@ export function CreatePowerCellStyle(sensorInfo: FullSensorInfo) : CellChannelSt
         minValue: CalculatePower(sensorInfo.MaxSpeed, sensorInfo.MinValue),
         limits: false,
         visible: true,
-    } 
+    }
 }

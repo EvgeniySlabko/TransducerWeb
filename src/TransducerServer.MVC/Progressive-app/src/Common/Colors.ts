@@ -1,4 +1,4 @@
-export var ColorsDefs = 
+export var ColorsDefs =
 {
     red: "#FF0000",
     green: "#005000",

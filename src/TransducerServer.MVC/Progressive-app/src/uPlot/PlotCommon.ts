@@ -1,23 +1,42 @@
+import { Axis, Scale, Series } from "uplot";
 
-
-export function AxeRangeChangeHandler(range: number[], dy: number)
-{
-    let curRangeVal = range[1] - range[0];
-
-    //вычисляем относительное смещение 
-    let dVal = curRangeVal * dy;
-
-    range[0] += dVal;
-    range[1] += dVal;
+export type SeriesValue = (number | null | undefined)
+export function GetSeries(scale: string) : Series {
+    return {
+        label: "Undefined",
+        stroke: "red",
+        scale: scale,
+        points: {
+            stroke: "green",
+        },
+        
+        show: true,
+    }
 }
 
-export function AxeWheelChangeHandler(range: number[], dy: number)
-{
-    let curRangeVal = range[1] - range[0];
-
-    //вычисляем относительное смещение 
-    let dVal = curRangeVal * dy;
-
-    range[0] += dVal;
-    range[1] += dVal;
+export function GetXAxe() : Axis {
+    return {
+        show: true,
+    }
 }
+
+export function GetScale() : Scale{
+    return {
+        auto: false,
+        distr: 1,
+        time: false,
+    }
+}
+
+export function GetDefaultAxe(scale: string, side: number) : Axis {
+    return {
+        grid:{
+            show: false,
+        },
+        scale: scale,
+        show: false,
+        space: 20,
+        side: side,
+    }
+}
+

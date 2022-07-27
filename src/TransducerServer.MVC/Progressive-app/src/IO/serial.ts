@@ -1,61 +1,53 @@
 import { SimpleEventDispatcher } from "strongly-typed-events";
 
-export class SerialWorker
-{
-  public readAttempts: number = 10;
-  public delaybetweenAttempts: number = 10;
+export class SerialWorker {
 
   private _onDisconnect = new SimpleEventDispatcher<SerialWorker>();
   private _onConnect = new SimpleEventDispatcher<SerialWorker>();
-  
-  private readonly port : SerialPort;
+
+  private readonly port: SerialPort;
   private reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
-  private writer: WritableStreamDefaultWriter<Uint8Array> | undefined;   
-  
+  private writer: WritableStreamDefaultWriter<Uint8Array> | undefined;
+
   constructor(port: SerialPort) {
-    if (port == null)
-      throw "Port is null";
+    if (port == null) throw "Port is null";
 
     this.port = port
     port.onconnect = (event: Event) => {
-      console.log("connect");
+      // console.log("connect");
       this._onConnect.dispatch(this);
     }
 
-    port.ondisconnect = (event: Event) =>{
-      console.log("disconnect");
+    port.ondisconnect = (event: Event) => {
+      // console.log("disconnect");
       this._onDisconnect.dispatch(this);
     }
   }
 
-  public async OpenPort()
-  {
+  public async OpenPort() {
     await this.port.open(
-    {
+      {
         baudRate: 115200,
-        bufferSize : 50000,
-        dataBits : 8,
-        flowControl :"none",
-        parity : "none",
-        stopBits : 1,
-    });
+        bufferSize: 50000,
+        dataBits: 8,
+        flowControl: "none",
+        parity: "none",
+        stopBits: 1,
+      });
 
-    if (this.port.readable != null && this.port.writable != null)
-    {
+    if (this.port.readable != null && this.port.writable != null) {
       this.reader = this.port.readable.getReader();
       this.writer = this.port.writable.getWriter();
-      
+
       await this.writer.ready;
     }
-    else
-    {
+    else {
       await this.port.close();
       throw "Port unreadable or unwritable.";
     }
   }
 
-  public get IsConnected() : boolean
-  {
+  public get IsConnected(): boolean {
     return this.port.readable != null && this.port.writable != null;
   }
 
@@ -67,29 +59,22 @@ export class SerialWorker
     return this._onConnect.asEvent();
   }
 
-  public async GetChunk() : Promise<Uint8Array>
-  {
-    if (this.reader == undefined || this.reader == null) throw "Reader undefined";
+  public async GetChunk(): Promise<Uint8Array> {
+    let result = await this.reader!.read();
 
-    let result = await this.reader.read();
-
-    if (!result.done)
-    {
+    if (!result.done) {
       return result.value;
     }
-    else
-    {
-      throw "no data";
+    else {
+      throw "No data";
     }
   }
-    
-  public async write(bytes: Uint8Array) : Promise<void>  {
-    if (this.writer == undefined || this.writer == null) throw "Writer undefined";
 
-    await this.writer.write(bytes);
+  public async write(bytes: Uint8Array): Promise<void> {
+    await this.writer!.write(bytes);
   }
 
-    public async Close() : Promise<void>{
+  public async Close(): Promise<void> {
     this.reader?.cancel();
     this.reader?.releaseLock();
     this.writer?.releaseLock();

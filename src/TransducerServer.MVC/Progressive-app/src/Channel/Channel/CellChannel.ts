@@ -1,38 +1,36 @@
 import { EventDispatcher } from "strongly-typed-events";
-import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
-import { dataEventArgs, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
+import { SensorData, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { CellChannelStyle } from "../ChannelStyle/CellChannelStyle";
 import { CreateDefaultCellStyle } from "../ChannelStyle/CellChannelStyleFactory";
 import { ISensorDataProvider } from "../SensorDataProveder/ISensorDataProvider";
 
 export type ChannelDataArgs =
-{
-    sensor: ISingleComponentSensor;
-    data: dataEventArgs;
-}
+    {
+        sensor: ISingleComponentSensor;
+        data: SensorData;
+    }
 
 export type ChannelMessageArgs =
-{
-    sensor: ISingleComponentSensor;
-    sensorMsgArgs: SensorMessageEventArgs;
-}
+    {
+        sensor: ISingleComponentSensor;
+        sensorMsgArgs: SensorMessageEventArgs;
+    }
 
 export type ChannelCloseArgs =
-{
-    sensor: ISingleComponentSensor;
-    msg: string;
-}
+    {
+        sensor: ISingleComponentSensor;
+        msg: string;
+    }
 
-export class CellChannel
-{
+export class CellChannel {
     private style: CellChannelStyle;
 
     private _onData = new EventDispatcher<CellChannel, ChannelDataArgs>();
-    private _onMessage = new EventDispatcher<CellChannel,ChannelMessageArgs>();
+    private _onMessage = new EventDispatcher<CellChannel, ChannelMessageArgs>();
     private _onClose = new EventDispatcher<CellChannel, ChannelCloseArgs>();
 
-    constructor(dataSourсe: ISensorDataProvider, style: CellChannelStyle = CreateDefaultCellStyle())
-    {
+    constructor(dataSourсe: ISensorDataProvider, style: CellChannelStyle = CreateDefaultCellStyle()) {
         this.style = style;
         dataSourсe.onData?.sub((sensor, args) => {
             this._onData.dispatch(this, {
@@ -56,16 +54,15 @@ export class CellChannel
         });
     }
 
-    public get Style()
-    {
+    public get Style() {
         return this.style;
     }
-    
-    public get onData() {return this._onData.asEvent();}
 
-    public get onMessage() {return this._onMessage.asEvent();}
+    public get onData() { return this._onData.asEvent(); }
 
-    public get onError() {return this._onClose.asEvent();} //chandge
+    public get onMessage() { return this._onMessage.asEvent(); }
 
-    public get onClose() {return this._onClose.asEvent();}
+    public get onError() { return this._onClose.asEvent(); } //chandge
+
+    public get onClose() { return this._onClose.asEvent(); }
 }

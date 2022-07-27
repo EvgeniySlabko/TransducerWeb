@@ -1,9 +1,8 @@
-import { SimpleEventDispatcher } from 'strongly-typed-events';
-import { ValueType } from './StyleCommon';
+import { ValueType } from './ColorsDefinitions';
 
 
-export class ChannelStyle{  
-    sensorId: number = 0;      
+export class ChannelStyle {
+    sensorId: number = 0;
     color: string = "green";
     grid: boolean = false;
     unitName: string = "Nm";
@@ -20,7 +19,7 @@ export class ChannelStyle{
     width: number = 1;
     legendValueAcurency: number = 2;
     drawLimits?: boolean = false;
-    mnogitel: number  = 1;
+    mnogitel: number = 1;
     minValue?: number;
     maxValue?: number;
 }

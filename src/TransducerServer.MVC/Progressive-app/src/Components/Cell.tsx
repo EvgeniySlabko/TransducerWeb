@@ -1,7 +1,7 @@
 import React from 'react';
 import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Channel/CellChannel';
 import { Button, Checkbox, Collapse, InputNumber, Row, Slider } from 'antd';
-import { ViewController } from '../ViewsControllers/PlotViewController';
+import { PlotsManager } from '../uPlot/plotsManager';
 import { ChannelsGroup } from '../Channel/AllChannelsFactory';
 import { CellModal } from './CellModal';
 import { SettingOutlined } from '@ant-design/icons';
@@ -9,118 +9,112 @@ import { CellValue } from './CellValue';
 
 const { Panel } = Collapse;
 
-  export interface Props {
-   channelGroup: ChannelsGroup;
-   plotViewController?: ViewController;
-   allowSettings: boolean,
+export interface Props {
+  channelGroup: ChannelsGroup;
+  plotsManager?: PlotsManager;
+  allowSettings: boolean,
+}
+
+interface IState {
+  value: string,
+  hide: boolean,
+  overload: boolean,
+  modalVisible: boolean,
+}
+
+export class Cell extends React.Component<Props, IState>{
+
+  constructor(prop: Props) {
+    super(prop);
+
+    this.state = {
+      hide: false,
+      value: "",
+      overload: false,
+      modalVisible: false
+    }
+
+    this.props.channelGroup.cellChannel.onClose.sub(this.closeHandler);
+    this.props.channelGroup.cellChannel.onData.sub(this.dataHandler);
   }
 
-   interface IState {
-    value: string,
-    hide: boolean,
-    overload: boolean,
-    modalVisible: boolean,
-   }
+  closeHandler = (channel: CellChannel, args: ChannelCloseArgs) => {
+    this.setState((prev, props) => ({
+      value: ""
+    }));
 
-  export class Cell extends React.Component<Props, IState>{
+    this.props.channelGroup.cellChannel.onClose.unsub(this.closeHandler);
+    this.props.channelGroup.cellChannel.onData.unsub(this.dataHandler);
+  }
 
-    constructor(prop: Props)
-    {
-      super(prop);
-
-      this.state = {
-        hide: false,
-        value: "",
-        overload: false,
-        modalVisible: false
-      }
-      
-      this.props.channelGroup.cellChannel.onClose.sub(this.closeHandler);
-      this.props.channelGroup.cellChannel.onData.sub(this.dataHandler);
+  dataHandler = (channel: CellChannel, args: ChannelDataArgs) => {
+    let value = args.data.data[0];
+    let overload = false;
+    if (this.props.channelGroup.cellChannel.Style.minValue && value <= this.props.channelGroup.cellChannel.Style.minValue) {
+      overload = true;
     }
 
-    closeHandler = (channel: CellChannel, args: ChannelCloseArgs) =>
-    {
-        this.setState((prev, props) => ({
-          value: ""
-        }));
-
-        this.props.channelGroup.cellChannel.onClose.unsub(this.closeHandler);
-        this.props.channelGroup.cellChannel.onData.unsub(this.dataHandler);
+    if (this.props.channelGroup.cellChannel.Style.maxValue && value >= this.props.channelGroup.cellChannel.Style.maxValue) {
+      overload = true;
     }
 
-    dataHandler = (channel: CellChannel, args: ChannelDataArgs) =>
-    {
-      let value = args.data.data[0];
-      let overload = false;
-      if (this.props.channelGroup.cellChannel.Style.minValue && value <= this.props.channelGroup.cellChannel.Style.minValue)
-      {
-        overload = true;
-      }
-
-      if (this.props.channelGroup.cellChannel.Style.maxValue && value >= this.props.channelGroup.cellChannel.Style.maxValue)
-      {
-        overload = true;
-      }
-
-      if (this.state.overload != overload)
-      {
-        this.setState((prev, props) => ({
-          overload: overload,
-        }));
-      }
-
+    if (this.state.overload != overload) {
       this.setState((prev, props) => ({
-        value: args.data.data[0].toFixed(this.props.channelGroup.cellChannel.Style.accurency),
+        overload: overload,
       }));
     }
 
-    limitHandler = (state: boolean) =>{
-      this.props.channelGroup.plotChannel.Style.drawLimits = state;
-    }
+    this.setState((prev, props) => ({
+      value: args.data.data[0].toFixed(this.props.channelGroup.cellChannel.Style.accurency),
+    }));
+  }
 
-    onModalClose =() =>{
-      this.setState((prev, props) => ({
-        modalVisible: false,
-      }));
-    }
+  limitHandler = (state: boolean) => {
+    this.props.channelGroup.plotChannel.Style.drawLimits = state;
+  }
 
-    onShow = () => {
-      this.setState((prev, props) => ({
-        modalVisible: true,
-      }));
-    }
-    render(){
-      return (
-        <div className='measure-box'>
+  onModalClose = () => {
+    this.setState((prev, props) => ({
+      modalVisible: false,
+    }));
+  }
 
-          <div className='horizontal-flex'>
-            
-            <div className={`cell-name`} 
-                style = {{color: this.props.channelGroup.cellChannel.Style.fontStyle, background: this.state.overload ? "red" : "white"}} >
-                {this.props.channelGroup.cellChannel.Style.valueName + ` ${"(" + this.props.channelGroup.cellChannel.Style.unitsName + ")"}`}
-            </div>
-              
-            <Button className='horizontal-padding'
-            onClick={event => { event.stopPropagation(); this.onShow(); } } 
-            key={1} 
-            icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); } } />} />
+  onShow = () => {
+    this.setState((prev, props) => ({
+      modalVisible: true,
+    }));
+  }
+  render() {
+    return (
+      <div className='measure-box'>
 
+        <div className='horizontal-flex'>
 
-            <CellModal 
-            group = {this.props.channelGroup} 
-            plotViewController={this.props.plotViewController} 
-            visible={this.state.modalVisible} 
-            onClose={ this.onModalClose }/>
-            
+          <div className={`cell-name`}
+            style={{ color: this.props.channelGroup.cellChannel.Style.fontStyle, background: this.state.overload ? "red" : "white" }} >
+            {this.props.channelGroup.cellChannel.Style.valueName + ` ${"(" + this.props.channelGroup.cellChannel.Style.unitsName + ")"}`}
           </div>
 
-          <CellValue fontSize={this.props.channelGroup.cellChannel.Style.fontSize}
+          <Button className='horizontal-padding'
+            onClick={event => { event.stopPropagation(); this.onShow(); }}
+            key={1}
+            icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); }} />} />
+
+
+          <CellModal
+            group={this.props.channelGroup}
+            plotsManager={this.props.plotsManager}
+            visible={this.state.modalVisible}
+            onClose={this.onModalClose} />
+
+        </div>
+
+        <CellValue fontSize={this.props.channelGroup.cellChannel.Style.fontSize}
           fontStyle={this.props.channelGroup.cellChannel.Style.fontStyle}
           hide={this.state.hide}
-          value={this.state.value}/>
-          
-        </div>
-      )
-    }
+          value={this.state.value} />
+
+      </div>
+    )
   }
+}

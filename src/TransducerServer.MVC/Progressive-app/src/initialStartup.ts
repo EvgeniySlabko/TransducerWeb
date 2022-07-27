@@ -1,14 +1,14 @@
-import { ViewController as PlotViewController } from "./ViewsControllers/PlotViewController";
-import { RecordController } from "./RecordController";
-import { SensorController } from "./SensorController";
+import { PlotsManager as PlotsManager } from "./uPlot/plotsManager";
+import { RecordManager } from "./ReportListener/RecordManager";
+import { SensorController } from "./Sensor/SensorsManager/SensorsManager";
 import { ParamsStorage } from "./Storage/Storage";
-import * as fs from 'fs';
 
 // Хронить сернсоры. Дает себытия подключения отключения
 export var sensorService: SensorController = new SensorController();
 
-export var plotViewController : PlotViewController;
+// manager for main plot
+export var plotsManager: PlotsManager;
 
-export var recordController : RecordController = new RecordController();
+export var recordController: RecordManager = new RecordManager();
 
-export var storage : ParamsStorage = new ParamsStorage();
+export var storage: ParamsStorage = new ParamsStorage();

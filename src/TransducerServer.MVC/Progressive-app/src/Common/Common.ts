@@ -4,8 +4,8 @@ export async function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function CalculatePower(speed: number, torque: number) : number {
-    return  torque * 2 *Math.PI * speed /60;
+export function CalculatePower(speed: number, torque: number): number {
+    return torque * 2 * Math.PI * speed / 60;
 }
 
 export function hashCode(str: string): number {
@@ -18,42 +18,39 @@ export function hashCode(str: string): number {
 
 export function getRandomInt(max: number) {
     return Math.floor(Math.random() * max);
-  }
+}
 
 
-export function nearestPoint(arr: (number | null | undefined)[] , index: number, maxCount: number) : number | undefined | null
-{
+export function nearestPoint(arr: (number | null | undefined)[], index: number, maxCount: number): number | undefined | null {
     if (arr[index] === null)
-        return undefined; 
+        return undefined;
     if (arr[index] !== undefined)
-        return arr[index] as number; 
-    
+        return arr[index] as number;
+
 
     let left = index;
     let right = index;
     let curIter = 0
-    do
-    {
-        if (arr[left] !== undefined) 
+    do {
+        if (arr[left] !== undefined)
             return arr[left];
 
         if (left != 0)
-            left -=1;
-        
-        if (arr[right] !== undefined) 
+            left -= 1;
+
+        if (arr[right] !== undefined)
             return arr[right];
 
         if (right != arr.length - 1)
             right += 1;
-        
+
         curIter += 1;
-    } while(curIter <= maxCount);
+    } while (curIter <= maxCount);
 
     return undefined;
 }
 
-export function getEmptyAlignedData(startTime: number, dt: number, segments:number, length: number) : AlignedData
-{
+export function getEmptyAlignedData(startTime: number, dt: number, segments: number, length: number): AlignedData {
     let currentTime = startTime;
     let timeArr = new Array<number>(length);
     for (let i = 0; i < length; i++) {
@@ -72,12 +69,12 @@ export function getEmptyAlignedData(startTime: number, dt: number, segments:numb
     return [timeArr, ...dataArrs];
 }
 
-export function increase_brightness(hex: string, percent: number){
+export function increase_brightness(hex: string, percent: number) {
     // strip the leading # if it's there
     hex = hex.replace(/^\s*#|\s*$/g, '');
 
     // convert 3 char codes --> 6, e.g. `E0F` --> `EE00FF`
-    if(hex.length == 3){
+    if (hex.length == 3) {
         hex = hex.replace(/(.)/g, '$1$1');
     }
 
@@ -86,32 +83,30 @@ export function increase_brightness(hex: string, percent: number){
         b = parseInt(hex.substr(4, 2), 16);
 
     return '#' +
-       ((0|(1<<8) + r + (256 - r) * percent / 100).toString(16)).substr(1) +
-       ((0|(1<<8) + g + (256 - g) * percent / 100).toString(16)).substr(1) +
-       ((0|(1<<8) + b + (256 - b) * percent / 100).toString(16)).substr(1);
+        ((0 | (1 << 8) + r + (256 - r) * percent / 100).toString(16)).substr(1) +
+        ((0 | (1 << 8) + g + (256 - g) * percent / 100).toString(16)).substr(1) +
+        ((0 | (1 << 8) + b + (256 - b) * percent / 100).toString(16)).substr(1);
 }
 
-export async function CreateTxtFileDialog(fileName?: string)
-{
+export async function CreateTxtFileDialog(fileName?: string) {
     const result = await window.showSaveFilePicker({
         suggestedName: fileName ? fileName : "Report.txt",
         types: [{
             description: 'Text file',
-            accept: {'text/plain': ['.txt']},
-          }],
+            accept: { 'text/plain': ['.txt'] },
+        }],
     });
 
     return result;
 }
 
-export async function CreateCsvFileDialog(fileName?: string)
-{
+export async function CreateCsvFileDialog(fileName?: string) {
     const result = await window.showSaveFilePicker({
         suggestedName: fileName ? fileName : "Report.csv",
         types: [{
             description: "CSV file",
-            accept: {"text/csv": [".csv"]}
-          }]
+            accept: { "text/csv": [".csv"] }
+        }],
     });
 
     return result;

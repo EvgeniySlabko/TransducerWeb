@@ -1,4 +1,3 @@
-
 .cell-container {
 	display: flex;
 	flex-direction: column;
@@ -16,14 +15,14 @@
 	flex-direction: row;
 }
 
-.cell-name{
+.cell-name {
 	font-size: 15px;
 	font-weight: bold;
 	width: 100%;
 	height: auto;
 	display: flex;
-  	align-items: center;
-  	justify-content: center;
+	align-items: center;
+	justify-content: center;
 }
 
 .cell-units {
@@ -33,11 +32,11 @@
 	margin-right: 2px;
 }
 
-.cell-measure-content{
+.cell-measure-content {
 	font-size: 30px;
 	height: auto;
 	width: 100%;
-	display:flex;
+	display: flex;
 	flex-direction: end;
 	flex-flow: row-reverse wrap-reverse;
 }
@@ -48,7 +47,7 @@
 	user-select: none;
 }
 
-.cells-box{
+.cells-box {
 	align-items: center;
 	flex-wrap: nowrap;
 	flex-direction: column;
@@ -57,7 +56,7 @@
 	height: 100%;
 }
 
-.right-column{
+.right-column {
 	text-align: right;
 	float: right;
 	margin: auto;
@@ -66,31 +65,31 @@
 	padding-right: 2px;
 }
 
-.table{
+.table {
 	margin-bottom: 0px !important;
 	height: auto;
 }
 
-th{
+th {
 	padding-bottom: 1em;
 	padding: 0px !important;
 }
 
-.table{
+.table {
 	height: auto;
 	table-layout: fixed;
 	font-size: 20px;
 }
 
-thead{
+thead {
 	border-bottom: 0px !important;
 }
 
-.width-auto{
+.width-auto {
 	white-space: nowrap;
 	width: auto;
 }
 
-.margin-bottom{
+.margin-bottom {
 	margin-bottom: 2px;
 }

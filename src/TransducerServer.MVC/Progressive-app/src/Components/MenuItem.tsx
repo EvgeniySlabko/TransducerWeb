@@ -1,36 +1,34 @@
 import React from 'react';
 import { Checkbox, Collapse, InputNumber, Modal, notification } from 'antd';
 import { Group } from './App';
-import { ViewController } from '../ViewsControllers/PlotViewController';
+import { PlotsManager } from '../uPlot/plotsManager';
 import { ParamsStorage } from '../Storage/Storage';
 const { Panel } = Collapse;
 
-  export interface Props {
-    children: React.ReactElement,
-    label: string,
-    className?: string,
+export interface Props {
+  children: React.ReactElement,
+  label: string,
+  className?: string,
+}
+
+export class MenuItem extends React.Component<Props>{
+
+  constructor(prop: Props) {
+    super(prop);
   }
 
-  export class MenuItem extends React.Component<Props>{
-    
-    constructor(prop: Props)
-    {
-      super(prop);
-    }
-
-    render() {
-        const children = this.props.children;
-      return (
-        <>
+  render() {
+    const children = this.props.children;
+    return (
+      <>
         <div className={this.props.className ? this.props.className : 'horizontal-flex'}>
-            <label className='margin vertical-align'>{this.props.label}</label>
-            <div className='margin horizontal-flex'>
-                {this.props.children}
-            </div>
+          <label className='margin vertical-align'>{this.props.label}</label>
+          <div className='margin horizontal-flex'>
+            {this.props.children}
+          </div>
         </div>
-            
-        </>
-      )
-    }
+
+      </>
+    )
   }
-  
+}

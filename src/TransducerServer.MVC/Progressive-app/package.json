@@ -44,7 +44,6 @@
   "scripts": {
     "build": "npx webpack-cli build",
     "start": "npx webpack serve",
-    "css": "postcss -u autoprefixer -r css/*",
     "snyk-protect": "snyk protect",
     "prepublish": "npm run snyk-protect",
     "postinstall": "npx patch-package"

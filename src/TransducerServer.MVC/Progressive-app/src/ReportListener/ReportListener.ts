@@ -1,28 +1,19 @@
-import { ISensorDataProvider } from "../Channel/SensorDataProveder/ISensorDataProvider";
-import { dataEventArgs } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
-import { ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
-import { Channel, ChannelDataArgs } from "../Channel/Channel/Channel";
-import { Snapshot, TrackData } from "./Snapshot";
 import { ChannelCloseArgs } from "../Channel/Channel/CellChannel";
+import { ChannelDataArgs, PlotChannel } from "../Channel/Channel/PlotChannel";
+import { SensorData } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { Snapshot, TrackData } from "./Snapshot";
 
-export class ReportListener
-{
-    private channelMap : Map<Channel, Array<dataEventArgs>> = new Map();
+export class ReportListener {
+    private channelMap: Map<PlotChannel, Array<SensorData>> = new Map();
     private isListening: boolean = false;
     private isInit: boolean = false;
 
-    constructor()
-    {
-        
-    }
 
-    public SetChannels(channels: Channel[])
-    {
-        if (channels.length == 0)
-            throw "There are no channels for listening";
+    public SetChannels(channels: PlotChannel[]) {
+        if (channels.length == 0) throw "There are no channels for listening";
 
         channels.forEach(channel => {
-            this.channelMap.set(channel, new Array());
+            this.channelMap.set(channel, new Array<SensorData>());
             channel.onData.sub(this.DataHandler);
             channel.onClose.sub(this.CloseHandler);
         })
@@ -30,93 +21,77 @@ export class ReportListener
         this.isInit = true;
     }
 
-    public StartListening()
-    {
-        if(!this.isInit) throw "There are no channels for listening";
-        if(this.isListening) throw "Already listen";
+    public StartListening() {
+        if (!this.isInit) throw "There are no channels for listening";
+        if (this.isListening) throw "Already listen";
 
         this.isListening = true;
     }
 
-    public StopListening()
-    {
+    public StopListening() {
         this.isListening = false;
     }
 
-    public Clean()
-    {
+    public Clean() {
         this.channelMap.forEach((a, v) => {
-            a = new Array<dataEventArgs>();
+            a = new Array<SensorData>();
         });
     }
 
-    public Reset()
-    {
-        if(this.isListening) throw "Recording in progress";
+    public Reset() {
+        if (this.isListening) throw "Recording in progress";
         this.channelMap.forEach((a, v) => {
             v.onData.unsub(this.DataHandler);
         });
 
         this.channelMap = new Map();
         this.isInit = false;
-
     }
-    
-    public GetSnapshot() : Snapshot
-    {
-        if(!this.isInit) throw "There are no channels for listening";
-        if(this.isListening) throw "Stop listening for getting snapshot";
+
+    public GetSnapshot(): Snapshot {
+        if (!this.isInit) throw "There are no channels for listening";
+        if (this.isListening) throw "Stop listening for getting snapshot";
 
         var trackData = new Array<TrackData>();
-        
-        this.channelMap.forEach((k, v) => {
-            var dataArr : dataEventArgs = 
+
+        this.channelMap.forEach((sensorData, plotChannel) => {
+            var dataArr: SensorData =
             {
                 data: [],
                 time: []
             }
-            
-            k.forEach(d => {
-                d.data.forEach(d => dataArr.data.push(d))
-                d.time.forEach(t => dataArr.time.push(t))
+
+            sensorData.forEach(data => {
+                data.data.forEach(d => dataArr.data.push(d))
+                data.time.forEach(t => dataArr.time.push(t))
             });
 
             trackData.push({
                 data: dataArr,
-                style: v.Style,
-            } as TrackData);
+                style: plotChannel.Style,
+            });
         });
-        
+
         return new Snapshot(trackData);
     }
 
-    private DataHandler = (channel: Channel, args: ChannelDataArgs) =>
-    {
-        if (this.isListening)
-        {
-            if (this.channelMap.has(channel))
-            {
-                let buff = this.channelMap.get(channel);
+    private DataHandler = (channel: PlotChannel, args: ChannelDataArgs) => {
+        if (this.isListening) {
+            if (this.channelMap.has(channel)) {
+                let dataBuffer = this.channelMap.get(channel);
                 var copy = {
                     data: args.data.data.slice(),
                     time: args.data.time.slice(),
-                } as dataEventArgs
-                buff?.push(copy);
+                } as SensorData
+                dataBuffer?.push(copy);
             }
-            else
-                throw "Не удалось найти ключ";
         }
     }
 
-    private CloseHandler = (channel: Channel, args: ChannelCloseArgs) =>
-    {
-        if (this.channelMap.has(channel))
-        {
+    private CloseHandler = (channel: PlotChannel, args: ChannelCloseArgs) => {
+        if (this.channelMap.has(channel)) {
             channel.onData.unsub(this.DataHandler);
             channel.onClose.unsub(this.CloseHandler);
-            //this.channelMap.delete(channel);
-            //if (this.channelMap.size == 0)
-                //this.isInit = false;
         }
     }
 }

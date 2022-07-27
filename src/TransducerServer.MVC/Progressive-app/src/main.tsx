@@ -1,21 +1,17 @@
-require('../css/styles.css');
-require('../css/cellStyles.css');
-require('../css/grow.css');
-require('../css/measureCell.css');
-
-require('../uPlot/uPlot.iife');
-require('../uPlot/uPlot.min.css');
-require('../src/initialStartup');
-
+import 'antd/dist/antd.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { App } from './Components/App';
 import { recordController, sensorService, storage } from './initialStartup';
-import 'antd/dist/antd.css';
+
+require('../css/styles.css');
+require('../css/grow.css');
+require('../css/measureCell.css');
+require('../css/uPlot.min.css');
+require('../src/initialStartup');
 
 
-
-ReactDOM.render(<App sensorService={sensorService} 
-                     recordController={recordController}
-                     storage = {storage}
-                     ></App>, document.getElementById("root"));
+ReactDOM.render(<App 
+    sensorService={sensorService}
+    recordController={recordController}
+    storage={storage}/>, document.getElementById("root"));

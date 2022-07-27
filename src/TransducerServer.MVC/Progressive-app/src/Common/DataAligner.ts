@@ -1,12 +1,10 @@
-import { AlignedData } from "uplot";
-import { dataEventArgs } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { SensorData } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 
-export declare class DataAlignParams
-{
+export declare class DataAlignParams {
     dt: number; //интервал сетки выравнивания
 }
 
-export function AlignedData(data: dataEventArgs[], params: DataAlignParams) : (number | null | undefined)[][] {
+export function AlignedData(data: SensorData[], params: DataAlignParams): (number | null | undefined)[][] {
 
     let timeToIndex = (time: number) => Math.floor(time / params.dt);
 
@@ -14,23 +12,22 @@ export function AlignedData(data: dataEventArgs[], params: DataAlignParams) : (n
     if (firstTime < 0) firstTime = 0;
     let lastTime = GetLastTime(data);
     let lastIndex = timeToIndex(lastTime);
-    let firstIndex= timeToIndex(firstTime);
+    let firstIndex = timeToIndex(firstTime);
     let segmentSize = lastIndex - firstIndex;
 
     let matrix = new Array<(number | null | undefined)[]>(data.length + 1);
-    for (let i = 0; i < matrix.length; i++) 
+    for (let i = 0; i < matrix.length; i++)
         matrix[i] = new Array<(number | null | undefined)>(segmentSize);
 
     // set time grid;
-    for (let i = 0; i < matrix[0].length; i++) 
+    for (let i = 0; i < matrix[0].length; i++)
         matrix[0][i] = (i + firstIndex) * params.dt;
-    
+
     // set data;
     for (let i = 0; i < data.length; i++) {
         for (let j = 0; j < data[i].data.length; j++) {
             let index = timeToIndex(data[i].time[j]);
-            if (index >= firstIndex)
-            {
+            if (index >= firstIndex) {
                 matrix[i + 1][index - firstIndex] = data[i].data[j];
             }
         }
@@ -39,23 +36,19 @@ export function AlignedData(data: dataEventArgs[], params: DataAlignParams) : (n
     return matrix;
 }
 
-function GetFirstTime(data: dataEventArgs[])
-{
+function GetFirstTime(data: SensorData[]) {
     let times: number[] = [];
-    for(let i = 0; i < data.length; i++)
-    {
-        if (data[i].data.length > 0)
-        {
+    for (let i = 0; i < data.length; i++) {
+        if (data[i].data.length > 0) {
             times.push(data[i].time[0])
         }
     };
 
-   return  Math.min(...times);
+    return Math.min(...times);
 }
 
-function GetLastTime(data: dataEventArgs[])
-{
+function GetLastTime(data: SensorData[]) {
     let lastValues = data.map(d => d.time[d.time.length - 1]);
 
-   return  Math.max(...lastValues);
+    return Math.max(...lastValues);
 }
