@@ -27,10 +27,9 @@ export class SaveModal extends React.Component<Props, IState>{
     }
   }
 
-  onCSVDownload = async (fileName: string) => {
-    let currentFile = await CreateCsvFileDialog(fileName);
-    let minAvgFactor = await this.props.maxAvgFactor();  //Переделать
-    this.props.snapshot?.ToCSV(this.state.csvName, 1 / (5000 / minAvgFactor), currentFile);
+  onCSVDownload = async () => {
+    let currentFile = await CreateCsvFileDialog();
+    this.props.snapshot?.ToCSV(currentFile);
   }
 
   onOk = () => {

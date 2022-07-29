@@ -2,19 +2,25 @@ import { AlignedData } from "uplot";
 import { SensorData as DataEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { SeriesValue } from "../PlotCommon";
 
+export declare class PlotBufferManagerConfig {
+    dt: number;
+    segments: number;
+    maxFrameTimeRange: number;
+}
+
 declare class ISegmentInfo {
     lastDataIndex: number;
 }
 
 export class PlotBufferManager {
-    private readonly maxFrameTimeRange: number = 60 * 30;                // максимальная величина Range при которой не будет видно переключения перекресных буфферов (в секундах)
-    private readonly framesCount = 6;                           // кол во буферов //TODO сделать динамическое добавление при необходимости
+    private readonly maxFrameTimeRange: number = 60 * 30;                   // максимальная величина Range при которой не будет видно переключения перекресных буфферов (в секундах)
+    private readonly framesCount = 6;                                       // кол во буферов //TODO сделать динамическое добавление при необходимости
     private readonly frameSize: number = 300;
+    private readonly dt: number;
     
     private frames: AlignedData[] = new Array(this.framesCount)
-    private frames2: AlignedData[] = new Array(this.framesCount) //перекресный буффер по времени
+    private frames2: AlignedData[] = new Array(this.framesCount)            //перекресный буффер по времени
     
-    private dt: number;
     private maxTime: number;
     private frameTime: number;
     private lastFramesTime1 = 0;
@@ -26,12 +32,15 @@ export class PlotBufferManager {
     public get Segments() { return this.segmentInfo.length }
     public get Dt() { return this.dt }
 
-    constructor(segments: number, dt: number, rangeGetter: () => [number, number]) {
+    constructor(rangeGetter: () => [number, number], config: PlotBufferManagerConfig) {
         this.getRange = rangeGetter;
-        this.dt = dt;
+
+        this.dt = config.dt;
+        this.maxFrameTimeRange = config.maxFrameTimeRange,
+        
         this.frameSize = (this.maxFrameTimeRange / this.dt) * 2;
         this.frameTime = this.frameSize * this.dt;
-        this.lastFramesTime2 = (this.frameSize / 2) * dt;
+        this.lastFramesTime2 = (this.frameSize / 2) * this.dt;
 
         for (let i = 0; i < this.frames.length; i++) {
 
@@ -46,7 +55,7 @@ export class PlotBufferManager {
 
             let valuesArr = new Array<SeriesValue[]>()
             let valuesArr2 = new Array<SeriesValue[]>()
-            for (let j = 0; j < segments; j++) {
+            for (let j = 0; j < config.segments; j++) {
                 let segment = new Array<SeriesValue>(this.frameSize)
                 let segment2 = new Array<SeriesValue>(this.frameSize)
                 segment.fill(undefined);
@@ -59,7 +68,7 @@ export class PlotBufferManager {
             this.frames2[i] = [timeArr2, ...valuesArr2];
         }
 
-        for (let i = 0; i < segments; i++)
+        for (let i = 0; i < config.segments; i++)
             this.segmentInfo.push({
                 lastDataIndex: 0
             })

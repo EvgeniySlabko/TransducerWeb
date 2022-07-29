@@ -1,7 +1,7 @@
 import uPlot from "uplot";
-import { ChannelStyle } from "../../Channel/ChannelStyle/ChannelStyle";
+import { PlotChannelStyle } from "../../Channel/ChannelStyle/PlotChannelStyle";
 import { Snapshot } from "../../ReportListener/Snapshot";
-import { MyUPlotBase } from "../uPlotBase";
+import { MyUPlotBase } from "../PlotBase";
 import { LogLevelBugger } from "./LogLevelBuffer";
 
 export class MyUPlotViewer extends MyUPlotBase {
@@ -29,7 +29,7 @@ export class MyUPlotViewer extends MyUPlotBase {
     this.BuildNewPlot(styles);
   }
 
-  private BuildNewPlot = (styles: ChannelStyle[]) => {
+  private BuildNewPlot = (styles: PlotChannelStyle[]) => {
     this.DestroyPlot();
 
     styles.forEach((s, i) => {

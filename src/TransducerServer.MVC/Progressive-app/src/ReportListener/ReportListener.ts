@@ -71,8 +71,10 @@ export class ReportListener {
                 style: plotChannel.Style,
             });
         });
-
-        return new Snapshot(trackData);
+        
+        return new Snapshot({
+            trackData: trackData,
+        });
     }
 
     private DataHandler = (channel: PlotChannel, args: ChannelDataArgs) => {

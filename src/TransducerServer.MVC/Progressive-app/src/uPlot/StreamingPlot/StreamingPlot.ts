@@ -1,9 +1,8 @@
 import { PlotChannel, ChannelDataArgs, ChannelMessageArgs } from "../../Channel/Channel/PlotChannel";
 import { SensorData, SensorMessage } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
-import { ChannelLabel } from "../plotsManager";
-import { PlotBufferManager } from "./StreamingBufferManager";
-import { Label, MyUPlotBase, SeriesInfo } from "../uPlotBase";
-
+import { PlotBufferManager, PlotBufferManagerConfig } from "./StreamingBufferManager";
+import { Label, MyUPlotBase, SeriesInfo } from "../PlotBase";
+import { ChannelLabel } from "../PlotsManager";
 
 export type TraceInfo =
   {
@@ -92,9 +91,12 @@ export class MyUPlot extends MyUPlotBase {
   private BuildNewPlot = (channels: PlotChannel[]) => {
     this.DestroyPlot();
 
-    this.bufferManager = new PlotBufferManager(channels.length, 
-                                              this.params.dt(), 
-                                              () => [this.params.range[0], this.params.range[1]]);
+    this.bufferManager = new PlotBufferManager(() => [this.params.range[0], this.params.range[1]], {
+      segments: channels.length,
+      dt: this.params.dt(),
+      maxFrameTimeRange: 60 * 30 
+    });
+
     this.options = this.getOptions();
     this.traces = [];
 

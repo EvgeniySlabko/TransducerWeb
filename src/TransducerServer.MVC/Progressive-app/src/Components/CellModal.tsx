@@ -1,8 +1,8 @@
-import React from 'react';
 import { Checkbox, Collapse, InputNumber, Modal, Slider } from 'antd';
-import { PlotsManager } from '../uPlot/plotsManager';
-import { ChannelsGroup } from '../Channel/AllChannelsFactory';
+import React from 'react';
 import { HexColorPicker } from 'react-colorful';
+import { ChannelsGroup } from '../Channel/AllChannelsFactory';
+import { PlotsManager } from '../uPlot/PlotsManager';
 import { MenuItem } from './MenuItem';
 
 const { Panel } = Collapse;
@@ -26,7 +26,7 @@ export class CellModal extends React.Component<Props, IState>{
     super(prop);
     this.state = {
       accurency: this.props.group.cellChannel.Style.accurency,
-      color: this.props.group.cellChannel.Style.fontStyle,
+      color: this.props.group.cellChannel.Style.color,
       limits: this.props.group.plotChannel.Style.drawLimits
     }
   }
@@ -37,11 +37,12 @@ export class CellModal extends React.Component<Props, IState>{
 
   onOk = () => {
     this.props.group.cellChannel.Style.accurency = this.state.accurency;
+    this.props.group.cellChannel.Style.color = this.state.color;
+    
     this.props.group.plotChannel.Style.color = this.state.color;
-    this.props.group.savingChannel.Style.color = this.state.color;
-    this.props.group.cellChannel.Style.fontStyle = this.state.color;
-
     this.props.group.plotChannel.Style.drawLimits = this.state.limits;
+
+    this.props.group.savingChannel.Style.color = this.state.color;
     this.props.group.savingChannel.Style.drawLimits = this.state.limits;
   }
 
@@ -71,7 +72,7 @@ export class CellModal extends React.Component<Props, IState>{
             } />
 
             <MenuItem label='Цвет графика:' children={
-              <HexColorPicker color={this.props.group.cellChannel.Style.fontStyle} onChange={this.colorChangeHandler} />
+              <HexColorPicker color={this.props.group.cellChannel.Style.color} onChange={this.colorChangeHandler} />
             } />
 
             <MenuItem label='Знаков после запятой:' children={

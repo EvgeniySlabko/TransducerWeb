@@ -2,8 +2,8 @@ import React from 'react';
 import { Navbar } from './navbar';
 import { GroupsContainer } from './GroupsContainer';
 import { SensorController, SensorControllerArgs } from '../Sensor/SensorsManager/SensorsManager';
-import { RecordManager } from '../ReportListener/RecordManager';
-import { PlotsManager } from '../uPlot/plotsManager';
+import { RecordigGroup, RecordManager } from '../ReportListener/RecordManager';
+import { PlotsManager } from '../uPlot/PlotsManager';
 import { AllChannelsInfo, ChannelsGroup, CreateAllChannels } from '../Channel/AllChannelsFactory';
 import { CellChannel, ChannelCloseArgs } from '../Channel/Channel/CellChannel';
 import { PlotChannel } from '../Channel/Channel/PlotChannel';
@@ -13,10 +13,12 @@ import { SensorWorker } from '../Sensor/SensorWorker';
 import { notification } from 'antd';
 import { Snapshot } from '../ReportListener/Snapshot';
 import { CreateTxtFileDialog, getRandomInt } from '../Common/Common';
-import { ParamsStorage } from '../Storage/Storage';
+import { ParamsStorage } from '../Storage/AppStorage';
 import { changeGroupColor } from '../Common/ChannelColorChanger';
 import { SaveModal } from './SaveModal/SaveModal';
 import { GetMinAvgFactor } from '../Common/SensorsHelpers';
+import { ApplayLocalStorageSettingsForGroups, ApplaySensorParameters as ApplaySensorStorageParameters } from '../Storage/ChannelsDataStorage';
+import { FileWorker } from '../Files/FileWorker';
 
 export interface Props {
     sensorService: SensorController;
@@ -44,12 +46,11 @@ interface IState {
     streaming: boolean;
     currentSnapshot: Snapshot | undefined;
     firstStart: boolean;
-    currentFile: FileSystemFileHandle | undefined;
 }
 
 export class App extends React.Component<Props, IState>
 {
-    //private plotViewController: ViewController | undefined;
+    private fileWorker: FileWorker = new FileWorker();
 
     constructor(props: Props) {
         super(props);
@@ -63,28 +64,11 @@ export class App extends React.Component<Props, IState>
             streaming: false,
             currentSnapshot: undefined,
             firstStart: true,
-            currentFile: undefined
         }
 
         //this.plotViewController = new ViewController(document.getElementById('gd'));
         this.sensorManualCloseHandler = this.sensorManualCloseHandler.bind(this);
         this.props.sensorService.onDispatch.addListener("Add", this.newSensorHandler)
-    }
-
-    getGroupByPlotChannel = (channel: PlotChannel) => this.state.groups.find(g => g.channelsInfo.channelGroups.find(g => g.plotChannel == channel));
-    getGroupByCellChannelChannel = (channel: CellChannel) => this.state.groups.find(g => g.channelsInfo.channelGroups.find(g => g.cellChannel == channel));
-    getGroupBySensor = (sensor: ISingleComponentSensor) => this.state.groups.find(g => g.node.sensor == sensor);
-    getGroupIndexBySensor = (sensor: ISingleComponentSensor) => this.state.groups.findIndex(g => g.node.sensor == sensor);
-    getChannelsGroupBy = (predicate: (group: ChannelsGroup) => boolean): ChannelsGroup | undefined => {
-        for (let i = 0; i < this.state.groups.length; i++) {
-            for (let j = 0; j < this.state.groups[i].channelsInfo.channelGroups.length; j++) {
-                if (predicate(this.state.groups[i].channelsInfo.channelGroups[j])) {
-                    return this.state.groups[i].channelsInfo.channelGroups[j];
-                }
-            }
-        }
-
-        return undefined;
     }
 
     componentDidMount = () => {
@@ -94,12 +78,14 @@ export class App extends React.Component<Props, IState>
         }));
     }
 
-    sensorCloseHandler = (sensor: ISingleComponentSensor, args: string) => {
-        let index = this.getGroupIndexBySensor(sensor);
+    sensorCloseHandler = async (sensor: ISingleComponentSensor, args: string) => {
+        let index = this.state.groups.findIndex(g => g.node.sensor == sensor);
         this.state.groups.splice(index, 1);
+        if (this.state.recording)
+        {
+            await this.stopRecordingHandler();
+        }
         if (this.state.groups.length == 0) {
-            if (this.state.recording)
-                this.stopRecordingHandler();
             this.setState((prev, props) => ({
                 streaming: false,
             }));
@@ -110,19 +96,23 @@ export class App extends React.Component<Props, IState>
 
     sensorManualCloseHandler = async (sensor: ISingleComponentSensor) => {
         this.props.sensorService.RemoveSensor(sensor);
-        this.setState((prev, props) => ({}));
     }
 
     sensorClose = async (sensor: ISingleComponentSensor) => {
-        sensor.onClose.unsub(this.sensorCloseHandler);
-        let group = this.getGroupBySensor(sensor);
+        if (this.state.recording)
+            this.handleRecClick();
+
+        let group = this.state.groups.find(g => g.node.sensor == sensor);
         await group?.node.worker.Close();
     }
 
-    newSensorHandler = (args: SensorControllerArgs) => {
+    newSensorHandler = async (args: SensorControllerArgs) => {
         if (this.state.plotsManager) {
             let allChannelsInfo = CreateAllChannels(args.sensor, args.fullSensorInfo, getRandomInt(10));
             changeGroupColor(allChannelsInfo.channelGroups, this.state.groups.length);
+            ApplayLocalStorageSettingsForGroups(allChannelsInfo.channelGroups, args.fullSensorInfo.SensorId);
+            await ApplaySensorStorageParameters(args.worker, args.fullSensorInfo.SensorId);
+
             //let plotChannels = CreateAllSensorChannelsForPlot(args.sensor, args.fullSensorInfo);
             this.setState((prev, props) => ({
                 firstStart: true,
@@ -151,10 +141,15 @@ export class App extends React.Component<Props, IState>
 
             //this.setState((prev, props) => ({}));
             this.state.plotsManager.AddChannels(allChannelsInfo.channelGroups.map(g => g.plotChannel));
-            let allSavingChannels: PlotChannel[] = [];
+            let recodingChannels: RecordigGroup[] = this.state.groups.map(g => 
+                {
+                    return {
+                        savingChannels: g.channelsInfo.channelGroups.map(cg => cg.savingChannel),
+                        sensor: g.node.sensor,
+                    }
+                });
 
-            this.state.groups.forEach(g => g.channelsInfo.channelGroups.forEach(c => allSavingChannels.push(c.savingChannel)));
-            this.props.recordController.SetChannels(allSavingChannels);
+            this.props.recordController.SetChannels(recodingChannels);
             args.sensor.onClose.sub(this.sensorCloseHandler);
 
             notification.success({
@@ -179,8 +174,7 @@ export class App extends React.Component<Props, IState>
             return;
         }
 
-        if (!this.state.viewingReport)
-            this.state.groups.forEach(async (g) => this.props.sensorService.RemoveSensor(g.node.sensor));
+        if (!this.state.viewingReport) this.state.groups.forEach(async (g) => this.props.sensorService.RemoveSensor(g.node.sensor));
 
         try {
             this.state.plotsManager?.UploadSnapshot(snapshot);
@@ -208,13 +202,10 @@ export class App extends React.Component<Props, IState>
     startRecordingHandler = async () => {
         try {
             this.props.recordController.StartListening();
-            let currentFile = await CreateTxtFileDialog();
-
-            this.setState((prev, props) => ({
-                currentFile: currentFile,
-            }));
+            this.fileWorker.OpenFile();
         }
         catch (ex) {
+            this.props.recordController.StopListening();
             return;
         }
 
@@ -227,13 +218,12 @@ export class App extends React.Component<Props, IState>
         if (this.state.streaming)
             await this.stophandler();
 
-
         let snapshot = this.props.recordController.StopListening();
-        if (this.state.currentFile) await snapshot.ToFile(this.state.currentFile);
+        if (this.fileWorker.File) 
+            await snapshot.ToFile(this.fileWorker.File);
 
         this.setState((prev, props) => ({
             recording: false,
-            //saveDialog: true,
             streaming: false,
             currentSnapshot: snapshot,
         }));
@@ -241,7 +231,7 @@ export class App extends React.Component<Props, IState>
     }
 
     handleRecClick = async () => {
-        this.state.recording ? this.stopRecordingHandler() : this.startRecordingHandler();
+        this.state.recording ? await this.stopRecordingHandler() : this.startRecordingHandler();
     }
 
     streamingModeViewHandler = () => {
@@ -295,9 +285,9 @@ export class App extends React.Component<Props, IState>
             this.state.streaming ? await this.stophandler() : await this.starthandler();
     }
 
-    clear = () => {
+    clear = async () => {
         if (this.state.recording)
-            this.stopRecordingHandler();
+            await this.stopRecordingHandler();
 
         this.setState(() => ({
             firstStart: true,
@@ -321,7 +311,7 @@ export class App extends React.Component<Props, IState>
                 reportVieving={this.state.viewingReport}
                 clear={this.clear}
                 export={this.export}
-                toggleRecording={this.handleRecClick}
+                toggleRecording={() => this.handleRecClick().then()}
                 recordingState={this.state.recording}
                 setStreamingModeView={this.streamingModeViewHandler}
                 plotsManager={this.state.plotsManager} />,

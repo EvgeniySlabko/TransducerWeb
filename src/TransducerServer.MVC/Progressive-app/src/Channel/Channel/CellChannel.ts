@@ -2,7 +2,6 @@ import { EventDispatcher } from "strongly-typed-events";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
 import { SensorData, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { CellChannelStyle } from "../ChannelStyle/CellChannelStyle";
-import { CreateDefaultCellStyle } from "../ChannelStyle/CellChannelStyleFactory";
 import { ISensorDataProvider } from "../SensorDataProveder/ISensorDataProvider";
 
 export type ChannelDataArgs =
@@ -30,7 +29,7 @@ export class CellChannel {
     private _onMessage = new EventDispatcher<CellChannel, ChannelMessageArgs>();
     private _onClose = new EventDispatcher<CellChannel, ChannelCloseArgs>();
 
-    constructor(dataSourсe: ISensorDataProvider, style: CellChannelStyle = CreateDefaultCellStyle()) {
+    constructor(dataSourсe: ISensorDataProvider, style: CellChannelStyle) {
         this.style = style;
         dataSourсe.onData?.sub((sensor, args) => {
             this._onData.dispatch(this, {
@@ -61,8 +60,6 @@ export class CellChannel {
     public get onData() { return this._onData.asEvent(); }
 
     public get onMessage() { return this._onMessage.asEvent(); }
-
-    public get onError() { return this._onClose.asEvent(); } //chandge
 
     public get onClose() { return this._onClose.asEvent(); }
 }

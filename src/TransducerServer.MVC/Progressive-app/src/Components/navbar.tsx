@@ -1,15 +1,12 @@
 
-import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISingleComponentSensor';
-import React, { useState } from 'react';
-import { CreateSerialSensor } from '../IO/SensorFactory';
+import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { Button, Dropdown, Menu, notification } from 'antd';
+import React from 'react';
+import { RecordManager } from '../ReportListener/RecordManager';
+import { CreateSerialSensor } from '../Sensor/SensorFactory';
 import { SensorController } from '../Sensor/SensorsManager/SensorsManager';
 import { Facker } from '../Sensor/SingleComponentSensor.ts/Faker/FackerSensor';
-import { PlotChannel } from '../Channel/Channel/PlotChannel';
-import { RecordManager } from '../ReportListener/RecordManager';
-import { PlotsManager } from '../uPlot/plotsManager';
-import { Snapshot } from '../ReportListener/Snapshot';
-import { Button, Dropdown, Menu, notification } from 'antd';
-import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightFilled, CaretRightOutlined, DownloadOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { PlotsManager } from '../uPlot/PlotsManager';
 import { Group } from './App';
 import { PlotControlPanel } from './ControlPanel/PlotControlPanel';
 
@@ -24,11 +21,11 @@ export interface Props {
 	reportVieving: boolean,
 
 
-	clear: () => void
+	clear: () => Promise<void>
 	toggleStreaming: () => void,
 	openReportCallback: (file: File) => void
 	setStreamingModeView: () => void
-	toggleRecording: () => void
+	toggleRecording: () => Promise <void>
 	export: () => void
 }
 
@@ -46,10 +43,6 @@ export class Navbar extends React.Component<Props, IState>
 			saveDialog: false,
 			startStop: false,
 		};
-
-		this.handleAddClick = this.handleAddClick.bind(this);
-		this.handleClearClick = this.handleClearClick.bind(this);
-		this.handleFakerClick = this.handleFakerClick.bind(this);
 	}
 
 	handleOpenFile = async () => {
@@ -67,12 +60,12 @@ export class Navbar extends React.Component<Props, IState>
 		input.click();
 	}
 
-	handleClearClick() {
+	handleClearClick = async () => {
 
 		this.props.plotsManager?.Clear();
 		this.props.plotsManager?.ClearLabels();
 		this.props.groups.forEach(g => g.channelsInfo.resetAbsoluteAnalizer());
-		this.props.clear();
+		await this.props.clear();
 	}
 
 	private async handleAddClick() {
@@ -132,11 +125,11 @@ export class Navbar extends React.Component<Props, IState>
 
 					<Button title="Добавить датчик"
 						size='large'
-						disabled={this.props.streaming || this.props.reportVieving}
+						disabled={this.props.streaming || this.props.reportVieving || this.props.recordingState}
 						id="open"
 						shape="default"
 						icon={<PlusCircleOutlined />}
-						onClick={this.handleAddClick} />
+						onClick={() => this.handleAddClick().then()} />
 
 					<Button title="Начать запись в файл" size='large' id="StartRec"
 						disabled={!this.props.enable || (this.props.streaming && !this.props.recordingState)}

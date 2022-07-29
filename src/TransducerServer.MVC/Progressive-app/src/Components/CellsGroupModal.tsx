@@ -1,8 +1,10 @@
+import { SaveOutlined } from '@ant-design/icons';
+import { Button, Checkbox, Collapse, InputNumber, Modal, notification } from 'antd';
 import React from 'react';
-import { Checkbox, Collapse, InputNumber, Modal, notification } from 'antd';
+import { ParamsStorage } from '../Storage/AppStorage';
+import { GetSensorParameters, SaveChannelGroupParameters, SaveSensorParameters, SensorStorageParameters } from '../Storage/ChannelsDataStorage';
+import { PlotsManager } from '../uPlot/PlotsManager';
 import { Group } from './App';
-import { PlotsManager } from '../uPlot/plotsManager';
-import { ParamsStorage } from '../Storage/Storage';
 import { MenuItem } from './MenuItem';
 const { Panel } = Collapse;
 
@@ -15,9 +17,9 @@ export interface Props {
 }
 
 interface IState {
-  absoluteAnalizer: boolean,
+  trackMaximum: boolean,
   speedPeriod: number,
-  avgFactor: number,
+  avgRatio: number,
   externalSpeedSensor: boolean,
   dataReceived: boolean,
 }
@@ -27,19 +29,19 @@ export class CellsGroupModal extends React.Component<Props, IState>{
   constructor(prop: Props) {
     super(prop);
     this.state = {
-      absoluteAnalizer: this.props.group.channelsInfo.getAbsoluteAnalizerState(),
+      trackMaximum: this.props.group.channelsInfo.getAbsoluteAnalizerState(),
       speedPeriod: 0,
-      avgFactor: 0,
+      avgRatio: 0,
       dataReceived: false,
       externalSpeedSensor: false,
     }
   }
 
   onOk = async () => {
-    this.props.group.channelsInfo.setAbsoluteAnalizer(this.state.absoluteAnalizer);
+    this.props.group.channelsInfo.setAbsoluteAnalizer(this.state.trackMaximum);
 
     try {
-      await this.props.group.node.worker.SetAverageRatio(this.state.avgFactor);
+      await this.props.group.node.worker.SetAverageRatio(this.state.avgRatio);
       await this.props.group.node.worker.SetSpeedPeriod(this.state.speedPeriod);
       await this.props.group.node.worker.SetExternalSpeedSensorState(this.state.externalSpeedSensor);
     }
@@ -55,10 +57,13 @@ export class CellsGroupModal extends React.Component<Props, IState>{
   async componentDidMount() {
     try {
       let holdingRegisters = await this.props.group.node.sensor.GetHoldingRegisters();
+      let sensorparameters = await GetSensorParameters(this.props.group.node.fullSensorInfo.SensorId);
+      let externalSpeedSensor = sensorparameters ? sensorparameters.externalSpeedSensor : false;
 
       this.setState((prev, props) => ({
         speedPeriod: holdingRegisters.SpeedMeasurigPeriod,
-        avgFactor: holdingRegisters.AverageRatio,
+        avgRatio: holdingRegisters.AverageRatio,
+        externalSpeedSensor: externalSpeedSensor,
         dataReceived: true
       }));
     }
@@ -71,59 +76,92 @@ export class CellsGroupModal extends React.Component<Props, IState>{
     }
   }
 
-  onSpeedChanged = (value: number) => {
-    this.setState((prev, props) => ({
-      speedPeriod: value,
-    }));
+  onSpeedChanged = (value: number) => this.setState((prev, props) => ({ speedPeriod: value }));
+  onAvgChanged = (value: number) =>  this.setState((prev, props) => ({ avgRatio: value }));
+  onExternalSpeedSensorChanged = (value: boolean) => 
+  {
+    this.setState((prev, props) => ({ externalSpeedSensor: value }));
   }
+  onTrackMaximumChanged = (value: boolean) =>  this.setState((prev, props) => ({ trackMaximum: value }));
 
-  onAvgChanged = (value: number) => {
-    this.setState((prev, props) => ({
-      avgFactor: value,
-    }));
+  onSaveParamsToStorage = () =>
+  {
+    SaveChannelGroupParameters(this.props.group.channelsInfo.channelGroups, this.props.group.node.fullSensorInfo.SensorId);
+    let sensorParameters: SensorStorageParameters = {
+      avgRatio: this.state.avgRatio,
+      externalSpeedSensor: this.state.externalSpeedSensor,
+      speedMeasurmentPeriod: this.state.speedPeriod,
+    }
+
+    SaveSensorParameters(sensorParameters, this.props.group.node.fullSensorInfo.SensorId);
   }
 
   render() {
     return (
 
-      <Modal title="Параметры датчика"
+      <Modal title="Общие параметры."
         visible={this.props.visible}
         onOk={event => { this.onOk(); this.props.onClose(); }}
+        onCancel={this.props.onClose}
         cancelButtonProps={{ style: { display: 'none' } }}
         centered={false}>
 
-        <MenuItem className='vertical-flex' label='Отображение каналов:' children={
-          <div className='vertical-flex'>
+
+        <Button className='save-sensor-params-button'
+                onClick={ this.onSaveParamsToStorage } 
+                icon={<SaveOutlined 
+                onClick={ this.onSaveParamsToStorage }/>}/>
+        
+        <MenuItem className='vertical-flex' 
+        label='Отображение каналов:'
+        children={
+          <div>
             {
               this.props.group.channelsInfo.channelGroups.map((g, i) =>
-                <Checkbox key={i} defaultChecked={g.cellChannel.Style.visible} onChange={e => g.cellChannel.Style.visible = e.target.checked}>{g.cellChannel.Style.valueName} </Checkbox>
+              <Checkbox key={i} 
+              defaultChecked={g.cellChannel.Style.visible}
+              onChange={e => g.cellChannel.Style.visible = e.target.checked}>
+                  {g.cellChannel.Style.valueName} </Checkbox>
               )
             }
           </div>
         } />
-
+          
         {
           (!this.state.dataReceived) ? <></> :
             <>
               <MenuItem key={1} label='Период измерения скорости:' children={
-                <InputNumber className='vertical-align' step={1} size="small" style={{ height: "25px" }} defaultValue={this.state.speedPeriod} onChange={this.onSpeedChanged} />
+                <InputNumber className='vertical-align' 
+                             step={1} size="small" 
+                             style={{ height: "25px" }} 
+                             defaultValue={this.state.speedPeriod} 
+                             onChange={this.onSpeedChanged} />
               } />
 
-              <MenuItem key={2} label='Коэффицент усреднения:' children={
-                <InputNumber className='vertical-align' step={1} size="small" style={{ height: "25px" }} defaultValue={this.state.avgFactor} onChange={this.onAvgChanged} />
-              } />
+              <MenuItem key={2} 
+                        label='Коэффицент усреднения:' 
+                        children={
+                          <InputNumber className='vertical-align' 
+                                       step={1} 
+                                       size="small" 
+                                       style={{ height: "25px" }} 
+                                       defaultValue={this.state.avgRatio} 
+                                       onChange={this.onAvgChanged} />
+                           }/>
 
-              <Checkbox key={3} className='margin' defaultChecked={false} onChange={(c) => {
-                this.setState((prev, props) => ({ externalSpeedSensor: c.target.checked }));
-              }}>Внешний датчик скорости</Checkbox>
-            </>
+              <Checkbox key={3} 
+                        className='margin'
+                        defaultChecked={this.state.externalSpeedSensor}
+                        onChange={(c) => this.onExternalSpeedSensorChanged(c.target.checked) }>
+                        Внешний датчик скорости</Checkbox>
+              </>
         }
 
-        <Checkbox key={6} className='margin' defaultChecked={false} onChange={(c) => {
-          this.setState((prev, props) => ({
-            absoluteAnalizer: c.target.checked,
-          }));
-        }}>Отслеживать максимум.</Checkbox>
+        <Checkbox key={6} 
+                  className='margin' 
+                  defaultChecked={false} 
+                  onChange={(c) => this.onTrackMaximumChanged(c.target.checked)}>
+                  Отслеживать максимум.</Checkbox>
       </Modal>
     )
   }

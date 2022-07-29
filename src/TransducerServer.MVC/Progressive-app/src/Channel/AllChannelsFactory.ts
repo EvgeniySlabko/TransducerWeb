@@ -5,9 +5,10 @@ import { CellChannel } from "./Channel/CellChannel";
 import { PlotChannel } from "./Channel/PlotChannel";
 import { CreateCellSpeedStyle, CreatePowerCellStyle, CreatetemperatureCellStyle, CreateTorqueCellStyle } from "./ChannelStyle/CellChannelStyleFactory";
 import { CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "./ChannelStyle/ChannelStyleFactory";
-import { CreateAbsoluteAnalizerSource, CreateAmplifiredDataSource, CreateAverageValueDataSource, CreateDetectorSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "./SensorDataProveder/DataSourceFactory";
+import { PeakEventArgs } from "./SensorDataProveder/AbsolutePeakAnalyzer";
+import { CutOffDataProvider } from "./SensorDataProveder/CutOffDataProvider";
+import { CreateAbsoluteAnalizerSource, CreateAmplifiredDataSource, CreateAverageValueDataSource, CreateDisplayValueDataSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "./SensorDataProveder/DataSourceFactory";
 import { ISensorDataProvider } from "./SensorDataProveder/ISensorDataProvider";
-import { PeakEventArgs } from "./SensorDataProveder/PeakAnalyzer";
 import { SensorDataProvider } from "./SensorDataProveder/SensorDataProvider";
 
 export interface ChannelsGroup {
@@ -18,12 +19,10 @@ export interface ChannelsGroup {
 
 export interface AllChannelsInfo {
     channelGroups: ChannelsGroup[];
-    avgSetter: (avgRatio: number) => void,
-    offsetSetter: (offset: number) => void,
-    currentValueOffsetSetter: () => number,
-    peackDetected: IEvent<PlotChannel, PeakEventArgs>,
+    setAvgRatio: (avgRatio: number) => void,
+    setOffset: (offset: number) => void,
+    setCurrentOffset: () => number,
     absolutePeackDetected: IEvent<PlotChannel, PeakEventArgs>,
-    setThreshold: (upperThreshold: number, lowerThreshold: number) => void,
     resetAbsoluteAnalizer: () => void,
     setAbsoluteAnalizer: (state: boolean) => void,
     getAbsoluteAnalizerState: () => boolean,
@@ -36,18 +35,18 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
 
     //Torque
     let mainSource = CreateMainValueDataSource(sensor);
-    let offsetSource = CreateOffsetDataSource(mainSource, 0);
+    let cutOffMainSource = new CutOffDataProvider(mainSource);
+    let offsetSource = CreateOffsetDataSource(cutOffMainSource, 0);
     let applifiredDataSource = CreateAmplifiredDataSource(offsetSource, fullSensorInfo.valueRatio);
 
-    let analizerSource = CreateDetectorSource(applifiredDataSource, 0.1 * fullSensorInfo.MaxValue, 0.4);
     let absoluteAnalizerSource = CreateAbsoluteAnalizerSource(applifiredDataSource);
 
-    let cellAverager = CreateAverageValueDataSource(offsetSource, 500);
+    let cellDisplaySource = CreateDisplayValueDataSource(offsetSource, 30);
     let plotAverager = CreateAverageValueDataSource(applifiredDataSource, 1);
 
     let mainPlotChannel = CreateMainChannel(plotAverager, fullSensorInfo);
     let mainSavingChannel = CreateMainChannel(applifiredDataSource, fullSensorInfo);
-    let mainCellChannel = CreateMainCellChannel(cellAverager, fullSensorInfo);
+    let mainCellChannel = CreateMainCellChannel(cellDisplaySource, fullSensorInfo);
 
     channels.push(mainPlotChannel);
     savingChannels.push(mainSavingChannel);
@@ -55,19 +54,25 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
 
     //Speed
     let speedSource = CreateSpeedValueDataSource(sensor);
-    let speedChannel = CreateSpeedChannel(speedSource, fullSensorInfo);
-    let speedCellChannel = CreateSpeedCellChannel(speedSource, fullSensorInfo);
-    channels.push(speedChannel);
-    savingChannels.push(speedChannel);
+    let cutOffSpeedSource = new CutOffDataProvider(speedSource);
+    let speedDisplaySource = CreateDisplayValueDataSource(cutOffSpeedSource, 30);
+    let speedPlotChannel = CreateSpeedChannel(cutOffSpeedSource, fullSensorInfo);
+    let speedCellChannel = CreateSpeedCellChannel(speedDisplaySource, fullSensorInfo);
+
+    channels.push(speedPlotChannel);
+    savingChannels.push(speedPlotChannel);
     cellChannels.push(speedCellChannel);
 
     //Power
     let powerSource = CreatePowerDataSource(mainSource, speedSource);
-    let powerChannel = CreatePowerChannel(powerSource, fullSensorInfo);
-    let powerCellChannel = CreatePowerCellChannel(powerSource, fullSensorInfo);
+    let cutOffPowerSource = new CutOffDataProvider(powerSource);
 
-    channels.push(powerChannel);
-    savingChannels.push(powerChannel);
+    let powerDisplaySource = CreateDisplayValueDataSource(cutOffPowerSource, 30);
+    let powerPlotChannel = CreatePowerChannel(cutOffPowerSource, fullSensorInfo);
+    let powerCellChannel = CreatePowerCellChannel(powerDisplaySource, fullSensorInfo);
+
+    channels.push(powerPlotChannel);
+    savingChannels.push(powerPlotChannel);
     cellChannels.push(powerCellChannel);
 
     //Tmp
@@ -79,11 +84,7 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     savingChannels.push(temperatureChannel);
     cellChannels.push(temperatureCellChannel);
 
-    let peakEvent = new EventDispatcher<PlotChannel, PeakEventArgs>();
     let absolutepeakEvent = new EventDispatcher<PlotChannel, PeakEventArgs>();
-    analizerSource.onPeakDetected.sub((sensor, args) => {
-        peakEvent.dispatch(mainPlotChannel, args);
-    });
 
     absoluteAnalizerSource.onPeakDetected.sub((sensor, args) => {
         absolutepeakEvent.dispatch(mainPlotChannel, args);
@@ -100,13 +101,11 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     }
 
     return {
-        avgSetter: plotAverager.SetAverage,
-        offsetSetter: offsetSource.SetOffset,
-        currentValueOffsetSetter: offsetSource.SetCurrentOffset,
+        setAvgRatio: plotAverager.SetAverage,
+        setOffset: offsetSource.SetOffset,
+        setCurrentOffset: offsetSource.SetCurrentOffset,
         channelGroups: groups,
-        peackDetected: peakEvent.asEvent(),
         absolutePeackDetected: absolutepeakEvent.asEvent(),
-        setThreshold: analizerSource.SetThreshold,
         resetAbsoluteAnalizer: absoluteAnalizerSource.Reset,
         setAbsoluteAnalizer: absoluteAnalizerSource.setState,
         getAbsoluteAnalizerState: absoluteAnalizerSource.getState
@@ -120,11 +119,11 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
         return new CellChannel(source, CreatetemperatureCellStyle(fullSensorInfo));
     }
 
-    function CreateSpeedChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo): PlotChannel {
+    function CreateSpeedChannel(source: ISensorDataProvider, fullSensorInfo: FullSensorInfo): PlotChannel {
         return new PlotChannel(source, CreateSpeedStyle(fullSensorInfo));
     }
 
-    function CreateSpeedCellChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo): CellChannel {
+    function CreateSpeedCellChannel(source: ISensorDataProvider, fullSensorInfo: FullSensorInfo): CellChannel {
         return new CellChannel(source, CreateCellSpeedStyle(fullSensorInfo));
     }
 

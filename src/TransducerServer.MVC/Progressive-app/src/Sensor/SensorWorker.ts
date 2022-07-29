@@ -56,10 +56,7 @@ export class SensorWorker {
     public async StopStreaming() {
         if (!this.isInit) throw "Sersor is not initialized";
         if (this.isStreaming) {
-            await this.sensor.StopMeasuring(true);
-            await sleep(100);
             await this.sensor.StopStreaming();
-            await this.startReading();
             this.isStreaming = false;
         }
     }

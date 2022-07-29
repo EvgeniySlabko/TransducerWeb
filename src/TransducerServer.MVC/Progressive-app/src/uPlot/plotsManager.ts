@@ -1,7 +1,7 @@
 import { PlotChannel } from '../Channel/Channel/PlotChannel';
 import { Snapshot } from '../ReportListener/Snapshot';
-import { MyUPlot as StreamingPlot } from './StreamingPlot/uPlot';
-import { MyUPlotViewer as ViewerPlot } from './Viewer/uPlotViewer';
+import { MyUPlot as StreamingPlot } from './StreamingPlot/StreamingPlot';
+import { MyUPlotViewer as ViewerPlot } from './Viewer/ViewerPlot';
 
 export declare class ChannelLabel {
     channel: PlotChannel;

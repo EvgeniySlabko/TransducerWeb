@@ -1,7 +1,7 @@
 import { CaretLeftOutlined, CaretRightOutlined, ColumnHeightOutlined, ColumnWidthOutlined, DoubleRightOutlined, StepBackwardOutlined, StepForwardOutlined, ZoomInOutlined, ZoomOutOutlined } from '@ant-design/icons';
 import { Button, Collapse } from 'antd';
 import React from 'react';
-import { PlotsManager } from '../../uPlot/plotsManager';
+import { PlotsManager } from '../../uPlot/PlotsManager';
 const { Panel } = Collapse;
 
 

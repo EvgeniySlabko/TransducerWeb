@@ -1,6 +1,6 @@
 import html2canvas from 'html2canvas';
 import uPlot, { Axis, Scale, Series } from 'uplot';
-import { ChannelStyle } from '../Channel/ChannelStyle/ChannelStyle';
+import { PlotChannelStyle } from '../Channel/ChannelStyle/PlotChannelStyle';
 import { increase_brightness, nearestPoint } from '../Common/Common';
 import { groupBy } from '../Common/GroupBy';
 import { GetDefaultAxe, GetScale, GetSeries } from './PlotCommon';
@@ -29,7 +29,7 @@ export declare class Label {
 
 export type SeriesInfo =
   {
-    style: ChannelStyle;
+    style: PlotChannelStyle;
     dataBufferIndex: number;
     curRange: number[];
     axis: Axis;
@@ -90,7 +90,7 @@ export class MyUPlotBase {
   public ClearLabels = () => this.labels.splice(0, this.labels.length);
 
 
-  public AddSeries(style: ChannelStyle): SeriesInfo {
+  public AddSeries(style: PlotChannelStyle): SeriesInfo {
     let axis: uPlot.Axis;
     let scale: uPlot.Scale;
     let range: number[];

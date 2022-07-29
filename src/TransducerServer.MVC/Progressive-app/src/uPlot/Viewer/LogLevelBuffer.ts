@@ -3,9 +3,10 @@ import { getEmptyAlignedData } from "../../Common/Common";
 import { Snapshot, TrackData } from "../../ReportListener/Snapshot"
 
 export class LogLevelBugger {
-    private levels: number = 6;
-    private compressionRatio: number = 1.5 //коэффицент изменения коэффицента усреднения на 1 level.
-    private logLevel0Treshold = 10; //пороговое значение range после которого начинают действовать уровни логирования
+    private levels: number = 2;
+    private level0AvgRatio = 1;
+    private compressionRatio: number = 100 //коэффицент изменения коэффицента усреднения на 1 level.
+    private logLevel0Treshold = 20; //пороговое значение range после которого начинают действовать уровни логирования
     private logLevelRatio = 150; //пороговое значение range после которого начинают действовать уровни логирования
 
     private logLevelCalculate: (range: [number, number]) => number = (range) => {
@@ -44,14 +45,16 @@ export class LogLevelBugger {
     public get Source(): AlignedData {
         let range = this.rangeGetter();
         let logLevel = this.logLevelCalculate([range[0], range[1]])
-        // console.log(logLevel);
-        return this.data[logLevel];
+        console.log(logLevel);
+        // TO DO 
+        return this.data[0];
     }
 
 
     public FromSnapshot(snapshot: Snapshot) {
         let trackData = snapshot.GetTrackData();
 
+        this.level0AvgRatio = snapshot.AvgRatio;
         let getMaxTimeVal = (trackData: TrackData[]): number => {
             //смотри максимальные значения времени
             let maxTimeValues: number[] = [];
@@ -66,7 +69,7 @@ export class LogLevelBugger {
         }
 
 
-        var dx = 1 / 5000; //To DO сделать парамерт в snapshot.
+        var dx = snapshot.dt
         let toArrayIndex = (time: number) => Math.floor(time / dx);
 
         let maxTimeValue = getMaxTimeVal(trackData);
@@ -107,7 +110,7 @@ export class LogLevelBugger {
         }
     }
 
-    private Compress(level: number, source: AlignedData): AlignedData {
+    private Compress(avg: number, source: AlignedData): AlignedData {
         let getAvgBuff = (): [number, number | undefined][] => {
             let avgBuff = new Array<[number, number | undefined]>(source.length - 1);
             for (let i = 0; i < avgBuff.length; i++) {
@@ -117,9 +120,10 @@ export class LogLevelBugger {
             return avgBuff;
         }
 
-        let levelAvg = Math.floor(this.compressionRatio * level);
-        let compressedArraylength = Math.floor(source[0].length / levelAvg);
+        let levelAvg =  Math.floor(this.compressionRatio * avg);
+        if ((levelAvg + this.level0AvgRatio) > 100) levelAvg = 1;
 
+        let compressedArraylength = Math.floor(source[0].length / levelAvg);
         let dt = 1 / Math.floor(5000 / levelAvg);
 
         let compressedData = getEmptyAlignedData(0, dt, source.length - 1, compressedArraylength);

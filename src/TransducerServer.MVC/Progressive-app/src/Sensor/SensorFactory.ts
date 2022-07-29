@@ -1,11 +1,19 @@
-import { SingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/SingleComponentSensor";
-import { SerialWorker } from "./serial";
-import { SerialBufferedWorker } from "./serialBuffer";
+import { SingleComponentSensor } from "./SingleComponentSensor.ts/SingleComponentSensor";
+import { SerialWorker } from "../IO/SerialWorker";
+import { SerialBufferedWorker } from "../IO/SerialBufferWorker";
 
-const InternalBufferSize = 10000;
 // создаем датчик с COM port
 export async function CreateSerialSensor(port: SerialPort) {
-    var serialWorker = new SerialWorker(port);
+    
+    let serialWorker = new SerialWorker(port);
+    try
+    {
+        await serialWorker.OpenPort();
+    }
+    catch
+    {
+        
+    }
 
     if (serialWorker != null) {
         let bufferedWorker = new SerialBufferedWorker(serialWorker);

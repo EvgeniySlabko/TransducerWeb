@@ -34,7 +34,7 @@ export class PlotSettings extends React.Component<Props, IState>{
         <Collapse defaultActiveKey={['0']}>
           <Panel header=
             {
-              <div className={`cell-name ${this.props.channel.Style.fontStyle}`}>
+              <div className={`cell-name ${this.props.channel.Style.color}`}>
                 <p>
                   {this.props.channel.Style.valueName}
                 </p>
@@ -62,7 +62,7 @@ export class PlotSettings extends React.Component<Props, IState>{
             height: this.state.hide ? "0px" : "auto"
           }
         }>
-          <div className={`${this.props.channel.Style.fontStyle}`}>{this.props.channel.Style.unitsName}</div>
+          <div className={`${this.props.channel.Style.color}`}>{this.props.channel.Style.unitsName}</div>
           <div className='right-column' style={{ fontSize: `${this.state.fontSize.toString()}px` }}>{this.state.value}</div>
         </div>
       </div>

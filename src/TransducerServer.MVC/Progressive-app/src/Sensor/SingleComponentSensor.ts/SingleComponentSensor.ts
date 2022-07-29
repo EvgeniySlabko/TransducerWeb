@@ -1,5 +1,6 @@
 import { EventDispatcher } from "strongly-typed-events";
-import { SerialBufferedWorker } from "../../IO/serialBuffer";
+import { IReaderWriter } from "../../IO/IReaderWriter";
+import { SerialBufferedWorker } from "../../IO/SerialBufferWorker";
 import { DefaultCommand, ISensorCommand, SingleCommand } from '../SensorCommand/SensorCommands';
 import { ISingleComponentSensor } from './ISingleComponentSensor';
 import { FlagRegistersAddresses, HoldingRegisters, SensorCoilValue, SensorCommand, SensorData, SensorMessage, SensorMessageEventArgs, SensorSK, StorageRegistersAddresses, StramingPackageType } from './SensorDefinitions';
@@ -13,7 +14,7 @@ export class SingleComponentSensor implements ISingleComponentSensor {
     private timeBase: number = 0;
     private avgRatio: number = 1;
     
-    public serialWorker: SerialBufferedWorker;
+    public serialWorker: IReaderWriter;
     private requiredStopStreaming: boolean = false;
 
     private _onTorqueData = new EventDispatcher<ISingleComponentSensor, SensorData>();
@@ -24,7 +25,7 @@ export class SingleComponentSensor implements ISingleComponentSensor {
     
     private commandHandlers: Map<number, any> = new Map();
 
-    constructor(worker: SerialBufferedWorker) {
+    constructor(worker: IReaderWriter) {
         if (worker == null) throw "Worker is null";
         this.serialWorker = worker;
     }
@@ -41,8 +42,6 @@ export class SingleComponentSensor implements ISingleComponentSensor {
     public get onMessage() { return this._onMessage.asEvent(); }
 
     public async Initialize() {
-        if (!this.serialWorker.baseWorker.IsConnected)
-            await this.serialWorker.baseWorker.OpenPort();
         this.processbytes();
         let holdingRegisters = await this.GetHoldingRegisters();
         this.avgRatio = holdingRegisters.AverageRatio;
@@ -52,8 +51,6 @@ export class SingleComponentSensor implements ISingleComponentSensor {
         var command = new DefaultCommand(SensorCommand.READ_HOLDING_REGISTERS, 0, 5);
         var registers = await this.SendRequesAndWaitResponse<number[]>(command);
         var holdingRegisters = new HoldingRegisters(registers);
-        let th = holdingRegisters.TimeHigh;
-        let tl = holdingRegisters.TimeLow;
         return holdingRegisters;
     }
 
@@ -84,6 +81,10 @@ export class SingleComponentSensor implements ISingleComponentSensor {
     }
 
     public StartStreaming = async () => {
+        this._onMessage.dispatch(this, {
+            msgType: SensorMessage.StartStreaming
+        })
+        
         await this.SendRequesAndWaitResponse<void>(new DefaultCommand(SensorCommand.FORCE_SINGLE_COIL, FlagRegistersAddresses.START_STREAMING, SensorCoilValue.COIL_ON_VALUE));
         this._onMessage.dispatch(this, {
             msgType: SensorMessage.StartStreaming
@@ -104,6 +105,7 @@ export class SingleComponentSensor implements ISingleComponentSensor {
         
         let holdingRegisters = await this.GetHoldingRegisters();
         this.timeBase = holdingRegisters.TimeLow + (holdingRegisters.TimeHigh << 16);
+        this._onMessage.dispatch(this, { msgType: SensorMessage.SetTime0 });
     }
     public SetSpeedPeriod = async (speedPerion: number) => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(SensorCommand.PRESET_SINGLE_REGISTER, StorageRegistersAddresses.SPEED_PERIOD, speedPerion));
 
@@ -119,8 +121,14 @@ export class SingleComponentSensor implements ISingleComponentSensor {
         }
         finally
         {
-            await this.serialWorker.Close();
-            this._onClose.dispatch(this, "Connection closed");
+            try
+            {
+                await this.serialWorker.Close();
+            }
+            finally
+            {
+                this._onClose.dispatch(this, "Connection closed");
+            }
         }
     }
 

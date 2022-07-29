@@ -1,11 +1,10 @@
-import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISingleComponentSensor';
+import { Collapse } from 'antd';
 import React from 'react';
-import { CellChannel, ChannelDataArgs } from '../Channel/Channel/CellChannel';
-import { Collapse, Dropdown, Menu, notification, Radio, Space } from 'antd';
-import { Group, SensorNode } from './App';
-import { CellsGroup, PeackMode } from './CellsGroup';
-import { PlotsManager } from '../uPlot/plotsManager';
-import { ParamsStorage } from '../Storage/Storage';
+import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISingleComponentSensor';
+import { ParamsStorage } from '../Storage/AppStorage';
+import { PlotsManager } from '../uPlot/PlotsManager';
+import { Group } from './App';
+import { CellsGroup } from './CellsGroup';
 const { Panel } = Collapse;
 
 export interface Props {
@@ -30,7 +29,6 @@ export class GroupsContainer extends React.Component<Props>{
         group={g}
         storage={this.props.storage}
         sensorRemove={(sensor: ISingleComponentSensor) => this.props.sensorRemove(sensor)}
-        setThreshold={g.channelsInfo.setThreshold}
       ></CellsGroup>)
     )
   }

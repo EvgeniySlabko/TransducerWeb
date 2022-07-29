@@ -1,7 +1,8 @@
 import { Queue } from "queue-typescript";
-import { SerialWorker } from "./serial";
+import { IReaderWriter } from "./IReaderWriter";
+import { SerialWorker } from "./SerialWorker";
 
-export class SerialBufferedWorker {
+export class SerialBufferedWorker implements IReaderWriter {
     private queue: Queue<number>;
     public baseWorker: SerialWorker;
 

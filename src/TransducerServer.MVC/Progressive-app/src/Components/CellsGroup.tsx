@@ -4,8 +4,8 @@ import { Button, Card, Checkbox, Collapse, InputNumber, Menu, Modal, notificatio
 import { CloseOutlined, SettingOutlined } from '@ant-design/icons';
 import { Cell } from './Cell';
 import { Group } from './App';
-import { PlotsManager } from '../uPlot/plotsManager';
-import { ParamsStorage } from '../Storage/Storage';
+import { PlotsManager } from '../uPlot/PlotsManager';
+import { ParamsStorage } from '../Storage/AppStorage';
 import { CellsGroupModal } from './CellsGroupModal';
 const { Panel } = Collapse;
 
@@ -15,7 +15,6 @@ export interface Props {
   group: Group,
   plotsManager?: PlotsManager;
   sensorRemove: (sensor: ISingleComponentSensor) => void,
-  setThreshold: (upperThreshold: number, lowerThreshold: number) => void;
   storage: ParamsStorage;
   allowSettings: boolean;
 }
@@ -48,7 +47,6 @@ export class CellsGroup extends React.Component<Props, IState>{
       modalVisible: false,
     }));
 
-    this.props.setThreshold(this.state.treshold, this.state.treshold - 0.0003);
     this.props.group.channelsInfo.setAbsoluteAnalizer(this.state.absoluteAnalizer);
   }
 
@@ -65,7 +63,7 @@ export class CellsGroup extends React.Component<Props, IState>{
   }
 
   setZeroClick = () => {
-    let currentOffset = this.props.group.channelsInfo.currentValueOffsetSetter();
+    let currentOffset = this.props.group.channelsInfo.setCurrentOffset();
     notification.success({
       message: `Смещение установлено для датчика ${this.props.group.node.fullSensorInfo.SensorType} - ${currentOffset.toFixed(2)}${this.props.group.node.fullSensorInfo.UnitValueName}`,
       duration: 2,

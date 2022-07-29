@@ -54,6 +54,7 @@ export enum SensorMessage {
     StartStreaming,
     StopStreaming,
     StopReading,
+    SetTime0,
 }
 
 export interface SensorMessageEventArgs {

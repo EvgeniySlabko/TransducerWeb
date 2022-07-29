@@ -29,8 +29,6 @@ export class SensorDataProvider implements ISensorDataProvider {
                 });
                 break;
         }
-
-
     }
 
     get onData(): EventDispatcher<ISingleComponentSensor, SensorData> {

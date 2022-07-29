@@ -1,5 +1,5 @@
 import { ChannelsGroup } from "../Channel/AllChannelsFactory";
-import { ValueType } from "../Channel/ChannelStyle/ColorsDefinitions";
+import { ValueType } from "../Channel/ChannelStyle/ChanneStyleCommon";
 
 let mainColors =
     [
@@ -27,7 +27,7 @@ let powerColors =
 
 export function changeGroupColor(groups: ChannelsGroup[], index: number) {
     groups.forEach(g => {
-        g.cellChannel.Style.fontStyle = changeChannelColorAccordigIndex(g.cellChannel.Style.fontStyle, g.cellChannel.Style.valueType, index);
+        g.cellChannel.Style.color = changeChannelColorAccordigIndex(g.cellChannel.Style.color, g.cellChannel.Style.valueType, index);
         g.plotChannel.Style.color = changeChannelColorAccordigIndex(g.plotChannel.Style.color, g.plotChannel.Style.valueType, index);
         g.savingChannel.Style.color = changeChannelColorAccordigIndex(g.savingChannel.Style.color, g.savingChannel.Style.valueType, index);
     })

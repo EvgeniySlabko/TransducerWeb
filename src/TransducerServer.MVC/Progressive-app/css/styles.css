@@ -217,6 +217,13 @@ pre {
 	background-color: var(--code-bg-color);
 }
 
+.save-sensor-params-button {
+	position: absolute;
+	
+	right: 10px;
+	top: 60px;
+}
+
 .code-block {
 	max-height: 100px;
 	overflow: auto;

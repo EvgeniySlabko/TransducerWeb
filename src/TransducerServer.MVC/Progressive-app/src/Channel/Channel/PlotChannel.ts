@@ -1,4 +1,4 @@
-import { ChannelStyle } from "../ChannelStyle/ChannelStyle";
+import { PlotChannelStyle as PlotChannelStyle } from "../ChannelStyle/PlotChannelStyle";
 import { ISensorDataProvider } from "../SensorDataProveder/ISensorDataProvider";
 import { EventDispatcher } from "strongly-typed-events";
 import { SensorData, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
@@ -25,14 +25,14 @@ export type ChannelCloseArgs =
 
 // Содержит информацию для отображения на графике. подает данные на график
 export class PlotChannel {
-    private style: ChannelStyle;
+    private style: PlotChannelStyle;
     
     // Фабричный метод создание каналов из Sensor
     private _onData = new EventDispatcher<PlotChannel, ChannelDataArgs>();
     private _onMessage = new EventDispatcher<PlotChannel, ChannelMessageArgs>();
     private _onClose = new EventDispatcher<PlotChannel, ChannelCloseArgs>();
 
-    public constructor(dataSource: ISensorDataProvider, style: ChannelStyle) {
+    public constructor(dataSource: ISensorDataProvider, style: PlotChannelStyle) {
         this.style = style;
         dataSource.onData?.sub((sensor, args) => {
             this._onData.dispatch(this, {

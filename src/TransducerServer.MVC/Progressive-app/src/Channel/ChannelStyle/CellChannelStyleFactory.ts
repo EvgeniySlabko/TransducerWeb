@@ -2,24 +2,9 @@
 import { CalculatePower } from "../../Common/Common";
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { CellChannelStyle } from "./CellChannelStyle";
-import { powerBaseColor, speedBaseColor, tmpBaseColor, torqueBaseColor } from "./ColorsDefinitions";
+import { powerBaseColor, speedBaseColor, tmpBaseColor, torqueBaseColor } from "./ChanneStyleCommon";
 
 let count: number = 0;
-export function CreateDefaultCellStyle(): CellChannelStyle {
-    return {
-        id: count++,
-        sensorId: Math.random(),
-        valueName: "undefined",
-        unitsName: "V",
-        cellStyle: "",
-        fontSize: 15,
-        fontStyle: "",
-        sensorType: "Undefined",
-        accurency: 2,
-        valueType: "torque",
-        visible: true,
-    }
-}
 
 export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo): CellChannelStyle {
     return {
@@ -27,9 +12,8 @@ export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo): CellChannelSt
         sensorId: sensorInfo.id,
         valueName: sensorInfo.ValueName,
         unitsName: sensorInfo.UnitValueName,
-        cellStyle: "cell-torque-style",
         fontSize: 15,
-        fontStyle: torqueBaseColor,
+        color: torqueBaseColor,
         sensorType: sensorInfo.SensorType,
         accurency: sensorInfo.MasEdRazm.toString().length - 1,
         valueType: "torque",
@@ -46,9 +30,8 @@ export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo): CellChannelSty
         sensorId: sensorInfo.id,
         valueName: "Скорость вр.",
         unitsName: "rpm",
-        fontStyle: speedBaseColor,
+        color: speedBaseColor,
         fontSize: 15,
-        cellStyle: "cell-speed-style",
         sensorType: sensorInfo.SensorType,
         accurency: 0,
         valueType: "speed",
@@ -64,9 +47,8 @@ export function CreatetemperatureCellStyle(sensorInfo: FullSensorInfo): CellChan
         sensorId: sensorInfo.id,
         valueName: "Температура",
         unitsName: "C",
-        fontStyle: tmpBaseColor,
+        color: tmpBaseColor,
         fontSize: 15,
-        cellStyle: "cell-tmp-style",
         sensorType: sensorInfo.SensorType,
         accurency: 1,
         valueType: "tmp",
@@ -80,9 +62,8 @@ export function CreatePowerCellStyle(sensorInfo: FullSensorInfo): CellChannelSty
         sensorId: sensorInfo.id,
         valueName: "Мощность",
         unitsName: sensorInfo.powerUnitsName,
-        fontStyle: powerBaseColor,
+        color: powerBaseColor,
         fontSize: 15,
-        cellStyle: "cell-power-style",
         sensorType: sensorInfo.SensorType,
         accurency: sensorInfo.MasEdRazm.toString().length - 1,
         valueType: "power",

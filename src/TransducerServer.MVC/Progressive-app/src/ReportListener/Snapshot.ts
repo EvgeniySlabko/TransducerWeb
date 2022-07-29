@@ -1,32 +1,76 @@
 
-import { ChannelStyle } from "../Channel/ChannelStyle/ChannelStyle";
+import { PlotChannelStyle } from "../Channel/ChannelStyle/PlotChannelStyle";
 import { AlignedData } from "../Common/DataAligner";
 import { SensorData } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { SeriesValue } from "../uPlot/PlotCommon";
 
-export type TrackData =
-    {
-        style: ChannelStyle;
-        data: SensorData;
-    }
+export declare class TrackData
+{
+    style: PlotChannelStyle;
+    data: SensorData;
+}
+
+export declare class SnapshotData
+{
+    trackData: TrackData[];
+}
+
+export declare class Report
+{
+    data: SnapshotData;
+    avgRatio: number;
+}
 
 export class Snapshot {
     private data: Array<TrackData>;
-    constructor(data?: Array<TrackData>) {
-        if (data)
-            this.data = data;
+    private avgRatio: number = 1;
+
+    public get AvgRatio(){
+        return this.avgRatio;
+    }
+
+    public set AvgRatio(value: number){
+        this.avgRatio = value;
+    }
+
+    public get dt() : number
+    {
+        return 1 / (5000 / this.avgRatio);
+    } 
+
+    public GetTrackData = () => this.data;
+
+    constructor(snapshotData?: SnapshotData) {
+        if (snapshotData)
+        {
+            this.data = snapshotData.trackData;
+        }
         else
             this.data = new Array(0);
     }
 
-    public async FromFile(file: File) {
-        var strData = await file.text();
-        this.data = JSON.parse(strData);
+    public FromShanpshotData(snapshotData: SnapshotData)
+    {
+        this.data = snapshotData.trackData;
     }
 
-    public GetTrackData = () => this.data;
+    public async FromFile(file: File) {
+        let text = await file.text();
+        let report: Report = JSON.parse(text);
+        this.data = report.data.trackData;
+        this.avgRatio = report.avgRatio;
+    }
+
     public async ToFile(stream: FileSystemFileHandle) {
         var parts = new Array<string>();
-        parts.push(JSON.stringify(this.data));
+        let report : Report = {
+            data: {
+                trackData: this.data,
+            },
+            avgRatio: this.avgRatio,
+        }
+
+        parts.push(JSON.stringify(report));
         var blob = new Blob(parts,
             {
                 type: "text/plain;charset=utf-8",
@@ -39,14 +83,15 @@ export class Snapshot {
         //FileSaver.saveAs(blob, fileName);
     }
 
-    public async ToCSV(fileName: string, dt: number, stream: FileSystemFileHandle) {
-        let alignedData = AlignedData(this.data.map(d => d.data), { dt: dt });
+    public async ToCSV(stream: FileSystemFileHandle) {
+        
+        let alignedData = AlignedData(this.data.map(d => d.data), { dt: this.dt });
 
-        let csvContent = "data:text/csv;charset=utf-8,";
+        let csvContent = ""//data:text/csv;charset=utf-8,";
 
         let csvRows = new Array<string>();
 
-        let addRow = (title: string, data: (number | null | undefined)[]) => {
+        let addRow = (title: string, data: (SeriesValue)[]) => {
             let rowArray = new Array<string>();
             rowArray.push(title);
 

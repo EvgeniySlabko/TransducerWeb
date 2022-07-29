@@ -1,10 +1,10 @@
-import React from 'react';
-import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Channel/CellChannel';
-import { Button, Checkbox, Collapse, InputNumber, Row, Slider } from 'antd';
-import { PlotsManager } from '../uPlot/plotsManager';
-import { ChannelsGroup } from '../Channel/AllChannelsFactory';
-import { CellModal } from './CellModal';
 import { SettingOutlined } from '@ant-design/icons';
+import { Button, Collapse } from 'antd';
+import React from 'react';
+import { ChannelsGroup } from '../Channel/AllChannelsFactory';
+import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Channel/CellChannel';
+import { PlotsManager } from '../uPlot/PlotsManager';
+import { CellModal } from './CellModal';
 import { CellValue } from './CellValue';
 
 const { Panel } = Collapse;
@@ -91,7 +91,7 @@ export class Cell extends React.Component<Props, IState>{
         <div className='horizontal-flex'>
 
           <div className={`cell-name`}
-            style={{ color: this.props.channelGroup.cellChannel.Style.fontStyle, background: this.state.overload ? "red" : "white" }} >
+            style={{ color: this.props.channelGroup.cellChannel.Style.color, background: this.state.overload ? "red" : "white" }} >
             {this.props.channelGroup.cellChannel.Style.valueName + ` ${"(" + this.props.channelGroup.cellChannel.Style.unitsName + ")"}`}
           </div>
 
@@ -110,7 +110,7 @@ export class Cell extends React.Component<Props, IState>{
         </div>
 
         <CellValue fontSize={this.props.channelGroup.cellChannel.Style.fontSize}
-          fontStyle={this.props.channelGroup.cellChannel.Style.fontStyle}
+          fontStyle={this.props.channelGroup.cellChannel.Style.color}
           hide={this.state.hide}
           value={this.state.value} />
 
