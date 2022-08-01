@@ -8,6 +8,7 @@ import { CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqu
 import { PeakEventArgs } from "./SensorDataProveder/AbsolutePeakAnalyzer";
 import { CutOffDataProvider } from "./SensorDataProveder/CutOffDataProvider";
 import { CreateAbsoluteAnalizerSource, CreateAmplifiredDataSource, CreateAverageValueDataSource, CreateDisplayValueDataSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "./SensorDataProveder/DataSourceFactory";
+import { HihgPassFilter } from "./SensorDataProveder/HihgPassFilter";
 import { ISensorDataProvider } from "./SensorDataProveder/ISensorDataProvider";
 import { SensorDataProvider } from "./SensorDataProveder/SensorDataProvider";
 
@@ -39,14 +40,15 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     let cutOffMainSource = new CutOffDataProvider(mainSource);
     let offsetSource = CreateOffsetDataSource(cutOffMainSource, 0);
     let applifiredDataSource = CreateAmplifiredDataSource(offsetSource, fullSensorInfo.valueRatio);
+    let filterDataSource = new HihgPassFilter(applifiredDataSource);
 
-    let absoluteAnalizerSource = CreateAbsoluteAnalizerSource(applifiredDataSource);
+    let absoluteAnalizerSource = CreateAbsoluteAnalizerSource(filterDataSource);
 
     let cellDisplaySource = CreateDisplayValueDataSource(offsetSource, 30);
-    let plotAverager = CreateAverageValueDataSource(applifiredDataSource, 1);
+    let plotAverager = CreateAverageValueDataSource(filterDataSource, 1);
 
     let mainPlotChannel = CreateMainChannel(plotAverager, fullSensorInfo);
-    let mainSavingChannel = CreateMainChannel(applifiredDataSource, fullSensorInfo);
+    let mainSavingChannel = CreateMainChannel(filterDataSource, fullSensorInfo);
     let mainCellChannel = CreateMainCellChannel(cellDisplaySource, fullSensorInfo);
 
     channels.push(mainPlotChannel);
@@ -116,6 +118,7 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     function CreateTemperatureChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo): PlotChannel {
         return new PlotChannel(source, CreatetemperatureStyle(fullSensorInfo));
     }
+    
 
     function CreateTemperatureCellChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo): CellChannel {
         return new CellChannel(source, CreatetemperatureCellStyle(fullSensorInfo));
