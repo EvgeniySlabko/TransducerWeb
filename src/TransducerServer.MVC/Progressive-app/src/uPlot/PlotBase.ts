@@ -605,8 +605,8 @@ export class MyUPlotBase {
     //вычисляем относительное смещение 
     let dVal = curRangeVal * dy;
 
-    range[0] += dVal;
-    range[1] += dVal;
+    range[0] += dVal / 2;
+    range[1] += dVal / 2;
   }
 
   private XAxisRangeChanged(dx: number) {
@@ -641,7 +641,6 @@ export class MyUPlotBase {
         if (this.legendItems) {
           try {
             this.legendItems[i + 1].setValue(strValue);
-
           }
           catch { }
 

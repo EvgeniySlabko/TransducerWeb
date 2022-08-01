@@ -2,7 +2,7 @@ import { Checkbox, Collapse, InputNumber, Modal, Slider } from 'antd';
 import React from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { ChannelsGroup } from '../Channel/AllChannelsFactory';
-import { PlotsManager } from '../uPlot/PlotsManager';
+import { PlotsManager } from '../uPlot/PlotManager';
 import { MenuItem } from './MenuItem';
 
 const { Panel } = Collapse;
@@ -57,10 +57,10 @@ export class CellModal extends React.Component<Props, IState>{
   render() {
     return (
       <div onClick={e => e.stopPropagation()}>
-        <Modal title="Параметры датчика"
+        <Modal title="Параметры канала"
           visible={this.props.visible}
-          cancelButtonProps={{ style: { display: 'none' } }}
           onOk={event => { this.onOk(); this.props.onClose(); }}
+          onCancel={this.props.onClose}
           centered={false}>
           <div className='vertical-flex'>
 
@@ -91,11 +91,3 @@ export class CellModal extends React.Component<Props, IState>{
     )
   }
 }
-
-
-/*
-<InputNumber step={0.01 * this.props.group.node.fullSensorInfo.MaxValue}
-          style={{ width: "auto" }}
-          min={0} max={this.props.group.node.fullSensorInfo.MaxValue}
-          value={this.state.treshold} onChange={this.tresholdChanged} />
-*/

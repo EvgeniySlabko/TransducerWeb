@@ -1,9 +1,9 @@
 import { SaveOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Collapse, InputNumber, Modal, notification } from 'antd';
+import { Button, Checkbox, Collapse, Divider, InputNumber, Modal, notification, Space } from 'antd';
 import React from 'react';
 import { ParamsStorage } from '../Storage/AppStorage';
-import { GetSensorParameters, SaveChannelGroupParameters, SaveSensorParameters, SensorStorageParameters } from '../Storage/ChannelsDataStorage';
-import { PlotsManager } from '../uPlot/PlotsManager';
+import { GetSensorParameters, SaveChannelGroupParameters, SaveSensorParameters, SensorStorageParameters, SetExternalSpeedSensorState } from '../Storage/ChannelsDataStorage';
+import { PlotsManager } from '../uPlot/PlotManager';
 import { Group } from './App';
 import { MenuItem } from './MenuItem';
 const { Panel } = Collapse;
@@ -52,20 +52,27 @@ export class CellsGroupModal extends React.Component<Props, IState>{
         duration: 2,
       });
     }
+
+    await SetExternalSpeedSensorState(this.state.externalSpeedSensor, this.props.group.node.fullSensorInfo.SensorId);
   }
 
   async componentDidMount() {
     try {
       let holdingRegisters = await this.props.group.node.sensor.GetHoldingRegisters();
-      let sensorparameters = await GetSensorParameters(this.props.group.node.fullSensorInfo.SensorId);
-      let externalSpeedSensor = sensorparameters ? sensorparameters.externalSpeedSensor : false;
-
+      
       this.setState((prev, props) => ({
         speedPeriod: holdingRegisters.SpeedMeasurigPeriod,
         avgRatio: holdingRegisters.AverageRatio,
-        externalSpeedSensor: externalSpeedSensor,
-        dataReceived: true
+        dataReceived: true,
       }));
+
+      let sensorparameters = await GetSensorParameters(this.props.group.node.fullSensorInfo.SensorId);
+      if (sensorparameters != null)
+      {
+        this.setState((prev, props) => ({
+          externalSpeedSensor: sensorparameters!.externalSpeedSensor,
+        }));
+      }
     }
     catch
     {
@@ -78,44 +85,47 @@ export class CellsGroupModal extends React.Component<Props, IState>{
 
   onSpeedChanged = (value: number) => this.setState((prev, props) => ({ speedPeriod: value }));
   onAvgChanged = (value: number) =>  this.setState((prev, props) => ({ avgRatio: value }));
-  onExternalSpeedSensorChanged = (value: boolean) => 
-  {
+  onExternalSpeedSensorChanged = (value: boolean) => {
     this.setState((prev, props) => ({ externalSpeedSensor: value }));
   }
+
   onTrackMaximumChanged = (value: boolean) =>  this.setState((prev, props) => ({ trackMaximum: value }));
 
   onSaveParamsToStorage = () =>
   {
     SaveChannelGroupParameters(this.props.group.channelsInfo.channelGroups, this.props.group.node.fullSensorInfo.SensorId);
-    let sensorParameters: SensorStorageParameters = {
-      avgRatio: this.state.avgRatio,
-      externalSpeedSensor: this.state.externalSpeedSensor,
-      speedMeasurmentPeriod: this.state.speedPeriod,
-    }
 
-    SaveSensorParameters(sensorParameters, this.props.group.node.fullSensorInfo.SensorId);
+    notification.success({
+      message: `Настройки каналов сохранены.`,
+      duration: 2,
+    });
+  }
+
+  ResetOffset = () =>{
+    this.props.group.channelsInfo.setOffset(0);
+    this.setState({});
   }
 
   render() {
     return (
 
-      <Modal title="Общие параметры."
+      <Modal title="Общие параметры"
         visible={this.props.visible}
         onOk={event => { this.onOk(); this.props.onClose(); }}
         onCancel={this.props.onClose}
-        cancelButtonProps={{ style: { display: 'none' } }}
-        centered={false}>
-
-
-        <Button className='save-sensor-params-button'
-                onClick={ this.onSaveParamsToStorage } 
+        cancelText={"Отмена"}
+        footer = {[
+          <Button style={{float:"left"}} 
+                title="Запомнить настройки датчика"
                 icon={<SaveOutlined 
-                onClick={ this.onSaveParamsToStorage }/>}/>
+                onClick={ this.onSaveParamsToStorage }/>}/>,
+                <Button onClick={this.props.onClose} title="Отмена">Отмена</Button>,
+                <Button onClick={ event => { this.onOk(); this.props.onClose(); } } title="Принять">Принять</Button>,
+        ]}
+        centered={false}>
         
-        <MenuItem className='vertical-flex' 
-        label='Отображение каналов:'
-        children={
-          <div>
+        
+          <Space size={'small'}>
             {
               this.props.group.channelsInfo.channelGroups.map((g, i) =>
               <Checkbox key={i} 
@@ -124,9 +134,8 @@ export class CellsGroupModal extends React.Component<Props, IState>{
                   {g.cellChannel.Style.valueName} </Checkbox>
               )
             }
-          </div>
-        } />
-          
+          </Space>
+          <Divider type="horizontal" style={{ height: "100%" }} />
         {
           (!this.state.dataReceived) ? <></> :
             <>
@@ -149,19 +158,36 @@ export class CellsGroupModal extends React.Component<Props, IState>{
                                        onChange={this.onAvgChanged} />
                            }/>
 
-              <Checkbox key={3} 
-                        className='margin'
-                        defaultChecked={this.state.externalSpeedSensor}
-                        onChange={(c) => this.onExternalSpeedSensorChanged(c.target.checked) }>
-                        Внешний датчик скорости</Checkbox>
+              <MenuItem key={3} 
+                        label='Внешний датчик скорости:' 
+                        children={
+                          <Checkbox key={4}   
+                            checked={this.state.externalSpeedSensor}
+                            onChange={(c) => this.onExternalSpeedSensorChanged(c.target.checked) }/>
+                           }/>              
               </>
         }
 
-        <Checkbox key={6} 
-                  className='margin' 
-                  defaultChecked={false} 
-                  onChange={(c) => this.onTrackMaximumChanged(c.target.checked)}>
-                  Отслеживать максимум.</Checkbox>
+        <MenuItem key={5} 
+          label='Отслеживать максимум:' 
+          children={
+            <Checkbox key={6} 
+              defaultChecked={false} 
+              onChange={(c) => this.onTrackMaximumChanged(c.target.checked)}>
+            </Checkbox> }/>
+        
+        <MenuItem key={7} 
+        label='Тара:' 
+        children={
+          <div style={{display: "flex", alignItems: "baseline"}}>
+            <Button size='small' key={8} onClick={ this.ResetOffset } >Сбросить</Button>
+
+            <p style={{width: "50px", paddingLeft: "10px"}}>
+                {this.props.group.channelsInfo.offset().toFixed(this.props.group.node.fullSensorInfo.valueRatio)}
+            </p>
+            
+          </div>
+         }/>
       </Modal>
     )
   }

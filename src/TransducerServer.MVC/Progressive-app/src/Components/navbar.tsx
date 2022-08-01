@@ -6,7 +6,7 @@ import { RecordManager } from '../ReportListener/RecordManager';
 import { CreateSerialSensor } from '../Sensor/SensorFactory';
 import { SensorController } from '../Sensor/SensorsManager/SensorsManager';
 import { Facker } from '../Sensor/SingleComponentSensor.ts/Faker/FackerSensor';
-import { PlotsManager } from '../uPlot/PlotsManager';
+import { PlotsManager } from '../uPlot/PlotManager';
 import { Group } from './App';
 import { PlotControlPanel } from './ControlPanel/PlotControlPanel';
 

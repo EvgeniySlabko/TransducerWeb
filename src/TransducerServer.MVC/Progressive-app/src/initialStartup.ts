@@ -1,4 +1,4 @@
-import { PlotsManager as PlotsManager } from "./uPlot/PlotsManager";
+import { PlotsManager as PlotsManager } from "./uPlot/PlotManager";
 import { RecordManager } from "./ReportListener/RecordManager";
 import { SensorController } from "./Sensor/SensorsManager/SensorsManager";
 import { ParamsStorage } from "./Storage/AppStorage";

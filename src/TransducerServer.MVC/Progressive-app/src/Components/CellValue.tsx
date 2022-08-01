@@ -1,7 +1,7 @@
 import React from 'react';
 import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Channel/CellChannel';
 import { Button, Checkbox, Collapse, InputNumber, Row, Slider } from 'antd';
-import { PlotsManager } from '../uPlot/PlotsManager';
+import { PlotsManager } from '../uPlot/PlotManager';
 import { ChannelsGroup } from '../Channel/AllChannelsFactory';
 import { CellModal } from './CellModal';
 import { SettingOutlined } from '@ant-design/icons';

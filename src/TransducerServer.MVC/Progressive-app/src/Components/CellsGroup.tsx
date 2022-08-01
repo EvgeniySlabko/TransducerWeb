@@ -4,9 +4,10 @@ import { Button, Card, Checkbox, Collapse, InputNumber, Menu, Modal, notificatio
 import { CloseOutlined, SettingOutlined } from '@ant-design/icons';
 import { Cell } from './Cell';
 import { Group } from './App';
-import { PlotsManager } from '../uPlot/PlotsManager';
+import { PlotsManager } from '../uPlot/PlotManager';
 import { ParamsStorage } from '../Storage/AppStorage';
 import { CellsGroupModal } from './CellsGroupModal';
+import { SetOffset } from '../Storage/ChannelsDataStorage';
 const { Panel } = Collapse;
 
 export type PeackMode = "none" | "absolute" | "relative";
@@ -64,6 +65,8 @@ export class CellsGroup extends React.Component<Props, IState>{
 
   setZeroClick = () => {
     let currentOffset = this.props.group.channelsInfo.setCurrentOffset();
+    SetOffset(currentOffset, this.props.group.node.fullSensorInfo.SensorId);
+
     notification.success({
       message: `Смещение установлено для датчика ${this.props.group.node.fullSensorInfo.SensorType} - ${currentOffset.toFixed(2)}${this.props.group.node.fullSensorInfo.UnitValueName}`,
       duration: 2,
@@ -97,15 +100,18 @@ export class CellsGroup extends React.Component<Props, IState>{
                 <h6 className='cell-group-title'>ID: {this.props.group.node.fullSensorInfo.SensorId}</h6>
               </div>
 
-              <div key={5} onClick={e => e.stopPropagation()}>
-
+              {
+                this.state.modalVisible ? 
+                <div key={5} onClick={e => e.stopPropagation()}>
                 <CellsGroupModal key={6}
                   group={this.props.group}
                   onClose={() => this.setState(() => ({ modalVisible: false }))}
                   plotsManager={this.props.plotsManager}
                   storage={this.props.storage}
                   visible={this.state.modalVisible} />
-              </div>
+                </div> : <></>
+              }
+              
             </>
           }>
 

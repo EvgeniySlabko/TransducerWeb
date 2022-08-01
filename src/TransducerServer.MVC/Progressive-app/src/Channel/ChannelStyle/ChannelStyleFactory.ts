@@ -64,7 +64,7 @@ export function CreatetemperatureStyle(sensorInfo: FullSensorInfo): PlotChannelS
         legendTitle: sensorInfo.SensorType + ":Tmp",
         line: "solid",
         range: [-60, 60],
-            yTitle: `Temperature (C)`,
+        yTitle: `Temperature (C)`,
         unitName: "Dg",
         valueType: "tmp",
         yAxeSide: "right",

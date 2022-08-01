@@ -1,15 +1,19 @@
-import { ChannelsGroup } from "../Channel/AllChannelsFactory";
+import { AllChannelsInfo, ChannelsGroup } from "../Channel/AllChannelsFactory";
 import { CellChannelStyle } from "../Channel/ChannelStyle/CellChannelStyle";
 import { PlotChannelStyle } from "../Channel/ChannelStyle/PlotChannelStyle";
 import { ValueType } from "../Channel/ChannelStyle/ChanneStyleCommon";
-import { SensorWorker } from "../Sensor/SensorWorker";
+import { Group } from "../Components/App";
 
 
 export declare class SensorStorageParameters
 {
-    avgRatio: number;
     externalSpeedSensor: boolean;
-    speedMeasurmentPeriod: number;
+    offset: number;
+}
+
+let defaultSensorParams: SensorStorageParameters = {
+    externalSpeedSensor: false,
+    offset: 0
 }
 
 export function SaveChannelGroupParameters(groups: ChannelsGroup[], sensorId: string) 
@@ -83,22 +87,42 @@ export function SaveSensorParameters(parameters: SensorStorageParameters, sensor
     localStorage.setItem(key, parametersJson);
 }
 
-export async function ApplaySensorParameters(worker: SensorWorker, sensorId: string)
+export async function SetExternalSpeedSensorState(state: boolean, sensorId: string)
 {
-    let parameters = await GetSensorParameters(sensorId);
-    if (parameters !== null)
-    {
-        await worker.SetAverageRatio(parameters.avgRatio);
-        await worker.SetExternalSpeedSensorState(parameters.externalSpeedSensor);
-        await worker.SetSpeedPeriod(parameters.speedMeasurmentPeriod);
-    }
+    let params = await GetSensorParameters(sensorId);
+    params.externalSpeedSensor = state;
+    SaveSensorParameters(params, sensorId);
 }
 
-export async function GetSensorParameters(sensorId: string) : Promise<SensorStorageParameters | null> 
+export async function SetOffset(offset: number, sensorId: string)
+{
+    let params = await GetSensorParameters(sensorId);
+    if (params === null)
+    {
+        params = defaultSensorParams;
+    }
+   
+    params.offset = offset;
+    SaveSensorParameters(params, sensorId);
+}
+
+export async function ApplySensorParameters(group: Group, sensorId: string)
+{
+    let parameters = await GetSensorParameters(sensorId);
+    
+    await group.node.worker.SetExternalSpeedSensorState(parameters.externalSpeedSensor);
+
+    await group.node.sensor.SetExternalSensorState(parameters.externalSpeedSensor);
+
+    group.channelsInfo.setOffset(parameters.offset)
+
+}
+
+export async function GetSensorParameters(sensorId: string) : Promise<SensorStorageParameters> 
 {
     let key = getSensorParametersKey(sensorId);
     let parametersJson = localStorage.getItem(key);
-    if (parametersJson === null) return null;
+    if (parametersJson === null) return defaultSensorParams;
 
     let parameters = JSON.parse(parametersJson) as SensorStorageParameters;
     return parameters;

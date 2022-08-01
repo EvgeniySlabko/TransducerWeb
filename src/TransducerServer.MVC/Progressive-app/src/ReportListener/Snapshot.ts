@@ -76,7 +76,7 @@ export class Snapshot {
                 type: "text/plain;charset=utf-8",
                 endings: "native",
             });
-
+        
         let writable = await stream.createWritable();
         await writable.write(blob);
         await writable.close();

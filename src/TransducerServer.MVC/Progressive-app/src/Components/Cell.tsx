@@ -3,7 +3,7 @@ import { Button, Collapse } from 'antd';
 import React from 'react';
 import { ChannelsGroup } from '../Channel/AllChannelsFactory';
 import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Channel/CellChannel';
-import { PlotsManager } from '../uPlot/PlotsManager';
+import { PlotsManager } from '../uPlot/PlotManager';
 import { CellModal } from './CellModal';
 import { CellValue } from './CellValue';
 
@@ -100,12 +100,14 @@ export class Cell extends React.Component<Props, IState>{
             key={1}
             icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); }} />} />
 
-
-          <CellModal
-            group={this.props.channelGroup}
-            plotsManager={this.props.plotsManager}
-            visible={this.state.modalVisible}
-            onClose={this.onModalClose} />
+          {
+            this.state.modalVisible ? 
+            <CellModal
+              group={this.props.channelGroup}
+              plotsManager={this.props.plotsManager}
+              visible={this.state.modalVisible}
+              onClose={this.onModalClose} /> : <></>
+          }
 
         </div>
 

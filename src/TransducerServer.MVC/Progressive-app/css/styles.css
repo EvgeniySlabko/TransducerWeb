@@ -155,6 +155,7 @@ legend {
 	padding-right: 2px !important;
 }
 
+
 .vertical-flex {
 	display: flex;
 	flex-direction: column;
@@ -217,11 +218,16 @@ pre {
 	background-color: var(--code-bg-color);
 }
 
+.control-panel-button{
+	height: "20px";
+	width: "20px"; 
+}
+
 .save-sensor-params-button {
 	position: absolute;
 	
-	right: 10px;
-	top: 60px;
+	right: 480px;
+	top: 360px;
 }
 
 .code-block {

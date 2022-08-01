@@ -47,6 +47,10 @@ export class OffsetDataProvider implements ISensorDataProvider {
         return this._onMessage.asEvent();;
     }
 
+    public get Offset() {
+        return this.offset;
+    }
+
     public SetOffset = (offset: number) => {
         this.offset = offset;
     }

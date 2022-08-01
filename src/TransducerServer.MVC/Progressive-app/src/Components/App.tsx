@@ -1,24 +1,22 @@
+import { notification } from 'antd';
 import React from 'react';
-import { Navbar } from './navbar';
-import { GroupsContainer } from './GroupsContainer';
-import { SensorController, SensorControllerArgs } from '../Sensor/SensorsManager/SensorsManager';
+import { AllChannelsInfo, CreateAllChannels } from '../Channel/AllChannelsFactory';
+import { changeGroupColor } from '../Common/ChannelColorChanger';
+import { getRandomInt } from '../Common/Common';
+import { GetMinAvgFactor } from '../Common/SensorsHelpers';
+import { FileWorker } from '../Files/FileWorker';
 import { RecordigGroup, RecordManager } from '../ReportListener/RecordManager';
-import { PlotsManager } from '../uPlot/PlotsManager';
-import { AllChannelsInfo, ChannelsGroup, CreateAllChannels } from '../Channel/AllChannelsFactory';
-import { CellChannel, ChannelCloseArgs } from '../Channel/Channel/CellChannel';
-import { PlotChannel } from '../Channel/Channel/PlotChannel';
+import { Snapshot } from '../ReportListener/Snapshot';
+import { SensorController, SensorControllerArgs } from '../Sensor/SensorsManager/SensorsManager';
+import { SensorWorker } from '../Sensor/SensorWorker';
 import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISingleComponentSensor';
 import { FullSensorInfo } from '../Sensor/SingleComponentSensor.ts/SensorDefinitions';
-import { SensorWorker } from '../Sensor/SensorWorker';
-import { notification } from 'antd';
-import { Snapshot } from '../ReportListener/Snapshot';
-import { CreateTxtFileDialog, getRandomInt } from '../Common/Common';
 import { ParamsStorage } from '../Storage/AppStorage';
-import { changeGroupColor } from '../Common/ChannelColorChanger';
+import { ApplayLocalStorageSettingsForGroups, ApplySensorParameters as ApplaySensorStorageParameters } from '../Storage/ChannelsDataStorage';
+import { PlotsManager } from '../uPlot/PlotManager';
+import { GroupsContainer } from './GroupsContainer';
+import { Navbar } from './navbar';
 import { SaveModal } from './SaveModal/SaveModal';
-import { GetMinAvgFactor } from '../Common/SensorsHelpers';
-import { ApplayLocalStorageSettingsForGroups, ApplaySensorParameters as ApplaySensorStorageParameters } from '../Storage/ChannelsDataStorage';
-import { FileWorker } from '../Files/FileWorker';
 
 export interface Props {
     sensorService: SensorController;
@@ -111,19 +109,21 @@ export class App extends React.Component<Props, IState>
             let allChannelsInfo = CreateAllChannels(args.sensor, args.fullSensorInfo, getRandomInt(10));
             changeGroupColor(allChannelsInfo.channelGroups, this.state.groups.length);
             ApplayLocalStorageSettingsForGroups(allChannelsInfo.channelGroups, args.fullSensorInfo.SensorId);
-            await ApplaySensorStorageParameters(args.worker, args.fullSensorInfo.SensorId);
+            
+            let group : Group ={
+                channelsInfo: allChannelsInfo,
+                node: {
+                    fullSensorInfo: args.fullSensorInfo,
+                    sensor: args.sensor,
+                    worker: args.worker,
+                }
+            } 
 
+            await ApplaySensorStorageParameters(group, args.fullSensorInfo.SensorId);
             //let plotChannels = CreateAllSensorChannelsForPlot(args.sensor, args.fullSensorInfo);
             this.setState((prev, props) => ({
                 firstStart: true,
-                groups: this.state.groups.concat([{
-                    channelsInfo: allChannelsInfo,
-                    node: {
-                        fullSensorInfo: args.fullSensorInfo,
-                        sensor: args.sensor,
-                        worker: args.worker,
-                    }
-                }]
+                groups: this.state.groups.concat([group]
                 )
             }));
 
@@ -222,6 +222,10 @@ export class App extends React.Component<Props, IState>
         if (this.fileWorker.File) 
             await snapshot.ToFile(this.fileWorker.File);
 
+        notification.success({
+            message: `Данные записаны в файл ${this.fileWorker.File?.name}`,
+            duration: 4,
+        });
         this.setState((prev, props) => ({
             recording: false,
             streaming: false,

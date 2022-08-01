@@ -2,7 +2,7 @@ import { Collapse } from 'antd';
 import React from 'react';
 import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISingleComponentSensor';
 import { ParamsStorage } from '../Storage/AppStorage';
-import { PlotsManager } from '../uPlot/PlotsManager';
+import { PlotsManager } from '../uPlot/PlotManager';
 import { Group } from './App';
 import { CellsGroup } from './CellsGroup';
 const { Panel } = Collapse;

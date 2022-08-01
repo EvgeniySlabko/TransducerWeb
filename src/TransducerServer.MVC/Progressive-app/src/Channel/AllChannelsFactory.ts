@@ -21,6 +21,7 @@ export interface AllChannelsInfo {
     channelGroups: ChannelsGroup[];
     setAvgRatio: (avgRatio: number) => void,
     setOffset: (offset: number) => void,
+    offset: () => number,
     setCurrentOffset: () => number,
     absolutePeackDetected: IEvent<PlotChannel, PeakEventArgs>,
     resetAbsoluteAnalizer: () => void,
@@ -104,6 +105,7 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
         setAvgRatio: plotAverager.SetAverage,
         setOffset: offsetSource.SetOffset,
         setCurrentOffset: offsetSource.SetCurrentOffset,
+        offset: () => offsetSource.Offset,
         channelGroups: groups,
         absolutePeackDetected: absolutepeakEvent.asEvent(),
         resetAbsoluteAnalizer: absoluteAnalizerSource.Reset,

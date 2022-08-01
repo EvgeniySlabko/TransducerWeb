@@ -2,7 +2,7 @@ import { PlotChannel, ChannelDataArgs, ChannelMessageArgs } from "../../Channel/
 import { SensorData, SensorMessage } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { PlotBufferManager, PlotBufferManagerConfig } from "./StreamingBufferManager";
 import { Label, MyUPlotBase, SeriesInfo } from "../PlotBase";
-import { ChannelLabel } from "../PlotsManager";
+import { ChannelLabel } from "../PlotManager";
 
 export type TraceInfo =
   {
