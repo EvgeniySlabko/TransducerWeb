@@ -1,97 +1,110 @@
-//TO DO filter
-
-/*
-import { EventDispatcher, IEvent, ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
-import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISensor";
-import SensorComponentSensor from "../../Sensor/SingleComponentSensor.ts/sensor";
-import { dataEventArgs, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { EventDispatcher, IEvent } from "strongly-typed-events";
+import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
+import { SensorData, SensorMessage, SensorMessageEventArgs, SetAvgEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { FilterParameters, FilterType } from "../../Storage/ChannelsDataStorage";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
-//буферизирует данные
+var Fili = require('fili');
 
-export class FilterDataProvider implements ISensorDataProvider
-{
-    private _onData = new EventDispatcher<ISingleComponentSensor, dataEventArgs>();
-    private _onMessage = new EventDispatcher<ISingleComponentSensor,SensorMessageEventArgs>();
+export class FilterDataProvider implements ISensorDataProvider {
+    private _onData = new EventDispatcher<ISingleComponentSensor, SensorData>();
+    private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
     private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
 
-    private coefA: number[] = [];
-    private coefB: number[] = [];
-    private samplingRate: number;
+    private avgRatio: number = 1;
+    private fc: number = 100;
+    private enabled: boolean = true;
+    private order: number = 3;
+    private filterType: FilterType = "butterworth";
+    private filter?: any;
 
-    private f1: number;
-    private f2: number;
-    private FiltOrd = 4;
-    constructor(sensor: ISensorDataProvider, samplingRate: number, fs: number)
-    {
-        this.samplingRate = samplingRate;
-        this.f1 = 0.1;
-        this.f2 = 0.2;
-        this.recalc();
-        sensor.onClose.sub((sensor, msg) => 
-        {
-            this._onClose.dispatch(sensor, msg);
+    constructor(baseSource: ISensorDataProvider) {
+
+        baseSource.onClose.sub((sender, args) => {
+            this._onClose.dispatch(sender, args);
         });
 
-        sensor.onMessage.sub((sensor, args) =>
-        {
-            this._onMessage.dispatch(sensor, args);
+        baseSource.onMessage.sub((sender, args) => {
+            if (args.msgType === SensorMessage.SetAvg)
+            {
+                let avgArgs = args as SetAvgEventArgs;
+                this.avgRatio = avgArgs.avg;
+                this.createFilter();
+            }
+
+            this._onMessage.dispatch(sender, args);
         });
 
-        //messageSource?.onError?.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
-        sensor.onData.sub((sensor, data) => {
+        baseSource.onData.sub((sender, data) => {
+            if (!this.enabled) 
+            {
+                this._onData.dispatch(sender, {
+                    time: data.time,
+                    data: data.data,
+                }); 
 
-           let filtered = this.Filter(data);
-           this._onData.dispatch(sensor, filtered);
+                return;
+            }
+
+            let filtered = this.filter.multiStep(data.data)
+            this._onData.dispatch(sender, {
+                time: data.time,
+                data: filtered,
+            }); 
         });
+
+        this.createFilter()
     }
 
-    get onData(): IEvent<ISingleComponentSensor, dataEventArgs> {
-        return this._onData.asEvent();;
+    public SetFilterParams = (filterParams: FilterParameters) =>{
+        this.fc = filterParams.fc;
+        this.enabled = filterParams.enabled;
+        this.filterType = filterParams.filterType;
+        this.order = filterParams.order;
+        this.createFilter();
+    }
+
+    public get FilterParams(){
+        let filterParams : FilterParameters = {
+            filterType: this.filterType,
+            enabled: this.enabled,
+            fc: this.fc,
+            order: this.order
+        }
+
+        return filterParams;
+    }
+
+    private createFilter = () => {
+        //  Instance of a filter coefficient calculator
+        let iirCalculator = new Fili.CalcCascades();
+
+        // get available filters
+        //let availableFilters = iirCalculator.available();
+
+        // calculate filter coefficients
+        let samples = 5000 / this.avgRatio;
+        var iirFilterCoeffs = iirCalculator.lowpass({
+            order: this.order, // cascade 3 biquad filters (max: 12)
+            characteristic: this.filterType,
+            Fs: samples, // sampling frequency
+            Fc: this.fc, // cutoff frequency / center frequency for bandpass, bandstop, peak
+            BW: 1, // bandwidth only for bandstop and bandpass filters - optional
+            gain: 0, // gain for peak, lowshelf and highshelf
+            preGain: false // adds one constant multiplication for highpass and lowpass
+            // k = (1 + cos(omega)) * 0.5 / k = 1 with preGain == false
+        });
+
+        this.filter = new Fili.IirFilter(iirFilterCoeffs);
+    }
+
+    get onData(): IEvent<ISingleComponentSensor, SensorData> {
+        return this._onData.asEvent();
     }
     get onClose(): IEvent<ISingleComponentSensor, string> {
         return this._onClose.asEvent();
     }
     get onMessage(): IEvent<ISingleComponentSensor, SensorMessageEventArgs> {
-        return this._onMessage.asEvent();;
-    }
-
-
-    Filter = (data: dataEventArgs) : dataEventArgs =>
-    {
-        let f = filter(data.data, this.coefB, this.coefA);
-        return  {
-            data: f,
-            time: data.time,
-        }
-    } 
-    
-    public SetF1 = (f1: number) =>
-    {
-       this.f1 = f1;
-       this.recalc();
-    }
-
-    public SetF2 = (f2: number) =>
-    {
-       this.f2 = f2;
-       this.recalc();
-    }
-
-    private recalc = () =>
-    {
-        let FrequencyBands= [ this.f1, this.f2 ];
-        this.coefA = ComputeDenCoeffs(this.FiltOrd, FrequencyBands[0], FrequencyBands[1]);
-        for (let k = 0; k < this.coefA.length; k++)
-        {
-            // console.log("DenC is: ", this.coefA[k]);
-        }
-
-        this.coefB = ComputeNumCoeffs(this.FiltOrd, FrequencyBands[0], FrequencyBands[1], this.coefA);
-        for (let k = 0; k < this.coefB.length; k++)
-        {
-            // console.log("NumC is: ", this.coefB[k]);
-        }
+        return this._onMessage.asEvent();
     }
 }
-*/

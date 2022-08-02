@@ -4,16 +4,35 @@ import { PlotChannelStyle } from "../Channel/ChannelStyle/PlotChannelStyle";
 import { ValueType } from "../Channel/ChannelStyle/ChanneStyleCommon";
 import { Group } from "../Components/App";
 
+export type FilterType = "bessel" | "butterworth";
+export declare class FilterParameters
+{
+    enabled: boolean;
+    fc: number;
+    filterType: FilterType;
+    order: number;
+}
 
 export declare class SensorStorageParameters
 {
     externalSpeedSensor: boolean;
     offset: number;
+    filterParameters: FilterParameters;
+    avgRatio: number;
+    speedPeriod: number;
 }
 
 let defaultSensorParams: SensorStorageParameters = {
     externalSpeedSensor: false,
-    offset: 0
+    offset: 0,
+    avgRatio: 0,
+    speedPeriod: 100,
+    filterParameters: {
+        enabled: true,
+        fc: 1000,
+        filterType: "bessel",
+        order: 3
+    }
 }
 
 export function SaveChannelGroupParameters(groups: ChannelsGroup[], sensorId: string) 
@@ -87,12 +106,6 @@ export function SaveSensorParameters(parameters: SensorStorageParameters, sensor
     localStorage.setItem(key, parametersJson);
 }
 
-export async function SetExternalSpeedSensorState(state: boolean, sensorId: string)
-{
-    let params = await GetSensorParameters(sensorId);
-    params.externalSpeedSensor = state;
-    SaveSensorParameters(params, sensorId);
-}
 
 export async function SetOffset(offset: number, sensorId: string)
 {
@@ -111,10 +124,10 @@ export async function ApplySensorParameters(group: Group, sensorId: string)
     let parameters = await GetSensorParameters(sensorId);
     
     await group.node.worker.SetExternalSpeedSensorState(parameters.externalSpeedSensor);
-
-    await group.node.sensor.SetExternalSensorState(parameters.externalSpeedSensor);
-
-    group.channelsInfo.setOffset(parameters.offset)
+    await group.node.worker.SetAverageRatio(parameters.avgRatio);
+    await group.node.worker.SetSpeedPeriod(parameters.speedPeriod);
+    group.channelsInfo.setFilterParameters(parameters.filterParameters);
+    group.channelsInfo.setOffset(parameters.offset);
 
 }
 

@@ -1,13 +1,13 @@
-import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISingleComponentSensor';
-import React from 'react';
-import { Button, Card, Checkbox, Collapse, InputNumber, Menu, Modal, notification } from 'antd';
 import { CloseOutlined, SettingOutlined } from '@ant-design/icons';
-import { Cell } from './Cell';
-import { Group } from './App';
-import { PlotsManager } from '../uPlot/PlotManager';
+import { Button, Collapse, notification } from 'antd';
+import React from 'react';
+import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISingleComponentSensor';
 import { ParamsStorage } from '../Storage/AppStorage';
-import { CellsGroupModal } from './CellsGroupModal';
 import { SetOffset } from '../Storage/ChannelsDataStorage';
+import { PlotsManager } from '../uPlot/PlotManager';
+import { Group } from './App';
+import { Cell } from './Cell';
+import { SensorSettingsTab } from './SensorSettings/SensorSettingsTab';
 const { Panel } = Collapse;
 
 export type PeackMode = "none" | "absolute" | "relative";
@@ -38,13 +38,13 @@ export class CellsGroup extends React.Component<Props, IState>{
   }
 
   tresholdChanged = (value: number) => {
-    this.setState((prev, props) => ({
+    this.setState(() => ({
       treshold: value,
     }));
   }
 
   onOk = () => {
-    this.setState((prev, props) => ({
+    this.setState(() => ({
       modalVisible: false,
     }));
 
@@ -52,13 +52,13 @@ export class CellsGroup extends React.Component<Props, IState>{
   }
 
   onShow = () => {
-    this.setState((prev, props) => ({
+    this.setState(() => ({
       modalVisible: true,
     }));
   }
 
   onCancel = () => {
-    this.setState((prev, props) => ({
+    this.setState(() => ({
       modalVisible: false,
     }));
   }
@@ -73,6 +73,11 @@ export class CellsGroup extends React.Component<Props, IState>{
     });
   }
 
+  setChannelVisibilty = (channelindex: number, value: boolean) => {
+    this.props.group.channelsInfo.channelGroups[channelindex].cellChannel.Style.visible = value;
+    this.setState({});
+  }
+
   render() {
     return (
       <Collapse defaultActiveKey={['0']}>
@@ -82,7 +87,7 @@ export class CellsGroup extends React.Component<Props, IState>{
               <Button key={1}
                 className='horizontal-padding'
                 onClick={event => { event.stopPropagation(); this.onShow(); }}
-                disabled={!this.props.allowSettings}
+                //disabled={!this.props.allowSettings}
                 icon={<SettingOutlined />} />
 
               <Button key={2}
@@ -103,11 +108,10 @@ export class CellsGroup extends React.Component<Props, IState>{
               {
                 this.state.modalVisible ? 
                 <div key={5} onClick={e => e.stopPropagation()}>
-                <CellsGroupModal key={6}
+                <SensorSettingsTab key={6}
+                  setChannelVisibilty={this.setChannelVisibilty}
                   group={this.props.group}
                   onClose={() => this.setState(() => ({ modalVisible: false }))}
-                  plotsManager={this.props.plotsManager}
-                  storage={this.props.storage}
                   visible={this.state.modalVisible} />
                 </div> : <></>
               }

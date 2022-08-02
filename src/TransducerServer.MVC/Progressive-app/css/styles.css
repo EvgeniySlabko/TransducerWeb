@@ -189,6 +189,7 @@ legend {
 .vertical-align {
 	display: inline-block !important;
 	vertical-align: middle !important;
+	height: auto;
 }
 
 .cell-control-panel-row {

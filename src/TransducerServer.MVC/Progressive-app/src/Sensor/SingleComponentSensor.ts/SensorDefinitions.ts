@@ -54,11 +54,16 @@ export enum SensorMessage {
     StartStreaming,
     StopStreaming,
     StopReading,
+    SetAvg,
     SetTime0,
 }
 
 export interface SensorMessageEventArgs {
     msgType: SensorMessage;
+}
+
+export interface SetAvgEventArgs extends SensorMessageEventArgs {
+    avg: number;
 }
 
 export type SensorData =

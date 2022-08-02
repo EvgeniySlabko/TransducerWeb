@@ -1,6 +1,7 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
 import { ISingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
 import { FullSensorInfo } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { FilterParameters } from "../Storage/ChannelsDataStorage";
 import { CellChannel } from "./Channel/CellChannel";
 import { PlotChannel } from "./Channel/PlotChannel";
 import { CreateCellSpeedStyle, CreatePowerCellStyle, CreatetemperatureCellStyle, CreateTorqueCellStyle } from "./ChannelStyle/CellChannelStyleFactory";
@@ -8,7 +9,7 @@ import { CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqu
 import { PeakEventArgs } from "./SensorDataProveder/AbsolutePeakAnalyzer";
 import { CutOffDataProvider } from "./SensorDataProveder/CutOffDataProvider";
 import { CreateAbsoluteAnalizerSource, CreateAmplifiredDataSource, CreateAverageValueDataSource, CreateDisplayValueDataSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "./SensorDataProveder/DataSourceFactory";
-import { HihgPassFilter } from "./SensorDataProveder/HihgPassFilter";
+import { FilterDataProvider } from "./SensorDataProveder/FilterDataProvider";
 import { ISensorDataProvider } from "./SensorDataProveder/ISensorDataProvider";
 import { SensorDataProvider } from "./SensorDataProveder/SensorDataProvider";
 
@@ -19,6 +20,8 @@ export interface ChannelsGroup {
 }
 
 export interface AllChannelsInfo {
+    setFilterParameters: (filterParams: FilterParameters) => void;
+    filterParameters: () => FilterParameters;
     channelGroups: ChannelsGroup[];
     setAvgRatio: (avgRatio: number) => void,
     setOffset: (offset: number) => void,
@@ -40,11 +43,11 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     let cutOffMainSource = new CutOffDataProvider(mainSource);
     let offsetSource = CreateOffsetDataSource(cutOffMainSource, 0);
     let applifiredDataSource = CreateAmplifiredDataSource(offsetSource, fullSensorInfo.valueRatio);
-    let filterDataSource = new HihgPassFilter(applifiredDataSource);
+    let filterDataSource = new FilterDataProvider(applifiredDataSource);
 
     let absoluteAnalizerSource = CreateAbsoluteAnalizerSource(filterDataSource);
 
-    let cellDisplaySource = CreateDisplayValueDataSource(offsetSource, 30);
+    let cellDisplaySource = CreateDisplayValueDataSource(offsetSource, 6);
     let plotAverager = CreateAverageValueDataSource(filterDataSource, 1);
 
     let mainPlotChannel = CreateMainChannel(plotAverager, fullSensorInfo);
@@ -58,7 +61,7 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     //Speed
     let speedSource = CreateSpeedValueDataSource(sensor);
     let cutOffSpeedSource = new CutOffDataProvider(speedSource);
-    let speedDisplaySource = CreateDisplayValueDataSource(cutOffSpeedSource, 30);
+    let speedDisplaySource = CreateDisplayValueDataSource(cutOffSpeedSource, 6);
     let speedPlotChannel = CreateSpeedChannel(cutOffSpeedSource, fullSensorInfo);
     let speedCellChannel = CreateSpeedCellChannel(speedDisplaySource, fullSensorInfo);
 
@@ -70,7 +73,7 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     let powerSource = CreatePowerDataSource(mainSource, speedSource);
     let cutOffPowerSource = new CutOffDataProvider(powerSource);
 
-    let powerDisplaySource = CreateDisplayValueDataSource(cutOffPowerSource, 30);
+    let powerDisplaySource = CreateDisplayValueDataSource(cutOffPowerSource, 6);
     let powerPlotChannel = CreatePowerChannel(cutOffPowerSource, fullSensorInfo);
     let powerCellChannel = CreatePowerCellChannel(powerDisplaySource, fullSensorInfo);
 
@@ -108,11 +111,13 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
         setOffset: offsetSource.SetOffset,
         setCurrentOffset: offsetSource.SetCurrentOffset,
         offset: () => offsetSource.Offset,
+        setFilterParameters: filterDataSource.SetFilterParams,
+        filterParameters: () => filterDataSource.FilterParams,
         channelGroups: groups,
         absolutePeackDetected: absolutepeakEvent.asEvent(),
         resetAbsoluteAnalizer: absoluteAnalizerSource.Reset,
         setAbsoluteAnalizer: absoluteAnalizerSource.setState,
-        getAbsoluteAnalizerState: absoluteAnalizerSource.getState
+        getAbsoluteAnalizerState: absoluteAnalizerSource.getState,
     }
 
     function CreateTemperatureChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo): PlotChannel {

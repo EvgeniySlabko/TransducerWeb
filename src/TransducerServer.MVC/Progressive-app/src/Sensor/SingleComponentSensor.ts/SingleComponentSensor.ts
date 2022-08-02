@@ -3,7 +3,7 @@ import { IReaderWriter } from "../../IO/IReaderWriter";
 import { SerialBufferedWorker } from "../../IO/SerialBufferWorker";
 import { DefaultCommand, ISensorCommand, SingleCommand } from '../SensorCommand/SensorCommands';
 import { ISingleComponentSensor } from './ISingleComponentSensor';
-import { FlagRegistersAddresses, HoldingRegisters, SensorCoilValue, SensorCommand, SensorData, SensorMessage, SensorMessageEventArgs, SensorSK, StorageRegistersAddresses, StramingPackageType } from './SensorDefinitions';
+import { FlagRegistersAddresses, HoldingRegisters, SensorCoilValue, SensorCommand, SensorData, SensorMessage, SensorMessageEventArgs, SensorSK, SetAvgEventArgs, StorageRegistersAddresses, StramingPackageType } from './SensorDefinitions';
 
 export class SingleComponentSensor implements ISingleComponentSensor {
 
@@ -93,6 +93,12 @@ export class SingleComponentSensor implements ISingleComponentSensor {
 
     public SetAvgRatio = async (avgRatio: number) => {
         await this.SendRequesAndWaitResponse<void>(new DefaultCommand(SensorCommand.PRESET_SINGLE_REGISTER, StorageRegistersAddresses.AVG_RATIO, avgRatio));
+        let eventArgs: SetAvgEventArgs = {
+            avg: avgRatio, 
+            msgType: SensorMessage.SetAvg
+        };
+        
+        this._onMessage.dispatch(this, eventArgs);
         this.avgRatio = avgRatio;
     }
     public SetComputerConnection = async () => await this.SendRequesAndWaitResponse<void>(new DefaultCommand(SensorCommand.FORCE_SINGLE_COIL, FlagRegistersAddresses.COMPUTER_CONNECTION, SensorCoilValue.COIL_ON_VALUE));
