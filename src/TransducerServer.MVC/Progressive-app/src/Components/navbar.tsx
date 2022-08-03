@@ -1,5 +1,5 @@
 
-import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, PlusCircleOutlined, SettingOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Menu, notification } from 'antd';
 import React from 'react';
 import { RecordManager } from '../ReportListener/RecordManager';
@@ -8,6 +8,7 @@ import { SensorController } from '../Sensor/SensorsManager/SensorsManager';
 import { Facker } from '../Sensor/SingleComponentSensor.ts/Faker/FackerSensor';
 import { PlotsManager } from '../uPlot/PlotManager';
 import { Group } from './App';
+import { AppSettingsTab } from './AppSettings/AppSettingsTab';
 import { PlotControlPanel } from './ControlPanel/PlotControlPanel';
 
 export interface Props {
@@ -20,7 +21,6 @@ export interface Props {
 	streaming: boolean,
 	reportVieving: boolean,
 
-
 	clear: () => Promise<void>
 	toggleStreaming: () => void,
 	openReportCallback: (file: File) => void
@@ -30,8 +30,7 @@ export interface Props {
 }
 
 interface IState {
-	saveDialog: boolean;
-	startStop: boolean;
+	settings: boolean;
 }
 
 export class Navbar extends React.Component<Props, IState>
@@ -40,8 +39,7 @@ export class Navbar extends React.Component<Props, IState>
 		super(prop);
 
 		this.state = {
-			saveDialog: false,
-			startStop: false,
+			settings: false,
 		};
 	}
 
@@ -100,6 +98,8 @@ export class Navbar extends React.Component<Props, IState>
 			anchor.click();
 		}
 	}
+	handleSettings = () => this.setState({settings: true})
+	handleSettingsClose = () => this.setState({settings: false})
 
 	render() {
 		return (
@@ -154,14 +154,20 @@ export class Navbar extends React.Component<Props, IState>
 
 					{
 						!this.props.reportVieving ? <></> :
-							<Button title="Открыть отчет"
+							<Button title="Экспортировать файл"
 								size='large'
 								id="openfile"
 								shape="default"
 								icon={<FileSyncOutlined />}
 								onClick={this.props.export} />
 					}
-
+			
+					<Button title="Настройки"
+						size='large'
+						id="openfile"
+						shape="default"
+						icon={<SettingOutlined />}
+						onClick={this.handleSettings} />
 
 					<Dropdown overlay=
 						{
@@ -181,6 +187,8 @@ export class Navbar extends React.Component<Props, IState>
 						} arrow>
 						<Button size='large' icon={<BarsOutlined />} />
 					</Dropdown>
+
+					<AppSettingsTab visible={this.state.settings} onClose={this.handleSettingsClose}></AppSettingsTab>
 				</div>
 
 				<PlotControlPanel
@@ -191,32 +199,3 @@ export class Navbar extends React.Component<Props, IState>
 		)
 	}
 }
-
-/*
-<Dropdown overlay=
-				  {
-					  <Menu
-						  items={[
-						  {
-							  key: '1',
-							  disabled: this.props.enable,
-							  label: (
-							  <a  onClick={this.handleFakerClick} target="_blank" rel="noopener noreferrer">
-								  Add faker
-							  </a>
-							  ),
-						  },
-						  {
-							  key: '2',
-							  label: (
-							  <a onClick={this.handleOpenFile} target="_blank" rel="noopener noreferrer">
-								  Открыть очет
-							  </a>
-							  ),
-						  },
-						  ]}
-					  />
-				  } arrow>
-					  <Button size='large' icon={<BarsOutlined />}/>
-				  </Dropdown>
-*/

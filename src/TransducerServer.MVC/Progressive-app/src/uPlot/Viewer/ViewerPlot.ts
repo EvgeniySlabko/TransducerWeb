@@ -1,14 +1,14 @@
 import uPlot from "uplot";
 import { PlotChannelStyle } from "../../Channel/ChannelStyle/PlotChannelStyle";
 import { Snapshot } from "../../ReportListener/Snapshot";
-import { MyUPlotBase } from "../PlotBase";
+import { MyUPlotBase, PlotParameters } from "../PlotBase";
 import { LogLevelBugger } from "./LogLevelBuffer";
 
 export class MyUPlotViewer extends MyUPlotBase {
   private buffer: LogLevelBugger;
 
-  constructor(element: HTMLElement) {
-    super(element);
+  constructor(element: HTMLElement, parameters: PlotParameters) {
+    super(element, parameters);
     this.buffer = new LogLevelBugger(() => [this.params.range[0], this.params.range[1]]);
     this.SetScale(0, this.params.screenSize());
   }

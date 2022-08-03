@@ -8,7 +8,7 @@ import { CreateCellSpeedStyle, CreatePowerCellStyle, CreatetemperatureCellStyle,
 import { CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "./ChannelStyle/ChannelStyleFactory";
 import { PeakEventArgs } from "./SensorDataProveder/AbsolutePeakAnalyzer";
 import { CutOffDataProvider } from "./SensorDataProveder/CutOffDataProvider";
-import { CreateAbsoluteAnalizerSource, CreateAmplifiredDataSource, CreateAverageValueDataSource, CreateDisplayValueDataSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "./SensorDataProveder/DataSourceFactory";
+import { CreateAbsoluteAnalizerSource, CreateAmplifiredDataSource, CreateDisplayValueDataSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "./SensorDataProveder/DataSourceFactory";
 import { FilterDataProvider } from "./SensorDataProveder/FilterDataProvider";
 import { ISensorDataProvider } from "./SensorDataProveder/ISensorDataProvider";
 import { SensorDataProvider } from "./SensorDataProveder/SensorDataProvider";
@@ -23,7 +23,6 @@ export interface AllChannelsInfo {
     setFilterParameters: (filterParams: FilterParameters) => void;
     filterParameters: () => FilterParameters;
     channelGroups: ChannelsGroup[];
-    setAvgRatio: (avgRatio: number) => void,
     setOffset: (offset: number) => void,
     offset: () => number,
     setCurrentOffset: () => number,
@@ -48,9 +47,9 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     let absoluteAnalizerSource = CreateAbsoluteAnalizerSource(filterDataSource);
 
     let cellDisplaySource = CreateDisplayValueDataSource(offsetSource, 6);
-    let plotAverager = CreateAverageValueDataSource(filterDataSource, 1);
+    //let plotAverager = CreateAverageValueDataSource(filterDataSource, 1);
 
-    let mainPlotChannel = CreateMainChannel(plotAverager, fullSensorInfo);
+    let mainPlotChannel = CreateMainChannel(filterDataSource, fullSensorInfo);
     let mainSavingChannel = CreateMainChannel(filterDataSource, fullSensorInfo);
     let mainCellChannel = CreateMainCellChannel(cellDisplaySource, fullSensorInfo);
 
@@ -107,7 +106,6 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     }
 
     return {
-        setAvgRatio: plotAverager.SetAverage,
         setOffset: offsetSource.SetOffset,
         setCurrentOffset: offsetSource.SetCurrentOffset,
         offset: () => offsetSource.Offset,

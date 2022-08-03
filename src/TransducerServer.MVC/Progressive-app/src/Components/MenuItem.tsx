@@ -1,8 +1,5 @@
+import { Collapse } from 'antd';
 import React from 'react';
-import { Checkbox, Collapse, InputNumber, Modal, notification } from 'antd';
-import { Group } from './App';
-import { PlotsManager } from '../uPlot/PlotManager';
-import { ParamsStorage } from '../Storage/AppStorage';
 const { Panel } = Collapse;
 
 export interface Props {

@@ -11,7 +11,6 @@ import { SensorController, SensorControllerArgs } from '../Sensor/SensorsManager
 import { SensorWorker } from '../Sensor/SensorWorker';
 import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISingleComponentSensor';
 import { FullSensorInfo } from '../Sensor/SingleComponentSensor.ts/SensorDefinitions';
-import { ParamsStorage } from '../Storage/AppStorage';
 import { ApplayLocalStorageSettingsForGroups, ApplySensorParameters as ApplaySensorStorageParameters } from '../Storage/ChannelsDataStorage';
 import { PlotsManager } from '../uPlot/PlotManager';
 import { GroupsContainer } from './GroupsContainer';
@@ -21,7 +20,6 @@ import { SaveModal } from './SaveModal/SaveModal';
 export interface Props {
     sensorService: SensorController;
     recordController: RecordManager;
-    storage: ParamsStorage;
 }
 
 export interface Group {
@@ -325,8 +323,7 @@ export class App extends React.Component<Props, IState>
                     {
                         this.state.viewingReport ? <></> :
                             <div className="left-container">
-                                <GroupsContainer storage={this.props.storage}
-                                    allowSettings={!this.state.streaming}
+                                <GroupsContainer allowSettings={!this.state.streaming}
                                     plotsManager={this.state.plotsManager}
                                     groups={this.state.groups}
                                     sensorRemove={this.sensorManualCloseHandler} />

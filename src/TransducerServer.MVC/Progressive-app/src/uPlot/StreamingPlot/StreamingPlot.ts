@@ -1,8 +1,8 @@
-import { PlotChannel, ChannelDataArgs, ChannelMessageArgs } from "../../Channel/Channel/PlotChannel";
+import { ChannelDataArgs, ChannelMessageArgs, PlotChannel } from "../../Channel/Channel/PlotChannel";
 import { SensorData, SensorMessage } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
-import { PlotBufferManager, PlotBufferManagerConfig } from "./StreamingBufferManager";
-import { Label, MyUPlotBase, SeriesInfo } from "../PlotBase";
+import { Label, MyUPlotBase, PlotParameters, SeriesInfo } from "../PlotBase";
 import { ChannelLabel } from "../PlotManager";
+import { PlotBufferManager } from "./StreamingBufferManager";
 
 export type TraceInfo =
   {
@@ -18,8 +18,8 @@ export class MyUPlot extends MyUPlotBase {
   private traces: TraceInfo[] = [];
   private streaming: boolean = true;
 
-  constructor(element: HTMLElement) {
-    super(element);
+  constructor(element: HTMLElement, parameters: PlotParameters) {
+    super(element, parameters);
     this.BuildNewPlot([]);
   }
 

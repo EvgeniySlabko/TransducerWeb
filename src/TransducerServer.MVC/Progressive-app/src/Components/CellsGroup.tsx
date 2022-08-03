@@ -2,7 +2,6 @@ import { CloseOutlined, SettingOutlined } from '@ant-design/icons';
 import { Button, Collapse, notification } from 'antd';
 import React from 'react';
 import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISingleComponentSensor';
-import { ParamsStorage } from '../Storage/AppStorage';
 import { SetOffset } from '../Storage/ChannelsDataStorage';
 import { PlotsManager } from '../uPlot/PlotManager';
 import { Group } from './App';
@@ -16,7 +15,6 @@ export interface Props {
   group: Group,
   plotsManager?: PlotsManager;
   sensorRemove: (sensor: ISingleComponentSensor) => void,
-  storage: ParamsStorage;
   allowSettings: boolean;
 }
 

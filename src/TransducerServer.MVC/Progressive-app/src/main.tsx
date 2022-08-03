@@ -2,7 +2,7 @@ import 'antd/dist/antd.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { App } from './Components/App';
-import { recordController, sensorService, storage } from './initialStartup';
+import { recordController, sensorService } from './initialStartup';
 
 require('../css/styles.css');
 require('../css/grow.css');
@@ -14,4 +14,4 @@ require('../src/initialStartup');
 ReactDOM.render(<App 
     sensorService={sensorService}
     recordController={recordController}
-    storage={storage}/>, document.getElementById("root"));
+    />, document.getElementById("root"));

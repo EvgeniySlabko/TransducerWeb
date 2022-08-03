@@ -1,5 +1,7 @@
 import { PlotChannel } from '../Channel/Channel/PlotChannel';
 import { Snapshot } from '../ReportListener/Snapshot';
+import { GetPointsPerSecond } from '../Storage/AppStorage';
+import { PlotParameters } from './PlotBase';
 import { MyUPlot as StreamingPlot } from './StreamingPlot/StreamingPlot';
 import { MyUPlotViewer as ViewerPlot } from './Viewer/ViewerPlot';
 
@@ -23,7 +25,7 @@ export class PlotsManager {
 
     constructor(element: any) {
         this.htmlElement = element;
-        this.plot = new StreamingPlot(element);
+        this.plot = this.GetStreamingPlot();
     }
 
     public async SetChannels(channels: PlotChannel[]) {
@@ -44,7 +46,7 @@ export class PlotsManager {
     private SetEmptyStreamingPlot = () =>
     {
         this.plot.DestroyPlot();
-        this.plot = new StreamingPlot(this.htmlElement);
+        this.plot = this.GetStreamingPlot();
         this.currentPlotType = PlotType.StremimgPlot
     }
 
@@ -66,7 +68,7 @@ export class PlotsManager {
 
     public UploadSnapshot(snapshot: Snapshot) {
         this.plot.DestroyPlot();
-        let viewer = new ViewerPlot(this.htmlElement);
+        let viewer = this.GetViewer();
         viewer.FromSnapshot(snapshot);
         this.plot = viewer;
         this.currentPlotType = PlotType.ViewerPlot;
@@ -75,7 +77,7 @@ export class PlotsManager {
     public Reset() {
         this.plot.DestroyPlot();
         this.plotChannels = [];
-        this.plot = new StreamingPlot(this.htmlElement);
+        this.plot = this.GetStreamingPlot();
     }
 
     public async MakeScreen(): Promise<string> {
@@ -87,6 +89,15 @@ export class PlotsManager {
         let index = this.plotChannels.indexOf(plotChannel);
         if (index != -1) 
             this.plotChannels.splice(index, 1);
+    }
+
+    private GetStreamingPlot = () : StreamingPlot => new StreamingPlot(this.htmlElement, this.GetPlotParameters());
+    private GetViewer = () : ViewerPlot => new ViewerPlot(this.htmlElement, this.GetPlotParameters());
+    
+    private GetPlotParameters = () : PlotParameters =>{
+        return {
+            pointsPerSecond: GetPointsPerSecond(),
+        }
     }
 
     public Clear = () => this.plot.Clear();

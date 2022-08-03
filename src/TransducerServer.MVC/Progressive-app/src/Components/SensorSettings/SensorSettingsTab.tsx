@@ -157,11 +157,11 @@ export class SensorSettingsTab extends React.Component<Props, IState>{
         cancelText={"Отмена"}
         footer = {[
           <Button key={1} style={{float:"left"}} 
-                title="Запомнить настройки датчика"
-                icon={<SaveOutlined 
-                onClick={ this.onSaveParamsToStorage }/>}/>,
-                <Button key={2} onClick={this.props.onClose} title="Отмена">Отмена</Button>,
-                <Button key={3} onClick={ () => { this.onOk(); this.props.onClose(); } } title="Принять">Принять</Button>,
+            title="Запомнить настройки датчика"
+            icon={<SaveOutlined 
+            onClick={ this.onSaveParamsToStorage }/>}/>,
+            <Button key={2} onClick={this.props.onClose} title="Отмена">Отмена</Button>,
+            <Button key={3} onClick={ () => { this.onOk(); this.props.onClose(); } } title="Принять">Принять</Button>,
         ]}
         centered={false}>
         

@@ -1,7 +1,6 @@
 import { PlotsManager as PlotsManager } from "./uPlot/PlotManager";
 import { RecordManager } from "./ReportListener/RecordManager";
 import { SensorController } from "./Sensor/SensorsManager/SensorsManager";
-import { ParamsStorage } from "./Storage/AppStorage";
 
 // Хронить сернсоры. Дает себытия подключения отключения
 export var sensorService: SensorController = new SensorController();
@@ -10,5 +9,3 @@ export var sensorService: SensorController = new SensorController();
 export var plotsManager: PlotsManager;
 
 export var recordController: RecordManager = new RecordManager();
-
-export var storage: ParamsStorage = new ParamsStorage();

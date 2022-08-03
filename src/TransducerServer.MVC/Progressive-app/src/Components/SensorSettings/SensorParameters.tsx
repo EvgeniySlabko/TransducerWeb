@@ -32,16 +32,16 @@ export class SensorParameters extends React.Component<Props>{
   render() {
     return (
     <>    
-      <Space size={'small'}>
-        {
-          this.props.visibleChannels.map((c, i) =>
-          <Checkbox key={i} 
-          defaultChecked={c[1]}
-          onChange={(e) => this.props.onVisibleChannelsChanged(i, e.target.checked)}>
-              {c[0]} </Checkbox>
-          )
-        }
-      </Space>
+    <Space size={'small'}>
+      {
+        this.props.visibleChannels.map((c, i) =>
+        <Checkbox key={i} 
+        defaultChecked={c[1]}
+        onChange={(e) => this.props.onVisibleChannelsChanged(i, e.target.checked)}>
+            {c[0]} </Checkbox>
+        )
+      }
+    </Space>
       
     <Divider type="horizontal" />
     <MenuItem label='Период измерения скорости(мс):' children={

@@ -5,6 +5,10 @@ import { increase_brightness, nearestPoint } from '../Common/Common';
 import { groupBy } from '../Common/GroupBy';
 import { GetDefaultAxe, GetScale, GetSeries } from './PlotCommon';
 
+export declare class PlotParameters{
+  pointsPerSecond: number;
+}
+
 export declare class LegendItem {
   public setValue: (value: string) => void;
   public getValue: () => string;
@@ -70,7 +74,8 @@ export class MyUPlotBase {
     dt: () => 1 / this.params.pointsPerSecond
   }
 
-  constructor(element: HTMLElement) {
+  constructor(element: HTMLElement, parameters: PlotParameters) {
+    this.params.pointsPerSecond = parameters.pointsPerSecond,
     this.element = element;
     this.parent = this.element.parentElement;
     this.options = this.getOptions();

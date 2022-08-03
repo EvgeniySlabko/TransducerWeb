@@ -13,7 +13,8 @@ declare class ISegmentInfo {
 }
 
 export class PlotBufferManager {
-    private readonly maxFrameTimeRange: number = 60 * 30;                   // максимальная величина Range при которой не будет видно переключения перекресных буфферов (в секундах)
+    private readonly maxFrameSize = 250000;
+    private readonly maxFrameTimeRange: number;                   // максимальная величина Range при которой не будет видно переключения перекресных буфферов (в секундах)
     private readonly framesCount = 6;                                       // кол во буферов //TODO сделать динамическое добавление при необходимости
     private readonly frameSize: number = 300;
     private readonly dt: number;
@@ -39,6 +40,7 @@ export class PlotBufferManager {
         this.maxFrameTimeRange = config.maxFrameTimeRange,
         
         this.frameSize = (this.maxFrameTimeRange / this.dt) * 2;
+        if (this.frameSize > this.maxFrameSize) this.frameSize = this.maxFrameSize;
         this.frameTime = this.frameSize * this.dt;
         this.lastFramesTime2 = (this.frameSize / 2) * this.dt;
 
