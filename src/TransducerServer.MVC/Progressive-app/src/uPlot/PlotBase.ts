@@ -7,6 +7,7 @@ import { GetDefaultAxe, GetScale, GetSeries } from './PlotCommon';
 
 export declare class PlotParameters{
   pointsPerSecond: number;
+  maxScreenSize: number;
 }
 
 export declare class LegendItem {
@@ -60,12 +61,14 @@ export class MyUPlotBase {
 
   protected params = {
     pointsPerSecond: 50,
+    maxScreenSize: 100,
     screenSize: () => this.params.range[1] - this.params.range[0],
     setScreenSize: (size: number) => {
+      let actualSize = size > this.params.maxScreenSize ? this.params.maxScreenSize : size;
       let rangeVal = this.params.range[1] - this.params.range[0];
       let mid = this.params.range[0] + (rangeVal / 2);
-      this.params.range[0] = mid - size / 2;
-      this.params.range[1] = mid + size / 2
+      this.params.range[0] = mid - actualSize / 2;
+      this.params.range[1] = mid + actualSize / 2
     },
 
     t0: 0,
@@ -76,6 +79,7 @@ export class MyUPlotBase {
 
   constructor(element: HTMLElement, parameters: PlotParameters) {
     this.params.pointsPerSecond = parameters.pointsPerSecond,
+    this.params.maxScreenSize = parameters.maxScreenSize;
     this.element = element;
     this.parent = this.element.parentElement;
     this.options = this.getOptions();
@@ -189,6 +193,11 @@ export class MyUPlotBase {
 
   protected SetScale(min: number, max: number) {
     if (min >= max) throw "min higher then max";
+    let rangeValue = max - min;
+    if (rangeValue > this.params.maxScreenSize){
+      this.params.setScreenSize(this.params.maxScreenSize);
+      return;
+    }
     this.params.range = [min, max];
   }
 
@@ -657,9 +666,10 @@ export class MyUPlotBase {
   public ZoomX(step: number = 20) // в процентах
   {
     let ratio = step / 100;
-    let screenSize = this.params.screenSize()
-    this.params.range[0] += ratio * screenSize;
-    this.params.range[1] -= ratio * screenSize;
+    let screenSize = this.params.screenSize();
+    let min = this.params.range[0] + (ratio * screenSize);
+    let max = this.params.range[1] - (ratio * screenSize);
+    this.SetScale(min, max);
   }
 
   public MoveX(step: number) // в процентах
@@ -682,8 +692,7 @@ export class MyUPlotBase {
   }
 
   public HorizontalAlign() {
-    this.params.range[0] = 0;
-    this.params.range[1] = this.params.th === 0 ? 5 : this.params.th;
+    this.SetScale(0, this.params.th === 0 ? 5 : this.params.th)
   }
 
   public VerticalAlign() {

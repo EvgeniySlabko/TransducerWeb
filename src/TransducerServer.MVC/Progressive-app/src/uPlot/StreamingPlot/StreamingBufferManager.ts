@@ -12,20 +12,18 @@ declare class ISegmentInfo {
     lastDataIndex: number;
 }
 
+export const MaxFrameSize = 550000; // Если больше, то лагает
+
 export class PlotBufferManager {
-    private readonly maxFrameSize = 250000;
-    private readonly maxFrameTimeRange: number;                   // максимальная величина Range при которой не будет видно переключения перекресных буфферов (в секундах)
-    private readonly framesCount = 6;                                       // кол во буферов //TODO сделать динамическое добавление при необходимости
-    private readonly frameSize: number = 300;
+    private readonly maxFrameTimeRange: number;                             // максимальная величина Range при которой не будет видно переключения перекресных буфферов (в секундах)
+    private readonly frameSize: number;
     private readonly dt: number;
     
-    private frames: AlignedData[] = new Array(this.framesCount)
-    private frames2: AlignedData[] = new Array(this.framesCount)            //перекресный буффер по времени
+    private frames: AlignedData[] = []
+    private frames2: AlignedData[] = []                                     //перекресный буффер по времени
     
     private maxTime: number;
     private frameTime: number;
-    private lastFramesTime1 = 0;
-    private lastFramesTime2;
     private getRange: () => [number, number];
     
     private segmentInfo: ISegmentInfo[] = [];
@@ -40,41 +38,15 @@ export class PlotBufferManager {
         this.maxFrameTimeRange = config.maxFrameTimeRange,
         
         this.frameSize = (this.maxFrameTimeRange / this.dt) * 2;
-        if (this.frameSize > this.maxFrameSize) this.frameSize = this.maxFrameSize;
+        if (this.frameSize > MaxFrameSize) this.frameSize = MaxFrameSize;
         this.frameTime = this.frameSize * this.dt;
-        this.lastFramesTime2 = (this.frameSize / 2) * this.dt;
-
-        for (let i = 0; i < this.frames.length; i++) {
-
-            let timeArr = new Array<number>(this.frameSize);
-            let timeArr2 = new Array<number>(this.frameSize);
-            for (let t = 0; t < timeArr.length; t++) {
-                timeArr[t] = this.lastFramesTime1;
-                timeArr2[t] = this.lastFramesTime2;
-                this.lastFramesTime1 += this.dt;
-                this.lastFramesTime2 += this.dt;
-            }
-
-            let valuesArr = new Array<SeriesValue[]>()
-            let valuesArr2 = new Array<SeriesValue[]>()
-            for (let j = 0; j < config.segments; j++) {
-                let segment = new Array<SeriesValue>(this.frameSize)
-                let segment2 = new Array<SeriesValue>(this.frameSize)
-                segment.fill(undefined);
-                valuesArr.push(segment);
-                segment2.fill(undefined);
-                valuesArr2.push(segment2);
-            }
-
-            this.frames[i] = [timeArr, ...valuesArr];
-            this.frames2[i] = [timeArr2, ...valuesArr2];
-        }
 
         for (let i = 0; i < config.segments; i++)
-            this.segmentInfo.push({
-                lastDataIndex: 0
-            })
-
+        this.segmentInfo.push({
+            lastDataIndex: 0
+        })
+        
+        this.HandleFramesBufferExpand(1); //добавим пустой буффер
         this.maxTime = 0;
     }
 
@@ -110,6 +82,8 @@ export class PlotBufferManager {
 
     public SetRange(segmentIndex: number, data: DataEventArgs) {
         let lastTimeVal = data.time[data.time.length - 1];
+        this.HandleFramesBufferExpand(lastTimeVal);
+
         let lastIndex = this.tickToGridIndex(lastTimeVal);
 
         if (lastIndex > this.maxTime)
@@ -128,6 +102,7 @@ export class PlotBufferManager {
     }
 
     public Set(segmentIndex: number, value: number, time: number) {
+        this.HandleFramesBufferExpand(time);
         let index = this.tickToGridIndex(time);
         if (index > this.maxTime) this.maxTime = index;
         if (index > this.segmentInfo[segmentIndex].lastDataIndex)
@@ -155,6 +130,7 @@ export class PlotBufferManager {
     }
 
     public SetGap(segmentIndex: number, from: number, to: number) {
+        this.HandleFramesBufferExpand(to);
         let i = this.tickToGridIndex(from);
         let j = this.tickToGridIndex(to);
         for (let k = i; k < j; k++)
@@ -171,6 +147,52 @@ export class PlotBufferManager {
         if (indexInFrame2 >= 0) {
             let frameIndex2 = Math.floor((index - (this.frameSize / 2)) / this.frameSize);
             this.frames2[frameIndex2][segmentIndex + 1][indexInFrame2] = value;
+        }
+    }
+
+    private HandleFramesBufferExpand(expandToTime: number)
+    {
+        let framesBufferIndex1 = this.tickToGridIndex(expandToTime);
+        let framesBufferIndex2 = this.tickToGridIndex(expandToTime) - (this.frameSize / 2);
+        
+        this.HandleFramesBuffer(this.frames, framesBufferIndex1, () =>{
+            if (this.frames.length != 0){
+                let lastFrame = this.frames[this.frames.length - 1];
+                return lastFrame[0][lastFrame[0].length - 1] + this.dt;
+            }
+            
+            return 0;
+        });
+
+        this.HandleFramesBuffer(this.frames2, framesBufferIndex2, () =>{
+            if (this.frames2.length != 0){
+                let lastFrame = this.frames2[this.frames2.length - 1];
+                return lastFrame[0][lastFrame[0].length - 1] + this.dt;
+            }
+
+            return this.frameTime / 2;
+        });
+    }
+
+    HandleFramesBuffer = (framesBuffer: AlignedData[], expandToIndex: number, getLastTime: () => number) =>{
+        while((this.frameSize * framesBuffer.length) <= expandToIndex)
+        {
+            let timeArr = new Array<number>(this.frameSize);
+            let valuesArr = new Array<SeriesValue[]>();
+            let lastTime = getLastTime();
+
+            for (let t = 0; t < timeArr.length; t++) {
+                timeArr[t] = lastTime;
+                lastTime += this.dt;
+            }
+
+            for (let j = 0; j < this.Segments; j++) {
+                let segment = new Array<SeriesValue>(this.frameSize)
+                segment.fill(undefined);
+                valuesArr.push(segment);
+            }
+
+            framesBuffer.push([timeArr, ...valuesArr]);
         }
     }
 }

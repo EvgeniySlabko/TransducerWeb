@@ -2,6 +2,7 @@ import { PlotChannel } from '../Channel/Channel/PlotChannel';
 import { Snapshot } from '../ReportListener/Snapshot';
 import { GetPointsPerSecond } from '../Storage/AppStorage';
 import { PlotParameters } from './PlotBase';
+import { MaxFrameSize } from './StreamingPlot/StreamingBufferManager';
 import { MyUPlot as StreamingPlot } from './StreamingPlot/StreamingPlot';
 import { MyUPlotViewer as ViewerPlot } from './Viewer/ViewerPlot';
 
@@ -95,8 +96,12 @@ export class PlotsManager {
     private GetViewer = () : ViewerPlot => new ViewerPlot(this.htmlElement, this.GetPlotParameters());
     
     private GetPlotParameters = () : PlotParameters =>{
+
+        let pointsPerSecond =  GetPointsPerSecond();
+        let maxScreenSize =  (MaxFrameSize / pointsPerSecond) / 2; // максимальны размер screen при котором не будет видно переключение перекресных буфферов.
         return {
             pointsPerSecond: GetPointsPerSecond(),
+            maxScreenSize: maxScreenSize,
         }
     }
 
