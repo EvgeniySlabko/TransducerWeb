@@ -77,14 +77,19 @@ export class App extends React.Component<Props, IState>
     sensorCloseHandler = async (sensor: ISingleComponentSensor, args: string) => {
         let index = this.state.groups.findIndex(g => g.node.sensor == sensor);
         this.state.groups.splice(index, 1);
-        if (this.state.recording)
-        {
+        if (this.state.recording){
             await this.stopRecordingHandler();
         }
+
+        if (!this.state.streaming && this.state.firstStart){
+            this.state.plotsManager?.Rebuild();
+        }
+
         if (this.state.groups.length == 0) {
-            this.setState((prev, props) => ({
-                streaming: false,
-            }));
+            this.setState({
+            streaming: false,
+        });
+
         }
 
         this.setState((prev, props) => ({}));
@@ -199,11 +204,10 @@ export class App extends React.Component<Props, IState>
 
     startRecordingHandler = async () => {
         try {
+            await this.fileWorker.OpenFile();
             this.props.recordController.StartListening();
-            this.fileWorker.OpenFile();
         }
         catch (ex) {
-            this.props.recordController.StopListening();
             return;
         }
 
@@ -297,12 +301,16 @@ export class App extends React.Component<Props, IState>
         }));
     }
 
-    export = () => this.setState(() => ({ saveDialog: true }));
+    saveScreen = async () =>{
+        
+    }
 
+    export = () => this.setState(() => ({ saveDialog: true }));
 
     render() {
         return [
             <Navbar key={1}
+                saveReport={this.saveScreen}
                 sensorService={this.props.sensorService}
                 recordController={this.props.recordController}
                 openReportCallback={async (file) => await this.openFileHandler(file)}

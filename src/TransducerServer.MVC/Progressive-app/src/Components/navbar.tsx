@@ -1,6 +1,6 @@
 
-import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, PlusCircleOutlined, SettingOutlined } from '@ant-design/icons';
-import { Button, Dropdown, Menu, notification } from 'antd';
+import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, PlusCircleOutlined, SaveOutlined, SettingOutlined } from '@ant-design/icons';
+import { Button, Dropdown, Menu } from 'antd';
 import React from 'react';
 import { RecordManager } from '../ReportListener/RecordManager';
 import { CreateSerialSensor } from '../Sensor/SensorFactory';
@@ -21,6 +21,7 @@ export interface Props {
 	streaming: boolean,
 	reportVieving: boolean,
 
+	saveReport: () => Promise<void>
 	clear: () => Promise<void>
 	toggleStreaming: () => void,
 	openReportCallback: (file: File) => void
@@ -67,21 +68,16 @@ export class Navbar extends React.Component<Props, IState>
 	}
 
 	private async handleAddClick() {
+		let port: SerialPort;
 		try {
-			let port = await navigator.serial.requestPort();    //запрашиваем выбор порта у пользователя
-			var sensor = await CreateSerialSensor(port);
-			await this.props.sensorService.AddSensor(sensor);
+			port = await navigator.serial.requestPort();    //запрашиваем выбор порта у пользователя
 		}
-		catch (e: any) {
-			if (e instanceof DOMException) {
-				//console.log('out of range');
-			} else {
-				notification.error({
-					message: e,
-					duration: 2,
-				});
-			}
+		catch {
+			return;
 		}
+
+		var sensor = await CreateSerialSensor(port);
+		await this.props.sensorService.AddSensor(sensor);
 	}
 
 	async handleFakerClick() {
@@ -98,8 +94,19 @@ export class Navbar extends React.Component<Props, IState>
 			anchor.click();
 		}
 	}
+
+	handleSaveScreen = async () => {
+		
+	}
+
 	handleSettings = () => this.setState({settings: true})
-	handleSettingsClose = () => this.setState({settings: false})
+	handleSettingsClose = (werePlotSettingsChanges: boolean) => {
+		this.setState({settings: false})
+		if (werePlotSettingsChanges === true){
+			this.props.plotsManager?.Rebuild();
+			this.props.clear();
+		}
+	}
 
 	render() {
 		return (
@@ -137,6 +144,14 @@ export class Navbar extends React.Component<Props, IState>
 						shape="default"
 						onClick={this.props.toggleRecording}
 						style={{ borderColor: this.props.recordingState ? "red" : "#d9d9d9" }} />
+
+					<Button title="Сохранить как отчет."
+						size='large'
+						id="screen"
+						shape="default"
+						icon={<SaveOutlined />}
+						onClick={this.handleScreen} />
+
 
 					<Button title="Сделать скриншот"
 						size='large'
@@ -188,7 +203,9 @@ export class Navbar extends React.Component<Props, IState>
 						<Button size='large' icon={<BarsOutlined />} />
 					</Dropdown>
 
-					<AppSettingsTab visible={this.state.settings} onClose={this.handleSettingsClose}></AppSettingsTab>
+					<AppSettingsTab 
+						visible={this.state.settings}
+						onClose={this.handleSettingsClose}/>
 				</div>
 
 				<PlotControlPanel

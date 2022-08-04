@@ -85,6 +85,14 @@ export class PlotsManager {
         return await this.plot.GetScreen();
     }
     
+    public Rebuild = () =>{
+        if (this.currentPlotType == PlotType.StremimgPlot){
+            this.plot.DestroyPlot();
+            this.plot = this.GetStreamingPlot();
+            this.AddChannels([]);
+        }
+    }
+
     private PlotChannelCloseHandler = (plotChannel: PlotChannel) =>
     {
         let index = this.plotChannels.indexOf(plotChannel);

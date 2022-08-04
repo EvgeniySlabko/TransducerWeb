@@ -25,7 +25,7 @@ export declare class SensorStorageParameters
 let defaultSensorParams: SensorStorageParameters = {
     externalSpeedSensor: false,
     offset: 0,
-    avgRatio: 0,
+    avgRatio: 1,
     speedPeriod: 100,
     filterParameters: {
         enabled: true,

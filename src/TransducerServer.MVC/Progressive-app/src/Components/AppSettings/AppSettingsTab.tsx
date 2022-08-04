@@ -6,13 +6,14 @@ const { TabPane } = Tabs;
 
 export interface Props {
   visible: boolean;
-  onClose: () => void;
+  onClose: (werePlotSettingsChanges: boolean) => void;
 }
 
 interface IState {
   pointsPerSecond: number,
 
   dataReceived: boolean,
+  werePlotSettingsChanges: boolean,
 }
 
 export class AppSettingsTab extends React.Component<Props, IState>{
@@ -22,6 +23,7 @@ export class AppSettingsTab extends React.Component<Props, IState>{
       this.state = {
         pointsPerSecond: 50,
         dataReceived: false,
+        werePlotSettingsChanges: true,
       }
   }
 
@@ -37,15 +39,23 @@ export class AppSettingsTab extends React.Component<Props, IState>{
     SetPointsPerSecond(this.state.pointsPerSecond);
   }
 
-  onPointsPerSecondChanged = (value: number) => this.setState({pointsPerSecond: value})
+  onPointsPerSecondChanged = (value: number) => this.setState(
+    {
+      pointsPerSecond: value,
+      werePlotSettingsChanges: value != this.state.pointsPerSecond
+    })
+
+  onClose = ()=>{
+    this.props.onClose(this.state.werePlotSettingsChanges);
+  }
 
   render() {
     return (
 
       <Modal title="Общие параметры"
         visible={this.props.visible}
-        onOk={event => { this.onOk(); this.props.onClose(); }}
-        onCancel={this.props.onClose}
+        onOk={event => { this.onOk(); this.onClose(); }}
+        onCancel={() => this.props.onClose(false)}
         okText={"Принять"}
         cancelText={"Отмена"}
         centered={false}>

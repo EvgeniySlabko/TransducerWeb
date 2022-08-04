@@ -8,6 +8,7 @@
     "@foxandfly/ts-event-dispatcher": "^2.1.4",
     "@rxstack/async-event-dispatcher": "^0.6.1",
     "@types/bytes": "^3.1.1",
+    "@types/cordova-plugin-file": "^4.3.2",
     "@types/filewriter": "^0.0.29",
     "@types/plotly.js-basic-dist": "^1.54.0",
     "@types/react-addons-update": "^0.14.21",
