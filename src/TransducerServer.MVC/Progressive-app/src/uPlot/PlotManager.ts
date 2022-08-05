@@ -100,11 +100,20 @@ export class PlotsManager {
             this.plotChannels.splice(index, 1);
     }
 
-    private GetStreamingPlot = () : StreamingPlot => new StreamingPlot(this.htmlElement, this.GetPlotParameters());
-    private GetViewer = () : ViewerPlot => new ViewerPlot(this.htmlElement, this.GetPlotParameters());
+    private GetStreamingPlot = () : StreamingPlot => new StreamingPlot(this.htmlElement, this.GetStreamingPlotParameters());
+    private GetViewer = () : ViewerPlot => new ViewerPlot(this.htmlElement, this.GetViewingPlotParameters());
     
-    private GetPlotParameters = () : PlotParameters =>{
+    private GetStreamingPlotParameters = () : PlotParameters =>{
 
+        let pointsPerSecond =  GetPointsPerSecond();
+        let maxScreenSize =  (MaxFrameSize / pointsPerSecond) / 2; // максимальны размер screen при котором не будет видно переключение перекресных буфферов.
+        return {
+            pointsPerSecond: GetPointsPerSecond(),
+            maxScreenSize: maxScreenSize,
+        }
+    }
+
+    private GetViewingPlotParameters = () : PlotParameters => {
         let pointsPerSecond =  GetPointsPerSecond();
         let maxScreenSize =  (MaxFrameSize / pointsPerSecond) / 2; // максимальны размер screen при котором не будет видно переключение перекресных буфферов.
         return {

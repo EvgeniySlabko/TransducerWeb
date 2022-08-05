@@ -15,6 +15,10 @@ export class RecordManager {
     private recordingGroups: RecordigGroup[] = [];
     private currentMinAvg: number = 1;
 
+    public get thereIsData(){
+        return this.listener.ThereIsData;
+    }
+
     constructor() {
         this.listener = new ReportListener();
     }
@@ -22,10 +26,15 @@ export class RecordManager {
     public SetChannels(groups: RecordigGroup[]) {
         this.listener.Reset();
         this.recordingGroups = groups;
+        this.recordingGroups.forEach(g => g.sensor.onClose.sub((sensor =>{
+            let index = this.recordingGroups.findIndex(rg => rg.sensor === sensor);
+            this.recordingGroups.splice(index);
+        })));
+
         let allPlotChannels: PlotChannel[] = [];
         allPlotChannels = allPlotChannels.concat(...groups.map(g => g.savingChannels));
         this.listener.SetChannels(allPlotChannels);
-    }
+    }   
 
     public async StartListening() {
         this.currentMinAvg =  await GetMinAvgFactor(this.recordingGroups.map(g => g.sensor));

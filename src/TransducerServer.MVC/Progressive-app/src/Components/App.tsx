@@ -2,7 +2,7 @@ import { notification } from 'antd';
 import React from 'react';
 import { AllChannelsInfo, CreateAllChannels } from '../Channel/AllChannelsFactory';
 import { changeGroupColor } from '../Common/ChannelColorChanger';
-import { getRandomInt } from '../Common/Common';
+import { getRandomInt, sleep } from '../Common/Common';
 import { GetMinAvgFactor } from '../Common/SensorsHelpers';
 import { FileWorker } from '../Files/FileWorker';
 import { RecordigGroup, RecordManager } from '../ReportListener/RecordManager';
@@ -37,7 +37,6 @@ interface IState {
     groups: Group[],
     plotsManager?: PlotsManager;
     viewingReport: boolean;
-    recording: boolean;
     saveDialog: boolean;
     streaming: boolean;
     currentSnapshot: Snapshot | undefined;
@@ -52,7 +51,6 @@ export class App extends React.Component<Props, IState>
         super(props);
 
         this.state = {
-            recording: false,
             plotsManager: undefined,
             groups: [],
             viewingReport: false,
@@ -77,9 +75,6 @@ export class App extends React.Component<Props, IState>
     sensorCloseHandler = async (sensor: ISingleComponentSensor, args: string) => {
         let index = this.state.groups.findIndex(g => g.node.sensor == sensor);
         this.state.groups.splice(index, 1);
-        if (this.state.recording){
-            await this.stopRecordingHandler();
-        }
 
         if (!this.state.streaming && this.state.firstStart){
             this.state.plotsManager?.Rebuild();
@@ -100,9 +95,6 @@ export class App extends React.Component<Props, IState>
     }
 
     sensorClose = async (sensor: ISingleComponentSensor) => {
-        if (this.state.recording)
-            this.handleRecClick();
-
         let group = this.state.groups.find(g => g.node.sensor == sensor);
         await group?.node.worker.Close();
     }
@@ -202,44 +194,6 @@ export class App extends React.Component<Props, IState>
         });
     }
 
-    startRecordingHandler = async () => {
-        try {
-            await this.fileWorker.OpenFile();
-            this.props.recordController.StartListening();
-        }
-        catch (ex) {
-            return;
-        }
-
-        this.setState((prev, props) => ({
-            recording: true,
-        }));
-    }
-
-    stopRecordingHandler = async () => {
-        if (this.state.streaming)
-            await this.stophandler();
-
-        let snapshot = this.props.recordController.StopListening();
-        if (this.fileWorker.File) 
-            await snapshot.ToFile(this.fileWorker.File);
-
-        notification.success({
-            message: `Данные записаны в файл ${this.fileWorker.File?.name}`,
-            duration: 4,
-        });
-        this.setState((prev, props) => ({
-            recording: false,
-            streaming: false,
-            currentSnapshot: snapshot,
-        }));
-
-    }
-
-    handleRecClick = async () => {
-        this.state.recording ? await this.stopRecordingHandler() : this.startRecordingHandler();
-    }
-
     streamingModeViewHandler = () => {
         this.state.plotsManager?.Reset();
         this.state.plotsManager?.SetChannels([]);
@@ -255,7 +209,9 @@ export class App extends React.Component<Props, IState>
         });
     }
 
-    starthandler = async () => {
+    starthandler = async () : Promise<void> => {
+        
+        await this.props.recordController.StartListening();
         let started = await this.props.sensorService.StartAll();
         if (!started) return;
 
@@ -278,10 +234,11 @@ export class App extends React.Component<Props, IState>
 
     stophandler = async () => {
         await this.props.sensorService.StopAll();
+
         this.setState(() => ({ streaming: false }));
     }
 
-    handleStartClick = async () => {
+    handleStartClick = async () : Promise<void> => {
         this.state.viewingReport ?
 
             this.setState((prev, props) => ({
@@ -292,17 +249,30 @@ export class App extends React.Component<Props, IState>
     }
 
     clear = async () => {
-        if (this.state.recording)
-            await this.stopRecordingHandler();
+        if (this.state.streaming){
+            await this.stophandler();
+            await sleep(100);
+        }
+
+        this.state.plotsManager?.Clear();
+		this.state.plotsManager?.ClearLabels();
+		this.state.groups.forEach(g => g.channelsInfo.resetAbsoluteAnalizer());
 
         this.setState(() => ({
             firstStart: true,
-            recording: false,
         }));
     }
 
-    saveScreen = async () =>{
-        
+    saveReport = async () =>{
+        await this.fileWorker.OpenFile();
+        let snapshot = this.props.recordController.StopListening();
+        if (this.fileWorker.File) 
+            await snapshot.ToFile(this.fileWorker.File);
+
+        notification.success({
+            message: `Данные записаны в файл ${this.fileWorker.File?.name}`,
+            duration: 4,
+        });
     }
 
     export = () => this.setState(() => ({ saveDialog: true }));
@@ -310,7 +280,9 @@ export class App extends React.Component<Props, IState>
     render() {
         return [
             <Navbar key={1}
-                saveReport={this.saveScreen}
+                allowSettings={!this.state.streaming && this.state.firstStart}
+                thereAreDataForSaving={this.props.recordController.thereIsData}
+                saveReport={this.saveReport}
                 sensorService={this.props.sensorService}
                 recordController={this.props.recordController}
                 openReportCallback={async (file) => await this.openFileHandler(file)}
@@ -321,8 +293,6 @@ export class App extends React.Component<Props, IState>
                 reportVieving={this.state.viewingReport}
                 clear={this.clear}
                 export={this.export}
-                toggleRecording={() => this.handleRecClick().then()}
-                recordingState={this.state.recording}
                 setStreamingModeView={this.streamingModeViewHandler}
                 plotsManager={this.state.plotsManager} />,
 
@@ -331,7 +301,7 @@ export class App extends React.Component<Props, IState>
                     {
                         this.state.viewingReport ? <></> :
                             <div className="left-container">
-                                <GroupsContainer allowSettings={!this.state.streaming}
+                                <GroupsContainer allowSettings={!this.state.streaming && this.state.firstStart}
                                     plotsManager={this.state.plotsManager}
                                     groups={this.state.groups}
                                     sensorRemove={this.sensorManualCloseHandler} />
@@ -343,7 +313,6 @@ export class App extends React.Component<Props, IState>
 
             <SaveModal key={3}
                 onClose={() => this.setState({ saveDialog: false })}
-                maxAvgFactor={async () => await GetMinAvgFactor(this.state.groups.map(g => g.node.sensor))}
                 snapshot={this.state.currentSnapshot}
                 visible={this.state.saveDialog} />
         ]

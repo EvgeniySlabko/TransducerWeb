@@ -1,4 +1,5 @@
 import { EventDispatcher } from "@foxandfly/ts-event-dispatcher";
+import { sleep } from "../../Common/Common";
 import { GetFullSensorInfo } from "../SensorInfoParser/SensorInfoCreator";
 import { SensorWorker } from "../SensorWorker";
 import { ISingleComponentSensor } from "../SingleComponentSensor.ts/ISingleComponentSensor";

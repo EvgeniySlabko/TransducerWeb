@@ -85,7 +85,7 @@ export class CellsGroup extends React.Component<Props, IState>{
               <Button key={1}
                 className='horizontal-padding'
                 onClick={event => { event.stopPropagation(); this.onShow(); }}
-                //disabled={!this.props.allowSettings}
+                disabled={!this.props.allowSettings}
                 icon={<SettingOutlined />} />
 
               <Button key={2}

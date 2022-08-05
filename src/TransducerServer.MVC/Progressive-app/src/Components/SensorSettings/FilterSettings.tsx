@@ -54,9 +54,9 @@ export class FilterSettings extends React.Component<Props>{
                   }  label='Порядок фильтра:'/>
 
                   <MenuItem children={
-                  <InputNumber step={1} size="middle" 
+                  <InputNumber step={0.1} size="middle" 
                             title='Частота среза'
-                            min={1}
+                            min={0.1}
                             max={20000}
                             defaultValue={this.props.fc}
                             onChange={ (val) => this.props.onFilterFcChanged(val)} />

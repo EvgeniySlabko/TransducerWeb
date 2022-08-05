@@ -56,7 +56,7 @@ export let MasNazvD: [string, string][] = [
 ];
 
 export let MasEdIzm: string[] = [
-  "Nm ", //           [L"Датчик крутящего момента",L"Nm "},
+  "Nm", //           [L"Датчик крутящего момента",L"Nm "},
   "N  ", //           {L"Датчик силы",L"N  "},
   "g  ", //           {L"Датчик массы",L"g  "},
   "Pa ", //           {L"Датчик давления",L"Pa "},

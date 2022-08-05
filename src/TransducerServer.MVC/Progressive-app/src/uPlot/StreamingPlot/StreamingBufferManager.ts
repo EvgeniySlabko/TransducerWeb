@@ -5,14 +5,13 @@ import { SeriesValue } from "../PlotCommon";
 export declare class PlotBufferManagerConfig {
     dt: number;
     segments: number;
-    maxFrameTimeRange: number;
 }
 
 declare class ISegmentInfo {
     lastDataIndex: number;
 }
 
-export const MaxFrameSize = 550000; // Если больше, то лагает
+export const MaxFrameSize = 550000;                                         // Если больше, то лагает
 
 export class PlotBufferManager {
     private readonly maxFrameTimeRange: number;                             // максимальная величина Range при которой не будет видно переключения перекресных буфферов (в секундах)
@@ -30,15 +29,15 @@ export class PlotBufferManager {
     
     public get Segments() { return this.segmentInfo.length }
     public get Dt() { return this.dt }
+    public get MaxFrameTimeRange() { return this.maxFrameTimeRange }
 
     constructor(rangeGetter: () => [number, number], config: PlotBufferManagerConfig) {
         this.getRange = rangeGetter;
-
+ 
         this.dt = config.dt;
-        this.maxFrameTimeRange = config.maxFrameTimeRange,
+        this.maxFrameTimeRange = (MaxFrameSize / (1 / config.dt)) / 2;
         
         this.frameSize = (this.maxFrameTimeRange / this.dt) * 2;
-        if (this.frameSize > MaxFrameSize) this.frameSize = MaxFrameSize;
         this.frameTime = this.frameSize * this.dt;
 
         for (let i = 0; i < config.segments; i++)

@@ -9,7 +9,6 @@ export interface Props {
   snapshot?: Snapshot,
   visible: boolean;
   onClose: () => void;
-  maxAvgFactor: () => Promise<number>;
 }
 
 interface IState {

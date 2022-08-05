@@ -10,6 +10,7 @@ export declare interface PlotChannelStyle {
     yTitle: string;
     axisColor: string;
     legendTitle: string;
+    legendValueAccurency: number,
     range: number[];
     line: "dash" | "solid";
     yAxeSide: "right" | "left";
@@ -17,8 +18,8 @@ export declare interface PlotChannelStyle {
     rescaleRationBottom: number;
     visible: boolean;
     width: number;
-    legendValueAcurency: number;
     drawLimits?: boolean;
+    valueRatio: number;
     mnogitel: number;
     minValue?: number;
     maxValue?: number;

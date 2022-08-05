@@ -1,159 +1,69 @@
 import { AlignedData } from "uplot";
 import { getEmptyAlignedData } from "../../Common/Common";
 import { Snapshot, TrackData } from "../../ReportListener/Snapshot"
+import { MaxFrameSize, PlotBufferManager } from "../StreamingPlot/StreamingBufferManager";
+
 
 export class LogLevelBugger {
-    private levels: number = 2;
-    private level0AvgRatio = 1;
-    private compressionRatio: number = 100 //коэффицент изменения коэффицента усреднения на 1 level.
-    private logLevel0Treshold = 20; //пороговое значение range после которого начинают действовать уровни логирования
-    private logLevelRatio = 150; //пороговое значение range после которого начинают действовать уровни логирования
+    private rangeGetter: () => [number, number] 
 
-    private logLevelCalculate: (range: [number, number]) => number = (range) => {
-        let rangeValue = range[1] - range[0];
-        if (rangeValue < this.logLevel0Treshold) return 0;
-
-        let offsetRange = rangeValue - this.logLevel0Treshold;
-        let logLevel = Math.floor(offsetRange / this.logLevelRatio);
-        if (logLevel >= this.levels) logLevel = this.levels - 1;
-
-        return logLevel;
-    }
-
-    private t0: number = 0;
-    private th: number = 0;
-
-    private rangeGetter: () => [number, number]
-
-    private data: AlignedData[] = [];
+    private readonly levels = [0.0002, 0.0004, 0.0008, 0.0016, 0.0032, 0.0062, 0.02] //dt 
+    private buffers: PlotBufferManager[] = [];
+    private currentDt: number = 0.02;
     constructor(rangeGetter: () => [number, number]) {
-        for (let i = 0; i < this.levels; i++) {
-            this.data.push([[], []]);
-        }
-
         this.rangeGetter = rangeGetter;
     }
 
-    public get T0(): number {
-        return this.t0;
-    }
-
-    public get TH(): number {
-        return this.th;
+    public get Dt() : number
+    {
+        return this.currentDt;
     }
 
     public get Source(): AlignedData {
         let range = this.rangeGetter();
-        let logLevel = this.logLevelCalculate([range[0], range[1]])
-        console.log(logLevel);
-        // TO DO 
-        return this.data[0];
+        let rangeValue = (range[1] - range[0]) * 2;
+        let maxPointsPerSecond = MaxFrameSize / rangeValue;
+        let currentDt = 1 / maxPointsPerSecond;
+        for (let i = 0; i < this.levels.length; i++) 
+        {
+            if (this.levels[i] >= currentDt){
+                console.log(i);
+                this.currentDt = this.buffers[i].Dt;
+                return this.buffers[i].Source;
+            } 
+        }
+
+        this.currentDt = this.buffers[this.buffers.length - 1].Dt;
+        return this.buffers[this.buffers.length - 1].Source;
     }
 
 
     public FromSnapshot(snapshot: Snapshot) {
-        let trackData = snapshot.GetTrackData();
+        var trackData = snapshot.GetTrackData();
 
-        this.level0AvgRatio = snapshot.AvgRatio;
-        let getMaxTimeVal = (trackData: TrackData[]): number => {
-            //смотри максимальные значения времени
-            let maxTimeValues: number[] = [];
-            trackData.forEach(t => {
-                let lastValue = t.data.time[t.data.time.length - 1];
-                maxTimeValues.push(lastValue);
-            });
+        let sourceBuffer = this.CreateBufferManager(snapshot.dt, trackData);   
 
-            //определяем размер буфера 
-            let maxTimeValue = Math.max(...maxTimeValues)
-            return maxTimeValue;
+        this.buffers = new Array<PlotBufferManager>(this.levels.length);
+        for (let i = 0; i < this.levels.length; i++) {
+            if (this.levels[i] <= snapshot.dt)
+                this.buffers[i] = sourceBuffer;
+            else {
+                this.buffers[i] = this.CreateBufferManager(this.levels[i], trackData);   
+            }
         }
+    }
 
+    private CreateBufferManager(dt: number, trackData: TrackData[]) : PlotBufferManager
+    {
+        let bufferManager = new PlotBufferManager(this.rangeGetter, {
+            segments: trackData.length,
+            dt: dt,
+        });
 
-        var dx = snapshot.dt
-        let toArrayIndex = (time: number) => Math.floor(time / dx);
-
-        let maxTimeValue = getMaxTimeVal(trackData);
-        let maxTimeIndex = toArrayIndex(maxTimeValue);
-
-        this.data[0] = getEmptyAlignedData(0, dx, trackData.length, maxTimeIndex);
-
-        //проставляем данные
         for (let i = 0; i < trackData.length; i++) {
-            for (let k = 0; k < trackData[i].data.time.length; k++) {
-                var time = trackData[i].data.time[k];
-                var val = trackData[i].data.data[k];
-
-                var index = toArrayIndex(time);
-                if (index < maxTimeIndex && index >= 0)
-                    this.data[0][i + 1][index] = val;
-            }
+            bufferManager.SetRange(i, trackData[i].data);   
         }
 
-        // определяем минимальное значение по оси x
-        let minTime = undefined;
-        for (let i = 1; i < this.data.length; i++) {
-            for (let j = 0; j < this.data[i].length; j++) {
-                if (this.data[i][j] != undefined) {
-                    let currentFirstvalue = this.data[0][0][j] as number;
-                    if (!minTime || currentFirstvalue < minTime)
-                        minTime = currentFirstvalue
-                }
-            }
-        }
-
-        this.t0 = minTime as number;
-        this.th = maxTimeValue;
-
-        for (let i = 1; i < this.levels; i++) {
-            let compressed = this.Compress(i, this.data[0])
-            this.data[i] = compressed;
-        }
-    }
-
-    private Compress(avg: number, source: AlignedData): AlignedData {
-        let getAvgBuff = (): [number, number | undefined][] => {
-            let avgBuff = new Array<[number, number | undefined]>(source.length - 1);
-            for (let i = 0; i < avgBuff.length; i++) {
-                avgBuff[i] = [0, undefined];
-            }
-
-            return avgBuff;
-        }
-
-        let levelAvg =  Math.floor(this.compressionRatio * avg);
-        if ((levelAvg + this.level0AvgRatio) > 100) levelAvg = 1;
-
-        let compressedArraylength = Math.floor(source[0].length / levelAvg);
-        let dt = 1 / Math.floor(5000 / levelAvg);
-
-        let compressedData = getEmptyAlignedData(0, dt, source.length - 1, compressedArraylength);
-        for (let i = 0; i < compressedData[0].length; i++) {
-            let sourceStartIndex = i * levelAvg;
-            let avgBuff = getAvgBuff();
-
-            for (let k = 0; k < levelAvg; k++) {
-                let sourceIndex = sourceStartIndex + k;
-                for (let l = 1; l < source.length; l++) {
-                    let avgBufIndex = l - 1;
-                    if (source[l][sourceIndex]) {
-                        avgBuff[avgBufIndex][0]++;
-                        if (avgBuff[avgBufIndex][1] === undefined) {
-                            avgBuff[avgBufIndex][1] = 0;
-                        }
-
-                        avgBuff[avgBufIndex][1] = (avgBuff[avgBufIndex][1] as number) + (source[l][sourceIndex] as number);
-                    }
-                }
-            }
-
-            for (let j = 1; j < compressedData.length; j++) {
-                let avgBuffIndex = j - 1;
-
-                compressedData[j][i] = (avgBuff[avgBuffIndex][1] === undefined) ? undefined :
-                    (avgBuff[avgBuffIndex][1] as number) / avgBuff[avgBuffIndex][0];
-            }
-        }
-
-        return compressedData;
-    }
+        return bufferManager;
+    } 
 }

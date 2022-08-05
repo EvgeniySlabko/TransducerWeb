@@ -23,7 +23,7 @@ export class MyUPlot extends MyUPlotBase {
     this.BuildNewPlot([]);
   }
 
-  protected get data(): uPlot.AlignedData {
+  protected GetData(): uPlot.AlignedData {
     return this.bufferManager ? this.bufferManager.Source : [[], []]
   }
 
@@ -94,7 +94,6 @@ export class MyUPlot extends MyUPlotBase {
     this.bufferManager = new PlotBufferManager(() => [this.params.range[0], this.params.range[1]], {
       segments: channels.length,
       dt: this.params.dt(),
-      maxFrameTimeRange: 60 * 30 
     });
 
     this.options = this.getOptions();

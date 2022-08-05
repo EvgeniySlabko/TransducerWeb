@@ -55,7 +55,7 @@ export class MyUPlotBase {
   private _data: uPlot.AlignedData = [[], []]
   protected interval?: NodeJS.Timer;
 
-  protected get data(): uPlot.AlignedData {
+  protected GetData(): uPlot.AlignedData {
     return this._data
   }
 
@@ -90,8 +90,8 @@ export class MyUPlotBase {
   }
 
   private timeToIndex = (time: number): number => {
-    let firstBufferTime = this.data[0][0];
-    let firsIndex = Math.floor(firstBufferTime / this.params.pointsPerSecond);
+    let firstBufferTime = this.GetData()[0][0];                                 
+    let firsIndex = Math.floor(firstBufferTime / this.params.dt());
     let curIndex = Math.floor(time / (1 / this.params.pointsPerSecond));
     return curIndex - firsIndex;
   }
@@ -536,11 +536,11 @@ export class MyUPlotBase {
   }
 
   protected BuildPlot() {
-    this.plot = new uPlot(this.options, this.data, this.element);
+    this.plot = new uPlot(this.options, this.GetData(), this.element);
 
     this.interval = setInterval(() => {
       let currentPlotBuffer = this._data;
-      let currentBuffer = this.data;
+      let currentBuffer = this.GetData();
 
       if (currentPlotBuffer !== currentBuffer) {
         this.plot?.setData(currentBuffer, false);
@@ -581,7 +581,6 @@ export class MyUPlotBase {
         getValue: () => { return item.getElementsByClassName("u-value")[0].innerHTML; },
         setValue: (value: string) => { item.getElementsByClassName("u-value")[0].innerHTML = value; },
         isActive: () => !item.classList.contains("u-off"),
-
       })
     })
 
@@ -648,16 +647,20 @@ export class MyUPlotBase {
     if (left && this.legendItems && xVal < this.params.th && xVal > this.params.t0) {
       // let curValues = GetApproximateValues(this.data, xVal);
 
-      for (let i = 0; i < this.data.length - 1; i++) {
-        let nearestVal = nearestPoint(this.data[i + 1], index, maxCount);
+      for (let i = 0; i < this.GetData().length - 1; i++) {
+        let nearestVal = nearestPoint(this.GetData()[i + 1], index, maxCount);
         let seriesInfo = this.seriesInfos[i];
-        let strValue = nearestVal !== undefined && nearestVal !== null ? nearestVal!.toFixed(seriesInfo.style.legendValueAcurency).toString() : "--";
+        let strValue = "--";
+        if (nearestVal){
+          let scaledValue = nearestVal / seriesInfo.style.valueRatio;
+          strValue = scaledValue.toFixed(seriesInfo.style.legendValueAccurency).toString()
+        }
+
         if (this.legendItems) {
           try {
             this.legendItems[i + 1].setValue(strValue);
           }
           catch { }
-
         }
       };
     }

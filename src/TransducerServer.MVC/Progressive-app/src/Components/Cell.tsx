@@ -50,6 +50,7 @@ export class Cell extends React.Component<Props, IState>{
   dataHandler = (channel: CellChannel, args: ChannelDataArgs) => {
     let value = args.data.data[0];
     let overload = false;
+    // TO DO сделать DataProvider для анализа на перегрузку
     if (this.props.channelGroup.cellChannel.Style.minValue && value <= this.props.channelGroup.cellChannel.Style.minValue) {
       overload = true;
     }

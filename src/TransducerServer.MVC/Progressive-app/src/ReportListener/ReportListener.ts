@@ -8,6 +8,14 @@ export class ReportListener {
     private isListening: boolean = false;
     private isInit: boolean = false;
 
+    public get ThereIsData(){
+        let thereIsData = false;
+        this.channelMap.forEach((a, v) => {
+            if(a.length > 0) thereIsData = true;
+        });
+
+        return thereIsData;
+    }
 
     public SetChannels(channels: PlotChannel[]) {
         if (channels.length == 0) throw "There are no channels for listening";
@@ -23,7 +31,6 @@ export class ReportListener {
 
     public StartListening() {
         if (!this.isInit) throw "There are no channels for listening";
-        if (this.isListening) throw "Already listen";
 
         this.isListening = true;
     }
@@ -39,7 +46,6 @@ export class ReportListener {
     }
 
     public Reset() {
-        if (this.isListening) throw "Recording in progress";
         this.channelMap.forEach((a, v) => {
             v.onData.unsub(this.DataHandler);
         });
