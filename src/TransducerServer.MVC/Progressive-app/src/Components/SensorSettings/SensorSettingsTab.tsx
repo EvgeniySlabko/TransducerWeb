@@ -26,6 +26,8 @@ interface IState {
   offset: number;
   visibleChannels: [string, boolean][]
   enabled: boolean;
+  absolute: boolean;
+  invertion: boolean;
   fc: number;
   filterType: FilterType;
   order: number;
@@ -36,6 +38,8 @@ export class SensorSettingsTab extends React.Component<Props, IState>{
   constructor(prop: Props) {
     super(prop);
       this.state = {
+        absolute: false,
+        invertion: false,
         tareAccurency: 2,
         avgRatio: 1,
         dataReceived: false,
@@ -57,6 +61,8 @@ export class SensorSettingsTab extends React.Component<Props, IState>{
       let holdingRegisters = await this.props.group.node.sensor.GetHoldingRegisters();
       let sensorparameters = await GetSensorParameters(this.props.group.node.fullSensorInfo.SensorId);
         this.setState(() => ({
+          absolute: this.props.group.channelsInfo.absoluteState(),
+          invertion: this.props.group.channelsInfo.invertionState(),
           avgRatio: holdingRegisters.AverageRatio,
           speedPeriod: holdingRegisters.SpeedMeasurigPeriod,
           trackMaximum: this.props.group.channelsInfo.getAbsoluteAnalizerState(),
@@ -96,11 +102,15 @@ export class SensorSettingsTab extends React.Component<Props, IState>{
       });
       this.props.group.channelsInfo.setAbsoluteAnalizer(this.state.trackMaximum);
       this.props.group.channelsInfo.setOffset(this.state.offset);
-
+      this.props.group.channelsInfo.setAbsoluteState(this.state.absolute);
+      this.props.group.channelsInfo.setInvertionState(this.state.invertion);
+      
       SaveSensorParameters({
         externalSpeedSensor: this.state.externalSpeedSensor,
         offset: this.state.offset,
         avgRatio: this.state.avgRatio,
+        invertion: this.state.invertion,
+        absolute: this.state.absolute,
         speedPeriod: this.state.speedPeriod,
         filterParameters:{
           fc: this.state.fc,
@@ -137,6 +147,9 @@ export class SensorSettingsTab extends React.Component<Props, IState>{
   onFilterTypeChanged = (value: FilterType) => this.setState(() => ({ filterType: value }));
   onFilterOrderChanged = (value: number) => this.setState(() => ({ order: value }));
 
+  onInvertionChanged = (value: boolean) => this.setState(() => ({ invertion: value }));
+  onAbsoluteChanged = (value: boolean) => this.setState(() => ({ absolute: value }));
+
   onOffsetChanged = (value: number) => this.setState(() => ({ offset: value }));
   onAvgChanged = (value: number) => this.setState(() => ({ avgRatio: value }));
   onExternalSpeedSensorChanged = (value: boolean) => this.setState(() => ({ externalSpeedSensor: value }));
@@ -170,6 +183,8 @@ export class SensorSettingsTab extends React.Component<Props, IState>{
           <Tabs defaultActiveKey="1">
             <TabPane tabKey='1' tab="Общие" key="1">
             <SensorParameters key = {2}
+              absolute = {this.state.absolute}
+              invertion = {this.state.invertion}
               tareAccurency={2}
               avgRatio={this.state.avgRatio}
               externalSpeedSensor={this.state.externalSpeedSensor}
@@ -177,6 +192,8 @@ export class SensorSettingsTab extends React.Component<Props, IState>{
               speedPeriod={this.state.speedPeriod}
               visibleChannels={this.state.visibleChannels}
               trackMaximum={this.state.trackMaximum}
+              onAbsoluteChanged={this.onAbsoluteChanged}
+              onInvertionChanged={this.onInvertionChanged}
               onAvgChanged={this.onAvgChanged}
               onExternalSpeedSensorChanged={this.onExternalSpeedSensorChanged}
               onOffsetChanged={this.onOffsetChanged}

@@ -12,6 +12,8 @@ export interface Props {
   speedPeriod: number;
   externalSpeedSensor: boolean;
   offset: number;
+  absolute: boolean;
+  invertion: boolean;
   visibleChannels: [string, boolean][];
 
   onOffsetChanged: (value: number) => void
@@ -20,6 +22,8 @@ export interface Props {
   onSpeedPeriodChanged: (value: number) => void;
   onVisibleChannelsChanged: (index: number, value: boolean) => void;
   onAvgChanged: (value: number) => void;
+  onInvertionChanged: (value: boolean) => void;
+  onAbsoluteChanged: (value: boolean) => void;
 }
 
 
@@ -76,6 +80,20 @@ export class SensorParameters extends React.Component<Props>{
     <Checkbox
       checked= {this.props.trackMaximum}
       onChange={(c) => this.props.onTrackMaximumChanged(c.target.checked)}/>
+    }/>
+
+<MenuItem label='Инвертировать основную величину:' 
+    children={
+    <Checkbox
+      checked= {this.props.invertion}
+      onChange={(c) => this.props.onInvertionChanged(c.target.checked)}/>
+    }/>
+  
+  <MenuItem label='Абсолютное значение:' 
+    children={
+    <Checkbox
+      checked= {this.props.absolute}
+      onChange={(c) => this.props.onAbsoluteChanged(c.target.checked)}/>
     }/>
   
   <MenuItem label='Тара:' 

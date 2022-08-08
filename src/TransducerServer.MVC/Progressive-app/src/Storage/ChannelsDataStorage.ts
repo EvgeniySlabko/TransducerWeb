@@ -20,6 +20,8 @@ export declare class SensorStorageParameters
     filterParameters: FilterParameters;
     avgRatio: number;
     speedPeriod: number;
+    absolute: boolean;
+    invertion: boolean;
 }
 
 let defaultSensorParams: SensorStorageParameters = {
@@ -27,6 +29,8 @@ let defaultSensorParams: SensorStorageParameters = {
     offset: 0,
     avgRatio: 1,
     speedPeriod: 100,
+    absolute: false,
+    invertion: false,
     filterParameters: {
         enabled: true,
         fc: 1000,
@@ -126,6 +130,8 @@ export async function ApplySensorParameters(group: Group, sensorId: string)
     await group.node.worker.SetExternalSpeedSensorState(parameters.externalSpeedSensor);
     await group.node.worker.SetAverageRatio(parameters.avgRatio);
     await group.node.worker.SetSpeedPeriod(parameters.speedPeriod);
+    group.channelsInfo.setInvertionState(parameters.invertion);
+    group.channelsInfo.setAbsoluteState(parameters.absolute);
     group.channelsInfo.setFilterParameters(parameters.filterParameters);
     group.channelsInfo.setOffset(parameters.offset);
 

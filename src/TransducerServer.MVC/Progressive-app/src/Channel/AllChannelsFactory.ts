@@ -6,10 +6,12 @@ import { CellChannel } from "./Channel/CellChannel";
 import { PlotChannel } from "./Channel/PlotChannel";
 import { CreateCellSpeedStyle, CreatePowerCellStyle, CreatetemperatureCellStyle, CreateTorqueCellStyle } from "./ChannelStyle/CellChannelStyleFactory";
 import { CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "./ChannelStyle/ChannelStyleFactory";
+import { AbsoluteDataSource } from "./SensorDataProveder/AbsoluteDataSource";
 import { PeakEventArgs } from "./SensorDataProveder/AbsolutePeakAnalyzer";
 import { CutOffDataProvider } from "./SensorDataProveder/CutOffDataProvider";
 import { CreateAbsoluteAnalizerSource, CreateAmplifiredDataSource, CreateDisplayValueDataSource, CreateMainValueDataSource, CreateOffsetDataSource, CreatePowerDataSource, CreateSpeedValueDataSource, CreateTemperatureValueDataSource } from "./SensorDataProveder/DataSourceFactory";
 import { FilterDataProvider } from "./SensorDataProveder/FilterDataProvider";
+import { InvertorDataSource } from "./SensorDataProveder/InvertorDataSource";
 import { ISensorDataProvider } from "./SensorDataProveder/ISensorDataProvider";
 import { SensorDataProvider } from "./SensorDataProveder/SensorDataProvider";
 
@@ -20,16 +22,20 @@ export interface ChannelsGroup {
 }
 
 export interface AllChannelsInfo {
+    setInvertionState: (invertion: boolean) => void
+    invertionState: () => boolean
+    setAbsoluteState: (invertion: boolean) => void
+    absoluteState: () => boolean
     setFilterParameters: (filterParams: FilterParameters) => void;
     filterParameters: () => FilterParameters;
     channelGroups: ChannelsGroup[];
-    setOffset: (offset: number) => void,
-    offset: () => number,
-    setCurrentOffset: () => number,
     absolutePeackDetected: IEvent<PlotChannel, PeakEventArgs>,
     resetAbsoluteAnalizer: () => void,
     setAbsoluteAnalizer: (state: boolean) => void,
     getAbsoluteAnalizerState: () => boolean,
+    setOffset: (offset: number) => void,
+    offset: () => number,
+    setCurrentOffset: () => number,
 }
 
 export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo, colorSeed: number): AllChannelsInfo {
@@ -39,10 +45,13 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
 
     //Torque
     let mainSource = CreateMainValueDataSource(sensor);
-    let cutOffMainSource = new CutOffDataProvider(mainSource);
+    let cutOffMainSource = CreateCutOffChannel(mainSource);
     let offsetSource = CreateOffsetDataSource(cutOffMainSource, 0);
     let applifiredDataSource = CreateAmplifiredDataSource(offsetSource, fullSensorInfo.valueRatio);
-    let filterDataSource = new FilterDataProvider(applifiredDataSource);
+
+    let absoluteDataSource = CreateAbsoluteChannel(applifiredDataSource);
+    let invertedDataSource = CreateInvertedChannel(absoluteDataSource);
+    let filterDataSource = CreateFilter(invertedDataSource);
 
     let absoluteAnalizerSource = CreateAbsoluteAnalizerSource(filterDataSource);
 
@@ -59,7 +68,7 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
 
     //Speed
     let speedSource = CreateSpeedValueDataSource(sensor);
-    let cutOffSpeedSource = new CutOffDataProvider(speedSource);
+    let cutOffSpeedSource = CreateCutOffChannel(speedSource);
     let speedDisplaySource = CreateDisplayValueDataSource(cutOffSpeedSource, 6);
     let speedPlotChannel = CreateSpeedChannel(cutOffSpeedSource, fullSensorInfo);
     let speedCellChannel = CreateSpeedCellChannel(speedDisplaySource, fullSensorInfo);
@@ -70,7 +79,7 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
 
     //Power
     let powerSource = CreatePowerDataSource(mainSource, speedSource);
-    let cutOffPowerSource = new CutOffDataProvider(powerSource);
+    let cutOffPowerSource = CreateCutOffChannel(powerSource);
 
     let powerDisplaySource = CreateDisplayValueDataSource(cutOffPowerSource, 6);
     let powerPlotChannel = CreatePowerChannel(cutOffPowerSource, fullSensorInfo);
@@ -106,6 +115,10 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     }
 
     return {
+        setAbsoluteState: (absolute: boolean) => absoluteDataSource.Absolute = absolute,
+        absoluteState: () => absoluteDataSource.Absolute,
+        invertionState: () => invertedDataSource.Inverted,
+        setInvertionState: (invertion: boolean) => invertedDataSource.Inverted = invertion,
         setOffset: offsetSource.SetOffset,
         setCurrentOffset: offsetSource.SetCurrentOffset,
         offset: () => offsetSource.Offset,
@@ -121,8 +134,11 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
     function CreateTemperatureChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo): PlotChannel {
         return new PlotChannel(source, CreatetemperatureStyle(fullSensorInfo));
     }
-    
 
+    function CreateCutOffChannel(source: ISensorDataProvider): CutOffDataProvider {
+        return new CutOffDataProvider(source);
+    }
+    
     function CreateTemperatureCellChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo): CellChannel {
         return new CellChannel(source, CreatetemperatureCellStyle(fullSensorInfo));
     }
@@ -147,7 +163,19 @@ export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo
         return new PlotChannel(source, CreatePowerStyle(fullSensorInfo));
     }
 
+    function CreateFilter(source: ISensorDataProvider): FilterDataProvider {
+        return new FilterDataProvider(source);
+    }
+
     function CreatePowerCellChannel(source: ISensorDataProvider, fullSensorInfo: FullSensorInfo): CellChannel {
         return new CellChannel(source, CreatePowerCellStyle(fullSensorInfo));
+    }
+
+    function CreateInvertedChannel(source: ISensorDataProvider): InvertorDataSource {
+        return new InvertorDataSource(source);
+    }
+    
+    function CreateAbsoluteChannel(source: ISensorDataProvider): AbsoluteDataSource {
+        return new AbsoluteDataSource(source);
     }
 }
