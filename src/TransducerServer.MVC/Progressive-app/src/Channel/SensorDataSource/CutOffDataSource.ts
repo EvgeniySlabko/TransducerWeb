@@ -9,7 +9,7 @@ import { ISensorDataProvider } from "./ISensorDataProvider";
 // На графике отображаются точки со старым временем.
 // CutOffData отсекает эти данные.
 
-export class CutOffDataProvider implements ISensorDataProvider {
+export class CutOffDataSource implements ISensorDataProvider {
     private readonly at: number = 1;          //погрешность
 
     private _onData = new EventDispatcher<ISingleComponentSensor, SensorData>();
@@ -17,7 +17,6 @@ export class CutOffDataProvider implements ISensorDataProvider {
     private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
 
     private isStreaming: boolean = false;
-    private firstStart: boolean = false;
     constructor(sensor: ISensorDataProvider) {
 
         sensor.onClose.sub((sensor, msg) => {
@@ -25,15 +24,10 @@ export class CutOffDataProvider implements ISensorDataProvider {
         });
 
         sensor.onMessage.sub((sensor, args) => {
-            if (args.msgType === SensorMessage.SetTime0){
-                this.firstStart = true;
-            }
-
             if (args.msgType === SensorMessage.StartStreaming){
                 sleep(30).then(() =>
                 {
                     this.isStreaming = true;
-                    this.firstStart = false;
                 });
             }
 
@@ -46,7 +40,7 @@ export class CutOffDataProvider implements ISensorDataProvider {
 
         sensor.onData.sub((sensor, data) => {
             if (!this.isStreaming){
-                console.log("cutoff");
+                //console.log("cutoff");
                 return;
             }
              this._onData.dispatch(sensor, data);     

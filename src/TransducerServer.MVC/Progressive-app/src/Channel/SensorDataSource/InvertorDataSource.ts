@@ -3,16 +3,13 @@ import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/IS
 import { SensorData, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
-export class OffsetDataProvider implements ISensorDataProvider {
+export class InvertorDataSource implements ISensorDataProvider {
     private _onData = new EventDispatcher<ISingleComponentSensor, SensorData>();
     private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
     private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
 
-    private offset: number;
-    private currentValue: number = 0;
-    constructor(baseSource: ISensorDataProvider, offset: number) {
-        this.offset = offset;
-
+    private enabled: boolean = false;
+    constructor(baseSource: ISensorDataProvider) {
         baseSource.onClose.sub((sensor, msg) => {
             this._onClose.dispatch(sensor, msg);
         });
@@ -23,17 +20,20 @@ export class OffsetDataProvider implements ISensorDataProvider {
 
         baseSource.onData.sub((sensor, data) => {
 
-            let ofsetValues = new Array<number>(data.data.length);
-
-            for (let i = 0; i < data.data.length; i++) {
-                this.currentValue = data.data[i];
-                ofsetValues[i] = data.data[i] - this.offset;
+            if (this.enabled)
+            {
+                this._onData.dispatch(sensor, {
+                    data: data.data.map(value => value * -1),
+                    time: data.time,
+                });
             }
-
-            this._onData.dispatch(sensor, {
-                data: ofsetValues,
-                time: data.time,
-            });
+            else
+            {
+                this._onData.dispatch(sensor, {
+                    data: data.data,
+                    time: data.time,
+                });
+            }
         });
     }
 
@@ -47,16 +47,11 @@ export class OffsetDataProvider implements ISensorDataProvider {
         return this._onMessage.asEvent();;
     }
 
-    public get Offset() {
-        return this.offset;
+    public get Enabled() {
+        return this.enabled;
     }
 
-    public SetOffset = (offset: number) => {
-        this.offset = offset;
-    }
-
-    public SetCurrentOffset = (): number => {
-        this.offset = this.currentValue;
-        return this.offset;
+    public set Enabled(enabled: boolean) {
+        this.enabled = enabled;
     }
 }

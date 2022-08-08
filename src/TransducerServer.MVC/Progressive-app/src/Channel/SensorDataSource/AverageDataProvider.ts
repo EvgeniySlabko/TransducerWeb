@@ -3,8 +3,7 @@ import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/IS
 import { SensorData, SensorMessage, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
-//буферизирует данные
-export class AverageSensorDataProvider implements ISensorDataProvider {
+export class AverageDataSource implements ISensorDataProvider {
     private _onData = new EventDispatcher<ISingleComponentSensor, SensorData>();
     private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
     private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
@@ -31,9 +30,9 @@ export class AverageSensorDataProvider implements ISensorDataProvider {
         });
 
         baseSource.onData.sub((sensor, data) => {
-            data.data.forEach((v, i) => {
+            data.data.forEach((value, i) => {
                 if (this.averageCount == 0) this.t0 = data.time[0];
-                this.averageValue += v;
+                this.averageValue += value;
                 this.averageCount++;
                 if (this.averageCount == this.averageRatio) {
                     this.th = data.time[i];
@@ -44,7 +43,7 @@ export class AverageSensorDataProvider implements ISensorDataProvider {
                     this._onData.dispatch(sensor, {
                         data: [curVal],
                         time: [curTime],
-                    } as SensorData);
+                    });
 
                     this.reset();
                 }
@@ -59,10 +58,8 @@ export class AverageSensorDataProvider implements ISensorDataProvider {
         this.averageValue = 0;
     }
 
-    public SetAverage = (averageRatio: number) => {
-        if (averageRatio < 1) throw "Average value must be higher then zero"
-
-        this.averageRatio = averageRatio;
+    public set(avgRatio: number) {
+        this.averageRatio = avgRatio;
     }
 
     get onData(): IEvent<ISingleComponentSensor, SensorData> {

@@ -1,36 +1,35 @@
 import { PlotChannelStyle as PlotChannelStyle } from "../ChannelStyle/PlotChannelStyle";
-import { ISensorDataProvider } from "../SensorDataProveder/ISensorDataProvider";
+import { ISensorDataProvider } from "../SensorDataSource/ISensorDataProvider";
 import { EventDispatcher } from "strongly-typed-events";
 import { SensorData, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
 //import { CreateDefaultStyle } from "./ChannelStyleFactory";
 
-export type ChannelDataArgs =
+export type PlotChannelDataArgs =
     {
         sensor: ISingleComponentSensor;
         data: SensorData;
     }
 
-export type ChannelMessageArgs =
+export type PlotChannelMessageArgs =
     {
         sensor: ISingleComponentSensor;
         sensorMsgArgs: SensorMessageEventArgs;
     }
 
-export type ChannelCloseArgs =
+export type PlotChannelCloseArgs =
     {
         sensor: ISingleComponentSensor;
         msg: string;
     }
 
-// Содержит информацию для отображения на графике. подает данные на график
+// Содержит информацию для отображения на графике.
 export class PlotChannel {
     private style: PlotChannelStyle;
     
-    // Фабричный метод создание каналов из Sensor
-    private _onData = new EventDispatcher<PlotChannel, ChannelDataArgs>();
-    private _onMessage = new EventDispatcher<PlotChannel, ChannelMessageArgs>();
-    private _onClose = new EventDispatcher<PlotChannel, ChannelCloseArgs>();
+    private _onData = new EventDispatcher<PlotChannel, PlotChannelDataArgs>();
+    private _onMessage = new EventDispatcher<PlotChannel, PlotChannelMessageArgs>();
+    private _onClose = new EventDispatcher<PlotChannel, PlotChannelCloseArgs>();
 
     public constructor(dataSource: ISensorDataProvider, style: PlotChannelStyle) {
         this.style = style;

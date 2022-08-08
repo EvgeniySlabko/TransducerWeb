@@ -1,7 +1,7 @@
 import { AllChannelsInfo, ChannelsGroup } from "../Channel/AllChannelsFactory";
 import { CellChannelStyle } from "../Channel/ChannelStyle/CellChannelStyle";
 import { PlotChannelStyle } from "../Channel/ChannelStyle/PlotChannelStyle";
-import { ValueType } from "../Channel/ChannelStyle/ChanneStyleCommon";
+import { ChannelDataType } from "../Channel/ChannelStyle/ChanneStyleCommon";
 import { Group } from "../Components/App";
 
 export type FilterType = "bessel" | "butterworth";
@@ -130,8 +130,8 @@ export async function ApplySensorParameters(group: Group, sensorId: string)
     await group.node.worker.SetExternalSpeedSensorState(parameters.externalSpeedSensor);
     await group.node.worker.SetAverageRatio(parameters.avgRatio);
     await group.node.worker.SetSpeedPeriod(parameters.speedPeriod);
-    group.channelsInfo.setInvertionState(parameters.invertion);
-    group.channelsInfo.setAbsoluteState(parameters.absolute);
+    group.channelsInfo.setInvertiorSourceState(parameters.invertion);
+    group.channelsInfo.setAbsoluteSourceState(parameters.absolute);
     group.channelsInfo.setFilterParameters(parameters.filterParameters);
     group.channelsInfo.setOffset(parameters.offset);
 
@@ -148,6 +148,6 @@ export async function GetSensorParameters(sensorId: string) : Promise<SensorStor
 }
 
 function getSensorParametersKey(sensorId: string) : string { return  sensorId + ":" + "Params" };
-function getPlotStyleKey(sensorId: string, valueType: ValueType) : string { return  sensorId + ":" + valueType + ":" + "plotStyle" };
-function getSavingStyleKey(sensorId: string, valueType: ValueType) : string { return sensorId + ":" + valueType + ":" + "savingStyle" };
-function getCellStyleKey(sensorId: string, valueType: ValueType) : string { return sensorId + ":" + valueType + ":" + "cellStyle" };
+function getPlotStyleKey(sensorId: string, valueType: ChannelDataType) : string { return  sensorId + ":" + valueType + ":" + "plotStyle" };
+function getSavingStyleKey(sensorId: string, valueType: ChannelDataType) : string { return sensorId + ":" + valueType + ":" + "savingStyle" };
+function getCellStyleKey(sensorId: string, valueType: ChannelDataType) : string { return sensorId + ":" + valueType + ":" + "cellStyle" };

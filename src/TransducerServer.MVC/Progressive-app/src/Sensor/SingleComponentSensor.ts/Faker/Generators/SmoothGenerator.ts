@@ -1,10 +1,10 @@
-import { getRandomInt } from "../../../../Common/Common";
+import { GetRandomInt } from "../../../../Common/Common";
 import { IGenerator } from "./IGeneraot";
 
 export class SmoothGenerator implements IGenerator {
     private count: number = 0;
     private lastVal: number = Math.random();
-    private cm: number = getRandomInt(30);
+    private cm: number = GetRandomInt(30);
     constructor(smoothFactor: number) {
     }
 

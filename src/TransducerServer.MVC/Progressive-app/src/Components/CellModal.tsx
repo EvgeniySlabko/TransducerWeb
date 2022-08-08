@@ -63,7 +63,6 @@ export class CellModal extends React.Component<Props, IState>{
           onCancel={this.props.onClose}
           centered={false}>
           <div className='vertical-flex'>
-
             <MenuItem label='Шрифт:' children={
               <Slider style={{ width: "200px" }}
                 defaultValue={this.props.group.cellChannel.Style.fontSize}
@@ -72,11 +71,17 @@ export class CellModal extends React.Component<Props, IState>{
             } />
 
             <MenuItem label='Цвет графика:' children={
-              <HexColorPicker color={this.props.group.cellChannel.Style.color} onChange={this.colorChangeHandler} />
+              <HexColorPicker color={this.props.group.cellChannel.Style.color} 
+                              onChange={this.colorChangeHandler} />
             } />
 
             <MenuItem label='Знаков после запятой:' children={
-              <InputNumber className='vertical-alignment' step={1} size="small" style={{ height: "25px" }} min={0} max={5} value={this.state.accurency} onChange={this.changeAccurency} />
+              <InputNumber className='vertical-alignment' 
+                           size="small" 
+                           style={{ height: "25px" }}
+                           step={1} min={0} max={5} 
+                           value={this.state.accurency} 
+                           onChange={this.changeAccurency} />
             } />
 
             <MenuItem label='Пределы измерений:' children={
@@ -84,7 +89,6 @@ export class CellModal extends React.Component<Props, IState>{
                 defaultChecked={this.state != undefined && this.props.group.plotChannel.Style.drawLimits}
                 onChange={(s) => this.limitHandler(s.target.checked)} />
             } />
-
           </div>
         </Modal>
       </div>

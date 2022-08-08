@@ -1,8 +1,9 @@
 import html2canvas from 'html2canvas';
 import uPlot, { Axis, Scale, Series } from 'uplot';
 import { PlotChannelStyle } from '../Channel/ChannelStyle/PlotChannelStyle';
-import { increase_brightness, nearestPoint } from '../Common/Common';
-import { groupBy } from '../Common/GroupBy';
+import { NearestPoint } from '../Common/AlignedDataHelpers';
+import { IncreaseBrightness } from '../Common/ColorHelpers';
+import { groupBy as GroupBy } from '../Common/Common';
 import { GetDefaultAxe, GetScale, GetSeries } from './PlotCommon';
 
 export declare class PlotParameters{
@@ -385,7 +386,7 @@ export class MyUPlotBase {
         let limitHeight = relVal * height / rangeValue;
 
         u.ctx.save();
-        u.ctx.strokeStyle = increase_brightness(l.color(), 40);
+        u.ctx.strokeStyle = IncreaseBrightness(l.color(), 40);
 
         let xMax = u.scales["x"].max;
         let xMin = u.scales["x"].min;
@@ -401,7 +402,7 @@ export class MyUPlotBase {
         u.ctx.setLineDash([dashLen, dashGap]);
         u.ctx.font = "10px serif";
         u.ctx.textAlign = "start";
-        u.ctx.fillStyle = increase_brightness(l.color(), 40);
+        u.ctx.fillStyle = IncreaseBrightness(l.color(), 40);
 
         let dy = height - limitHeight + top;
         u.ctx.fillText(l.label, left, dy - 6);
@@ -648,7 +649,7 @@ export class MyUPlotBase {
       // let curValues = GetApproximateValues(this.data, xVal);
 
       for (let i = 0; i < this.GetData().length - 1; i++) {
-        let nearestVal = nearestPoint(this.GetData()[i + 1], index, maxCount);
+        let nearestVal = NearestPoint(this.GetData()[i + 1], index, maxCount);
         let seriesInfo = this.seriesInfos[i];
         let strValue = "--";
         if (nearestVal){
@@ -685,7 +686,7 @@ export class MyUPlotBase {
 
   public ZoomY(step: number = 20) // в процентах
   {
-    let grouped = groupBy(this.seriesInfos, s => s.style.valueType);
+    let grouped = GroupBy(this.seriesInfos, s => s.style.valueType);
     let ratio = step / 100;
     grouped.forEach(g => {
       let range = g[1][0].curRange[1] - g[1][0].curRange[0];
@@ -699,7 +700,7 @@ export class MyUPlotBase {
   }
 
   public VerticalAlign() {
-    let groupedByType = groupBy(this.seriesInfos, (e) => e.style.valueType);
+    let groupedByType = GroupBy(this.seriesInfos, (e) => e.style.valueType);
     groupedByType.forEach(g => {
       let maxRange: number[] = [0, 0];
 

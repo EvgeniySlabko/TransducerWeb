@@ -1,10 +1,9 @@
 
-import { AimOutlined, ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, PlusCircleOutlined, SaveOutlined, SettingOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, PlusCircleOutlined, SaveOutlined, SettingOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Menu } from 'antd';
 import React from 'react';
-import { sleep } from '../Common/Common';
 import { keyCodes as keyCode } from '../Common/KeyCodes';
-import { SetupPlotManager } from '../Common/PlotHelpers';
+import { SetupPlotManager } from '../Common/PlotManagerHelpers';
 import { RecordManager } from '../ReportListener/RecordManager';
 import { CreateSerialSensor } from '../Sensor/SensorFactory';
 import { SensorController } from '../Sensor/SensorsManager/SensorsManager';
@@ -78,7 +77,7 @@ export class Navbar extends React.Component<Props, IState>
 		input.click();
 	}
 
-	private async handleAddClick() {
+	async handleAddClick() {
 		let port: SerialPort;
 		try {
 			port = await navigator.serial.requestPort();    //запрашиваем выбор порта у пользователя

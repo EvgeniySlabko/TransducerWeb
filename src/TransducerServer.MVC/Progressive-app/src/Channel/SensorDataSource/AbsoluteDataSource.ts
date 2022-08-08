@@ -8,7 +8,7 @@ export class AbsoluteDataSource implements ISensorDataProvider {
     private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
     private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
 
-    private absolute: boolean = false;
+    private enabled: boolean = false;
     constructor(baseSource: ISensorDataProvider) {
         baseSource.onClose.sub((sensor, msg) => {
             this._onClose.dispatch(sensor, msg);
@@ -19,7 +19,7 @@ export class AbsoluteDataSource implements ISensorDataProvider {
         });
 
         baseSource.onData.sub((sensor, data) => {
-            if (this.absolute)
+            if (this.enabled)
             {
                 this._onData.dispatch(sensor, {
                     data: data.data.map(value => Math.abs(value)),
@@ -46,11 +46,11 @@ export class AbsoluteDataSource implements ISensorDataProvider {
         return this._onMessage.asEvent();;
     }
 
-    public get Absolute() {
-        return this.absolute;
+    public get Enabled() {
+        return this.enabled;
     }
 
-    public set Absolute(inverted: boolean) {
-        this.absolute = inverted;
+    public set Enabled(enabled: boolean) {
+        this.enabled = enabled;
     }
 }

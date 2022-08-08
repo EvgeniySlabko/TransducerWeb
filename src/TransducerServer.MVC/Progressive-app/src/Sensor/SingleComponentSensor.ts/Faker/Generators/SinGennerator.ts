@@ -1,9 +1,9 @@
-import { getRandomInt } from "../../../../Common/Common";
+import { GetRandomInt } from "../../../../Common/Common";
 import { IGenerator } from "./IGeneraot";
 
 export class SinGenerator implements IGenerator {
     private c: number = 1;
-    private f: number = getRandomInt(100) / 1000;
+    private f: number = GetRandomInt(100) / 1000;
     private amp: number = Math.random();
     private ph: number = Math.random() * 10;
     constructor() {

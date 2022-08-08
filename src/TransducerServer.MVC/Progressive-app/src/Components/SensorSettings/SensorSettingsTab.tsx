@@ -57,19 +57,19 @@ export class SensorSettingsTab extends React.Component<Props, IState>{
 
   async componentDidMount() {
     try {
-      let filterParameters = this.props.group.channelsInfo.filterParameters();
+      let filterParameters = this.props.group.channelsInfo.getFilterParameters();
       let holdingRegisters = await this.props.group.node.sensor.GetHoldingRegisters();
       let sensorparameters = await GetSensorParameters(this.props.group.node.fullSensorInfo.SensorId);
         this.setState(() => ({
-          absolute: this.props.group.channelsInfo.absoluteState(),
-          invertion: this.props.group.channelsInfo.invertionState(),
+          absolute: this.props.group.channelsInfo.getAbsoluteSourceState(),
+          invertion: this.props.group.channelsInfo.getInvertorSourceState(),
           avgRatio: holdingRegisters.AverageRatio,
           speedPeriod: holdingRegisters.SpeedMeasurigPeriod,
-          trackMaximum: this.props.group.channelsInfo.getAbsoluteAnalizerState(),
+          trackMaximum: this.props.group.channelsInfo.getPeackAnalizerState(),
           visibleChannels: this.props.group.channelsInfo.channelGroups.map(c => c.cellChannel).map(ch => [ch.Style.valueName, ch.Style.visible]),
           externalSpeedSensor: sensorparameters.externalSpeedSensor,
 
-          offset: this.props.group.channelsInfo.offset(),
+          offset: this.props.group.channelsInfo.getCurrentOffset(),
           enabled: filterParameters.enabled,
           fc: filterParameters.fc,
           filterType: filterParameters.filterType,
@@ -88,7 +88,7 @@ export class SensorSettingsTab extends React.Component<Props, IState>{
   }
 
   onOk = async () => {
-    this.props.group.channelsInfo.setAbsoluteAnalizer(this.state.trackMaximum);
+    this.props.group.channelsInfo.setPeackAnalizerState(this.state.trackMaximum);
 
     try {
       await this.props.group.node.worker.SetAverageRatio(this.state.avgRatio);
@@ -100,10 +100,10 @@ export class SensorSettingsTab extends React.Component<Props, IState>{
         filterType: this.state.filterType,
         order: this.state.order,
       });
-      this.props.group.channelsInfo.setAbsoluteAnalizer(this.state.trackMaximum);
+      this.props.group.channelsInfo.setPeackAnalizerState(this.state.trackMaximum);
       this.props.group.channelsInfo.setOffset(this.state.offset);
-      this.props.group.channelsInfo.setAbsoluteState(this.state.absolute);
-      this.props.group.channelsInfo.setInvertionState(this.state.invertion);
+      this.props.group.channelsInfo.setAbsoluteSourceState(this.state.absolute);
+      this.props.group.channelsInfo.setInvertiorSourceState(this.state.invertion);
       
       SaveSensorParameters({
         externalSpeedSensor: this.state.externalSpeedSensor,

@@ -1,12 +1,13 @@
 import { SensorData } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { SeriesValue } from "../uPlot/PlotCommon";
 
 export declare class DataAlignParams {
     dt: number; //интервал сетки выравнивания
 }
 
-export function AlignedData(data: SensorData[], params: DataAlignParams): (number | null | undefined)[][] {
+export function AlignedData(data: SensorData[], params: DataAlignParams): SeriesValue[][] {
 
-    let timeToIndex = (time: number) => Math.trunc(time / params.dt);
+    let timeToIndex = (time: number) => Math.round(time / params.dt);
 
     let firstTime = GetFirstTime(data);
     if (firstTime < 0) firstTime = 0;
@@ -15,9 +16,9 @@ export function AlignedData(data: SensorData[], params: DataAlignParams): (numbe
     let firstIndex = timeToIndex(firstTime);
     let segmentSize = lastIndex - firstIndex;
 
-    let matrix = new Array<(number | null | undefined)[]>(data.length + 1);
+    let matrix = new Array<SeriesValue[]>(data.length + 1);
     for (let i = 0; i < matrix.length; i++)
-        matrix[i] = new Array<(number | null | undefined)>(segmentSize);
+        matrix[i] = new Array<SeriesValue>(segmentSize);
 
     // set time grid;
     for (let i = 0; i < matrix[0].length; i++)
@@ -37,23 +38,22 @@ export function AlignedData(data: SensorData[], params: DataAlignParams): (numbe
 }
 
 function GetFirstTime(data: SensorData[]) {
-    let times: number[] = [];
+    let timeArr: number[] = [];
     for (let i = 0; i < data.length; i++) {
         if (data[i].data.length > 0) {
-            times.push(data[i].time[0])
+            timeArr.push(data[i].time[0])
         }
     };
 
-    return Math.min(...times);
+    return Math.min(...timeArr);
 }
 
 function GetLastTime(data: SensorData[]) {
-    let lastValues = data.map(d => d.time[d.time.length - 1]);
-
+    let lastValues = data.map(value => value.time[value.time.length - 1]);
     return Math.max(...lastValues);
 }
 
-export function getEmptyAlignedData(startTime: number, dt: number, segments: number, length: number): uPlot.AlignedData {
+export function GetEmptyAlignedData(startTime: number, dt: number, segments: number, length: number): uPlot.AlignedData {
     let currentTime = startTime;
     let timeArr = new Array<number>(length);
     for (let i = 0; i < length; i++) {
@@ -61,13 +61,42 @@ export function getEmptyAlignedData(startTime: number, dt: number, segments: num
         currentTime += dt;
     }
 
-    let dataArrs = new Array<(undefined | null | number)[]>(segments);
+    let dataArrs = new Array<SeriesValue[]>(segments);
     for (let i = 0; i < dataArrs.length; i++) {
-        dataArrs[i] = new Array<(undefined | null | number)>(length);
+        dataArrs[i] = new Array<SeriesValue>(length);
         for (let j = 0; j < dataArrs.length; j++) {
             dataArrs[i][j] = undefined;
         }
     }
 
     return [timeArr, ...dataArrs];
+}
+
+export function NearestPoint(arr: SeriesValue[], index: number, maxCount: number): SeriesValue {
+    if (arr[index] === null)
+        return undefined;
+    if (arr[index] !== undefined)
+        return arr[index] as number;
+
+
+    let left = index;
+    let right = index;
+    let curIter = 0
+    do {
+        if (arr[left] !== undefined)
+            return arr[left];
+
+        if (left != 0)
+            left -= 1;
+
+        if (arr[right] !== undefined)
+            return arr[right];
+
+        if (right != arr.length - 1)
+            right += 1;
+
+        curIter += 1;
+    } while (curIter <= maxCount);
+
+    return undefined;
 }

@@ -6,7 +6,7 @@ import { ISensorDataProvider } from "./ISensorDataProvider";
 
 var Fili = require('fili');
 
-export class FilterDataProvider implements ISensorDataProvider {
+export class FilterDataSource implements ISensorDataProvider {
     private _onData = new EventDispatcher<ISingleComponentSensor, SensorData>();
     private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
     private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
@@ -78,8 +78,6 @@ export class FilterDataProvider implements ISensorDataProvider {
     private createFilter = () => {
         //  Instance of a filter coefficient calculator
         let iirCalculator = new Fili.CalcCascades();
-
-        //let availableFilters = iirCalculator.available();
 
         // calculate filter coefficients
         let samples = 5000 / this.avgRatio;

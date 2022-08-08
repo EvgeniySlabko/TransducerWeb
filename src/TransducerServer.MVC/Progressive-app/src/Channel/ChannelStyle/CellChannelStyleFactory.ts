@@ -1,4 +1,3 @@
-
 import { CalculatePower } from "../../Common/Common";
 import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { CellChannelStyle } from "./CellChannelStyle";

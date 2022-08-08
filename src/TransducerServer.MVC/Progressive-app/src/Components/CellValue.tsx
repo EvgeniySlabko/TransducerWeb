@@ -19,14 +19,10 @@ export class CellValue extends React.Component<Props>{
     super(prop);
   }
 
-
   render() {
     return (
       <div className='measure-box'>
-
         <div className='horizontal-flex'>
-
-
         </div>
         <div style={
           {
@@ -34,7 +30,7 @@ export class CellValue extends React.Component<Props>{
             height: this.props.hide ? "0px" : "auto"
           }}>
 
-          <div className='right-column'
+          <div className='cell-value'
             style={{
               color: this.props.fontStyle,
               fontSize: `${this.props.fontSize.toString()}px`

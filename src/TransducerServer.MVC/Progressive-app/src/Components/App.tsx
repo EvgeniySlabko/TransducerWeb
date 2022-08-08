@@ -1,9 +1,7 @@
 import React from 'react';
 import { notification } from 'antd';
 import { AllChannelsInfo, CreateAllChannels } from '../Channel/AllChannelsFactory';
-import { changeGroupColor as SetupColors } from '../Common/ChannelColorChanger';
 import { sleep } from '../Common/Common';
-import { FileWorker } from '../Files/FileWorker';
 import { RecordigGroup, RecordManager } from '../ReportListener/RecordManager';
 import { Snapshot } from '../ReportListener/Snapshot';
 import { SensorController, SensorControllerArgs } from '../Sensor/SensorsManager/SensorsManager';
@@ -16,7 +14,9 @@ import { GroupsContainer } from './GroupsContainer';
 import { Navbar } from './navbar';
 import { SaveModal } from './SaveModal/SaveModal';
 import { SetupGroup, SetupGroup as SetupGroupsAlignment } from '../Common/GroupHelpers';
-import { SetupPlotManager } from '../Common/PlotHelpers';
+import { SetupPlotManager } from '../Common/PlotManagerHelpers';
+import { ChangeGroupColor as ChangeGroupColor } from '../Common/ColorHelpers';
+import { FileWorker } from '../Common/FileHelpers';
 
 export interface Props {
     sensorService: SensorController;
@@ -61,8 +61,6 @@ export class App extends React.Component<Props, IState>
             firstStart: true,
         }
 
-        //this.plotViewController = new ViewController(document.getElementById('gd'));
-        this.sensorManualCloseHandler = this.sensorManualCloseHandler.bind(this);
         this.props.sensorService.onDispatch.addListener("Add", this.newSensorHandler)
     }
 
@@ -84,12 +82,11 @@ export class App extends React.Component<Props, IState>
 
         if (this.state.groups.length == 0) {
             this.setState({
-            streaming: false,
-        });
-
+                streaming: false,
+            });
         }
 
-        this.setState((prev, props) => ({}));
+        this.forceUpdate();
     }
 
     sensorManualCloseHandler = async (sensor: ISingleComponentSensor) => {
@@ -104,7 +101,7 @@ export class App extends React.Component<Props, IState>
     newSensorHandler = async (args: SensorControllerArgs) => {
         if (this.state.plotsManager) {
             let allChannelsInfo = CreateAllChannels(args.sensor, args.fullSensorInfo);
-            SetupColors(allChannelsInfo.channelGroups, this.state.groups.length);
+            ChangeGroupColor(allChannelsInfo.channelGroups, this.state.groups.length);
             ApplayLocalStorageSettingsForGroups(allChannelsInfo.channelGroups, args.fullSensorInfo.SensorId);
             
             let group : Group ={
@@ -123,7 +120,7 @@ export class App extends React.Component<Props, IState>
                 groups: this.state.groups.concat([group])
             }));
 
-            allChannelsInfo.absolutePeackDetected.sub((channel, peakArgs) => {
+            allChannelsInfo.PeackDetectedEvent.sub((channel, peakArgs) => {
                 let group = allChannelsInfo.channelGroups.find(g => g.plotChannel === channel)
                 this.state.plotsManager?.ClearLabels();
                 this.state.plotsManager?.AddLabelForChannel({
@@ -258,7 +255,7 @@ export class App extends React.Component<Props, IState>
 
         this.state.plotsManager?.Clear();
 		this.state.plotsManager?.ClearLabels();
-		this.state.groups.forEach(g => g.channelsInfo.resetAbsoluteAnalizer());
+		this.state.groups.forEach(g => g.channelsInfo.resetPeackAnalizer());
 
         this.setState(() => ({
             firstStart: true,

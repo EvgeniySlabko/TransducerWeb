@@ -3,7 +3,6 @@ import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/IS
 import { SensorData, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
-//буферизирует данные
 export declare class PeakEventArgs {
     peakValue: number;
     time: number;
@@ -16,13 +15,13 @@ export class AbsolutePeakAnalyzer {
     private _onPeakDetected = new EventDispatcher<AbsolutePeakAnalyzer, PeakEventArgs>();
 
     private absMaxValue: number = 0;
-    private state: boolean = false;
+    private enabled: boolean = false;
     constructor(baseSource: ISensorDataProvider) {
         baseSource.onData.sub(this.relativeHandler);
     }
 
     private relativeHandler = (sensor: ISingleComponentSensor, data: SensorData) => {
-        if (!this.state) return;
+        if (!this.enabled) return;
         let args: PeakEventArgs | null;
         args = null;
 
@@ -45,11 +44,13 @@ export class AbsolutePeakAnalyzer {
         this.absMaxValue = 0;
     }
 
-    setState = (state: boolean) => {
-        this.state = state;
+    public set Enabled(enabled: boolean){
+        this.enabled = enabled;
     }
 
-    getState = () => this.state;
+    public get Enabled() {
+        return this.enabled
+    }
 
     get onPeakDetected(): IEvent<ISensorDataProvider, PeakEventArgs> {
         return this._onPeakDetected.asEvent();

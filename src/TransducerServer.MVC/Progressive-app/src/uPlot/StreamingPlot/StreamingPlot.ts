@@ -1,4 +1,4 @@
-import { ChannelDataArgs, ChannelMessageArgs, PlotChannel } from "../../Channel/Channel/PlotChannel";
+import { PlotChannelDataArgs, PlotChannelMessageArgs, PlotChannel } from "../../Channel/Channel/PlotChannel";
 import { SensorData, SensorMessage } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { Label, MyUPlotBase, PlotParameters, SeriesInfo } from "../PlotBase";
 import { ChannelLabel } from "../PlotManager";
@@ -31,7 +31,7 @@ export class MyUPlot extends MyUPlotBase {
     this.BuildNewPlot(channels);
   }
 
-  private HandleMessage = (channel: PlotChannel, args: ChannelMessageArgs) => {
+  private HandleMessage = (channel: PlotChannel, args: PlotChannelMessageArgs) => {
     if (args.sensorMsgArgs.msgType === SensorMessage.StartStreaming)
       this.StartStreamingHandler(channel);
   }
@@ -54,7 +54,7 @@ export class MyUPlot extends MyUPlotBase {
       this.traces[index].requireGap = true;
   }
 
-  private HandleData = (channel: PlotChannel, args: ChannelDataArgs) => {
+  private HandleData = (channel: PlotChannel, args: PlotChannelDataArgs) => {
     var curIndex = this.traces.find(c => c.channel == channel)!.seriesInfo.dataBufferIndex - 1;
 
     if (this.traces[curIndex].requireGap) {

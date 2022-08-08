@@ -1,6 +1,5 @@
 import { Collapse, InputNumber, Select } from 'antd';
 import React from 'react';
-import { GetPointsPerSecond } from '../../Storage/AppStorage';
 import { MenuItem } from '../MenuItem';
 const { Panel } = Collapse;
 const { Option } = Select;
@@ -26,8 +25,7 @@ export class PlotSettings extends React.Component<Props>{
           size="small"
           defaultValue={this.props.pointsPerSecond} 
           onChange={this.props.pointsPerSecondChanged} />
-      }/>
-      
+        }/>
     )
   }
 }

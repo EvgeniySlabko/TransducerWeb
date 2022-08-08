@@ -40,8 +40,9 @@ export class SaveModalItem extends React.Component<Props, IState>{
               onChange={(e) => this.onChange(e.target.value)}
               placeholder={this.props.placeHolder} />
 
-                <Button onClick={(event) => this.props.download(this.state.reportName)}
-                icon={<SaveOutlined />}></Button>
+            <Button 
+              onClick={(event) => this.props.download(this.state.reportName)}
+              icon={<SaveOutlined />}/>
           </div>
         </div>
       </>

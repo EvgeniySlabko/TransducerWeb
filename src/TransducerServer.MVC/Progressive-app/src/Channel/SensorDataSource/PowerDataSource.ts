@@ -4,7 +4,7 @@ import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/IS
 import { SensorData, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
-export class PowerDataProvider implements ISensorDataProvider {
+export class PowerDataSource implements ISensorDataProvider {
     private _onData = new EventDispatcher<ISingleComponentSensor, SensorData>();
     private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
     private _onClose = new EventDispatcher<ISingleComponentSensor, string>();

@@ -1,12 +1,11 @@
-import { ValueType } from './ChanneStyleCommon';
-
+import { ChannelDataType } from './ChanneStyleCommon';
 
 export declare interface PlotChannelStyle {
     sensorId: number;
     color: string;
     grid: boolean;
     unitName: string;
-    valueType: ValueType;
+    valueType: ChannelDataType;
     yTitle: string;
     axisColor: string;
     legendTitle: string;

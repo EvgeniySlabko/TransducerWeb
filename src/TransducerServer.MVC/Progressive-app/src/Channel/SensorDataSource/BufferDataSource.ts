@@ -4,8 +4,7 @@ import { SensorData, SensorMessageEventArgs } from "../../Sensor/SingleComponent
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
 //буферизирует данные
-
-export class BufferSensorDataProvider implements ISensorDataProvider {
+export class BufferSensorDataSource implements ISensorDataProvider {
     private _onData = new EventDispatcher<ISingleComponentSensor, SensorData>();
     private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
     private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
@@ -31,7 +30,6 @@ export class BufferSensorDataProvider implements ISensorDataProvider {
             this._onMessage.dispatch(sensor, args);
         });
 
-        //messageSource?.onError?.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
         sensor.onData.sub((sensor, data) => {
 
             for (let i = 0; i < data.time.length; i++) {
@@ -40,7 +38,7 @@ export class BufferSensorDataProvider implements ISensorDataProvider {
 
                 this.dataCount++;
                 if (this.dataCount == this.bufferSize) {
-                    var args: SensorData = {
+                    let args: SensorData = {
                         data: this.dataBuffer,
                         time: this.timeBuffer,
                     }

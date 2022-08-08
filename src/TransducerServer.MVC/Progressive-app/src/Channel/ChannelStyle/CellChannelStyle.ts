@@ -1,4 +1,4 @@
-import { ValueType } from "./ChanneStyleCommon";
+import { ChannelDataType } from "./ChanneStyleCommon";
 
 export declare interface CellChannelStyle {
     id: number; // id fo react
@@ -10,7 +10,7 @@ export declare interface CellChannelStyle {
     unitsName: string;
     sensorType: string;
     accurency: number;
-    valueType: ValueType;
+    valueType: ChannelDataType;
     maxValue?: number;
     minValue?: number;
     limits?: boolean;

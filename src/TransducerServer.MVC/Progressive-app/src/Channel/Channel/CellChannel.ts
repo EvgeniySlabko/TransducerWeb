@@ -2,7 +2,7 @@ import { EventDispatcher } from "strongly-typed-events";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
 import { SensorData, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { CellChannelStyle } from "../ChannelStyle/CellChannelStyle";
-import { ISensorDataProvider } from "../SensorDataProveder/ISensorDataProvider";
+import { ISensorDataProvider } from "../SensorDataSource/ISensorDataProvider";
 
 export type ChannelDataArgs =
     {

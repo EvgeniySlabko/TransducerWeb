@@ -21,12 +21,12 @@ export class GroupsContainer extends React.Component<Props>{
 
   render() {
     return (
-      this.props.groups.map((g, i) => <CellsGroup key={g.node.fullSensorInfo.id}
+      this.props.groups.map((group) => <CellsGroup key={group.node.fullSensorInfo.id}
         allowSettings={this.props.allowSettings}
         plotsManager={this.props.plotsManager}
-        group={g}
+        group={group}
         sensorRemove={(sensor: ISingleComponentSensor) => this.props.sensorRemove(sensor)}
-      ></CellsGroup>)
+      />)
     )
   }
 }

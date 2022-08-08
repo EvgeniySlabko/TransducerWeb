@@ -24,7 +24,6 @@ export class MenuItem extends React.Component<Props>{
             {this.props.children}
           </div>
         </div>
-
       </>
     )
   }

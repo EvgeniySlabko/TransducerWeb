@@ -10,7 +10,6 @@ export class GridAlignerSource implements ISensorDataProvider {
     private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
 
     private dt: number = 0.02;
-    private enabled: boolean = true;
 
     private currentGridTime = 0;
     private currentAvgValue = 0;
@@ -28,10 +27,7 @@ export class GridAlignerSource implements ISensorDataProvider {
             this._onMessage.dispatch(sender, args);
         });
 
-        baseSource.onData.sub((sensor, data) => {
-            if (!this.enabled)
-                this._onData.dispatch(sensor, data);
-            
+        baseSource.onData.sub((sensor, data) => { 
             let sensorData: SensorData = {
                 data: [],
                 time: [],
@@ -69,11 +65,6 @@ export class GridAlignerSource implements ISensorDataProvider {
     {
         this.dt = dt;
         this.reset();
-    } 
-
-    public set Enable(enable:  boolean)
-    {
-        this.enabled = enable;
     } 
 
     private reset = () =>{

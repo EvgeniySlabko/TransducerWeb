@@ -1,6 +1,6 @@
 import { Collapse, Modal } from 'antd';
 import React from 'react';
-import { CreateCsvFileDialog } from '../../Common/Common';
+import { CreateCsvFileDialog } from '../../Common/FileHelpers';
 import { Snapshot } from '../../ReportListener/Snapshot';
 import { SaveModalItem } from './SaveModalItem';
 const { Panel } = Collapse;
@@ -44,12 +44,11 @@ export class SaveModal extends React.Component<Props, IState>{
           onOk={this.props.onClose}
           centered={false}>
           <div className='vertical-flex'>
-
-            <SaveModalItem download={this.onCSVDownload}
+            <SaveModalItem 
+              download={this.onCSVDownload}
               label='Сохранить в формате CSV:'
               placeHolder="Имя отчета"
               defaultName={this.state.csvName} />
-
           </div>
         </Modal>
       </div>

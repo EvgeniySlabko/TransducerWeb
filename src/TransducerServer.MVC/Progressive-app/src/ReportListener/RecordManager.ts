@@ -1,5 +1,5 @@
 import { PlotChannel } from "../Channel/Channel/PlotChannel";
-import { GetMinAvgFactor } from "../Common/SensorsHelpers";
+import { GetMinAvgFactor } from "../Common/SensorHelpers";
 import { ISingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
 import { ReportListener } from "./ReportListener";
 import { Snapshot } from "./Snapshot";

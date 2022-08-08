@@ -46,7 +46,7 @@ export class CellsGroup extends React.Component<Props, IState>{
       modalVisible: false,
     }));
 
-    this.props.group.channelsInfo.setAbsoluteAnalizer(this.state.absoluteAnalizer);
+    this.props.group.channelsInfo.setPeackAnalizerState(this.state.absoluteAnalizer);
   }
 
   onShow = () => {
@@ -82,31 +82,31 @@ export class CellsGroup extends React.Component<Props, IState>{
         <Panel key={0} header=
           {
             <>
-              <Button key={1}
+              <Button
                 className='horizontal-padding'
                 onClick={event => { event.stopPropagation(); this.onShow(); }}
                 disabled={!this.props.allowSettings}
                 icon={<SettingOutlined />} />
 
-              <Button key={2}
+              <Button
                 className='horizontal-padding'
                 onClick={event => { event.stopPropagation(); this.setZeroClick() }} >{">0<"}</Button>
 
-              <Button key={3}
+              <Button
                 onClick={event => { event.stopPropagation(); this.props.sensorRemove(this.props.group.node.sensor); }}
                 className='horizontal-padding'
                 disabled={!this.props.allowSettings}
                 icon={<CloseOutlined />} />
 
-              <div key={4} className='vertical-flex'>
+              <div className='vertical-flex'>
                 <h6 className='cell-group-title'>{this.props.group.node.fullSensorInfo.SensorType}</h6>
                 <h6 className='cell-group-title'>ID: {this.props.group.node.fullSensorInfo.SensorId}</h6>
               </div>
 
               {
                 this.state.modalVisible ? 
-                <div key={5} onClick={e => e.stopPropagation()}>
-                <SensorSettingsTab key={6}
+                <div onClick={e => e.stopPropagation()}>
+                <SensorSettingsTab
                   setChannelVisibilty={this.setChannelVisibilty}
                   group={this.props.group}
                   onClose={() => this.setState(() => ({ modalVisible: false }))}
@@ -123,8 +123,7 @@ export class CellsGroup extends React.Component<Props, IState>{
                 allowSettings={this.props.allowSettings}
                 key={c.cellChannel.Style.id}
                 channelGroup={c}
-                plotsManager={this.props.plotsManager}
-              ></Cell>)
+                plotsManager={this.props.plotsManager}/>)
           }
 
         </Panel>

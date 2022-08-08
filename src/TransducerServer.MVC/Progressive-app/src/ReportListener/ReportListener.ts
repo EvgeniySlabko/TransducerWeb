@@ -1,5 +1,5 @@
 import { ChannelCloseArgs } from "../Channel/Channel/CellChannel";
-import { ChannelDataArgs, PlotChannel } from "../Channel/Channel/PlotChannel";
+import { PlotChannelDataArgs, PlotChannel } from "../Channel/Channel/PlotChannel";
 import { SensorData } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { Snapshot, TrackData } from "./Snapshot";
 
@@ -83,7 +83,7 @@ export class ReportListener {
         });
     }
 
-    private DataHandler = (channel: PlotChannel, args: ChannelDataArgs) => {
+    private DataHandler = (channel: PlotChannel, args: PlotChannelDataArgs) => {
         if (this.isListening) {
             if (this.channelMap.has(channel)) {
                 let dataBuffer = this.channelMap.get(channel);
