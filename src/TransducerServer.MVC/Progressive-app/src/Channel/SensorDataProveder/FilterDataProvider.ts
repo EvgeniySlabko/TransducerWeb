@@ -79,7 +79,6 @@ export class FilterDataProvider implements ISensorDataProvider {
         //  Instance of a filter coefficient calculator
         let iirCalculator = new Fili.CalcCascades();
 
-        // get available filters
         //let availableFilters = iirCalculator.available();
 
         // calculate filter coefficients

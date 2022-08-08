@@ -40,7 +40,7 @@ export class AverageSensorDataProvider implements ISensorDataProvider {
                     var curVal = this.averageValue / this.averageCount;
 
                     let dt = ((this.th - this.t0) / 2);
-                    var curTime = this.th - dt;//  + ((this.th - this.t0) / 2);
+                    var curTime = this.th - dt;
                     this._onData.dispatch(sensor, {
                         data: [curVal],
                         time: [curTime],

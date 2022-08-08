@@ -1,8 +1,6 @@
 import { IEvent } from "strongly-typed-events";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
 import { SensorData, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
-import { CellChannel } from "../Channel/CellChannel";
-import { PlotChannel } from "../Channel/PlotChannel";
 
 export interface ISensorDataProvider {
     get onData(): IEvent<ISingleComponentSensor, SensorData>;

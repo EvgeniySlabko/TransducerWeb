@@ -4,6 +4,7 @@ import { Button, Dropdown, Menu } from 'antd';
 import React from 'react';
 import { sleep } from '../Common/Common';
 import { keyCodes as keyCode } from '../Common/KeyCodes';
+import { SetupPlotManager } from '../Common/PlotHelpers';
 import { RecordManager } from '../ReportListener/RecordManager';
 import { CreateSerialSensor } from '../Sensor/SensorFactory';
 import { SensorController } from '../Sensor/SensorsManager/SensorsManager';
@@ -108,8 +109,8 @@ export class Navbar extends React.Component<Props, IState>
 	handleSettings = () => this.setState({settings: true})
 	handleSettingsClose = (werePlotSettingsChanges: boolean) => {
 		this.setState({settings: false})
-		if (werePlotSettingsChanges === true){
-			this.props.plotsManager?.Rebuild();
+		if (werePlotSettingsChanges === true) {
+			SetupPlotManager(this.props.plotsManager as PlotsManager);
 			this.props.clear();
 		}
 	}

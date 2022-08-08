@@ -18,16 +18,32 @@ export enum PlotType {
     ViewerPlot,
 }
 
+export declare class PlotsManagerParameters{
+    pointsPerSecond: number;
+    maxStreamingPlotScreenSize: number;
+}
+
 export class PlotsManager {
     private readonly htmlElement: HTMLElement;
     private plotChannels: PlotChannel[] = [];
     private currentPlotType: PlotType = PlotType.StremimgPlot;
     private plot: StreamingPlot | ViewerPlot;
 
+    private parameters: PlotsManagerParameters = {
+        maxStreamingPlotScreenSize: 100,
+        pointsPerSecond: 50,
+    }
+
+    public get ManagerParameters() : PlotsManagerParameters{
+        return this.parameters;
+    }
+    
     constructor(element: any) {
         this.htmlElement = element;
         this.plot = this.GetStreamingPlot();
     }
+
+    public SetParameters = (parameters: PlotsManagerParameters) => this.parameters = parameters;
 
     public async SetChannels(channels: PlotChannel[]) {
         this.SetEmptyStreamingPlot();
@@ -100,27 +116,12 @@ export class PlotsManager {
             this.plotChannels.splice(index, 1);
     }
 
-    private GetStreamingPlot = () : StreamingPlot => new StreamingPlot(this.htmlElement, this.GetStreamingPlotParameters());
-    private GetViewer = () : ViewerPlot => new ViewerPlot(this.htmlElement, this.GetViewingPlotParameters());
-    
-    private GetStreamingPlotParameters = () : PlotParameters =>{
+    private GetStreamingPlot = () : StreamingPlot => new StreamingPlot(this.htmlElement, {
+        maxScreenSize: this.parameters.maxStreamingPlotScreenSize,
+        pointsPerSecond: this.parameters.pointsPerSecond,
+    });
 
-        let pointsPerSecond =  GetPointsPerSecond();
-        let maxScreenSize =  (MaxFrameSize / pointsPerSecond) / 2; // максимальны размер screen при котором не будет видно переключение перекресных буфферов.
-        return {
-            pointsPerSecond: GetPointsPerSecond(),
-            maxScreenSize: maxScreenSize,
-        }
-    }
-
-    private GetViewingPlotParameters = () : PlotParameters => {
-        let pointsPerSecond =  GetPointsPerSecond();
-        let maxScreenSize =  (MaxFrameSize / pointsPerSecond) / 2; // максимальны размер screen при котором не будет видно переключение перекресных буфферов.
-        return {
-            pointsPerSecond: GetPointsPerSecond(),
-            maxScreenSize: maxScreenSize,
-        }
-    }
+    private GetViewer = () : ViewerPlot => new ViewerPlot(this.htmlElement);
 
     public Clear = () => this.plot.Clear();
     public ClearLabels = () => this.plot.ClearLabels();

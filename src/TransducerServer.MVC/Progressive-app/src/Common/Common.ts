@@ -50,25 +50,6 @@ export function nearestPoint(arr: (number | null | undefined)[], index: number, 
     return undefined;
 }
 
-export function getEmptyAlignedData(startTime: number, dt: number, segments: number, length: number): AlignedData {
-    let currentTime = startTime;
-    let timeArr = new Array<number>(length);
-    for (let i = 0; i < length; i++) {
-        timeArr[i] = currentTime;
-        currentTime += dt;
-    }
-
-    let dataArrs = new Array<(undefined | null | number)[]>(segments);
-    for (let i = 0; i < dataArrs.length; i++) {
-        dataArrs[i] = new Array<(undefined | null | number)>(length);
-        for (let j = 0; j < dataArrs.length; j++) {
-            dataArrs[i][j] = undefined;
-        }
-    }
-
-    return [timeArr, ...dataArrs];
-}
-
 export function increase_brightness(hex: string, percent: number) {
     // strip the leading # if it's there
     hex = hex.replace(/^\s*#|\s*$/g, '');
@@ -112,3 +93,8 @@ export async function CreateCsvFileDialog(fileName?: string) {
     return result;
 }
 
+const comparingAccuracy = 0.000001
+export function Equals(value1: number, value2: number) : boolean
+{
+    return value1 < value2 + comparingAccuracy && value1 > value2 - comparingAccuracy;
+}

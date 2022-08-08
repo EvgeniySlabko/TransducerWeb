@@ -8,8 +8,12 @@ export class MyUPlotViewer extends MyUPlotBase {
   private buffer?: LogLevelBuffer;
 
 
-  constructor(element: HTMLElement, parameters: PlotParameters) {
-    super(element, parameters);
+  constructor(element: HTMLElement) {
+    super(element, {
+      maxScreenSize: Infinity,
+      pointsPerSecond: 50,
+    });
+    
     this.SetScale(0, this.params.screenSize());
   }
 
@@ -24,7 +28,6 @@ export class MyUPlotViewer extends MyUPlotBase {
   public FromSnapshot(snapshot: Snapshot) {
     var trackData = snapshot.GetTrackData();
 
-    this.params.maxScreenSize =  Infinity;
     this.buffer = new LogLevelBuffer(() => [this.params.range[0], this.params.range[1]]);
     this.buffer.FromSnapshot(snapshot);
     var styles = trackData.map(t => t.style);

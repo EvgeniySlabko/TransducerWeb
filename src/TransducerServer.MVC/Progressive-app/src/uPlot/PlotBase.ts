@@ -91,8 +91,8 @@ export class MyUPlotBase {
 
   private timeToIndex = (time: number): number => {
     let firstBufferTime = this.GetData()[0][0];                                 
-    let firsIndex = Math.floor(firstBufferTime / this.params.dt());
-    let curIndex = Math.floor(time / (1 / this.params.pointsPerSecond));
+    let firsIndex = Math.round(firstBufferTime / this.params.dt());
+    let curIndex = Math.round(time / (1 / this.params.pointsPerSecond));
     return curIndex - firsIndex;
   }
 

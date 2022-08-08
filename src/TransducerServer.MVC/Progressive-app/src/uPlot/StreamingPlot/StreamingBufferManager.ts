@@ -9,6 +9,8 @@ export declare class PlotBufferManagerConfig {
 
 declare class ISegmentInfo {
     lastDataIndex: number;
+    avgCount: number;
+    avgIndex: number;
 }
 
 export const MaxFrameSize = 550000;                                         // Если больше, то лагает
@@ -42,7 +44,9 @@ export class PlotBufferManager {
 
         for (let i = 0; i < config.segments; i++)
         this.segmentInfo.push({
-            lastDataIndex: 0
+            lastDataIndex: 0,
+            avgCount: 0,
+            avgIndex: 0,
         })
         
         this.HandleFramesBufferExpand(1); //добавим пустой буффер
@@ -68,8 +72,8 @@ export class PlotBufferManager {
 
 
     private tickToGridIndex(sensorTimeValue: number) {
-        return Math.floor(sensorTimeValue / this.dt); // получаем индекс на графике по оси x (пододвигаем в меньшую сторону)
-    };
+        return Math.round(sensorTimeValue / this.dt); // получаем индекс на графике по оси x (пододвигаем в меньшую сторону)
+    }
 
     public GetLastSegmentTime(segmentIndex: number): number {
         return this.segmentInfo[segmentIndex].lastDataIndex * this.dt;
@@ -135,16 +139,16 @@ export class PlotBufferManager {
         for (let k = i; k < j; k++)
             this.SetValue(k, segmentIndex, null);
     }
-
+    
     private SetValue(index: number, segmentIndex: number, value: SeriesValue) {
         let indexInFrame1 = index % this.frameSize;
-        let frameIndex1 = Math.floor(index / this.frameSize);
+        let frameIndex1 = Math.trunc(index / this.frameSize);
 
         this.frames[frameIndex1][segmentIndex + 1][indexInFrame1] = value;
 
         let indexInFrame2 = (index - (this.frameSize / 2)) % this.frameSize;
         if (indexInFrame2 >= 0) {
-            let frameIndex2 = Math.floor((index - (this.frameSize / 2)) / this.frameSize);
+            let frameIndex2 = Math.trunc((index - (this.frameSize / 2)) / this.frameSize);
             this.frames2[frameIndex2][segmentIndex + 1][indexInFrame2] = value;
         }
     }

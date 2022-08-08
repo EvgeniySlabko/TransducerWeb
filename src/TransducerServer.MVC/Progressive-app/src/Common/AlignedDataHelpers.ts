@@ -6,7 +6,7 @@ export declare class DataAlignParams {
 
 export function AlignedData(data: SensorData[], params: DataAlignParams): (number | null | undefined)[][] {
 
-    let timeToIndex = (time: number) => Math.floor(time / params.dt);
+    let timeToIndex = (time: number) => Math.trunc(time / params.dt);
 
     let firstTime = GetFirstTime(data);
     if (firstTime < 0) firstTime = 0;
@@ -51,4 +51,23 @@ function GetLastTime(data: SensorData[]) {
     let lastValues = data.map(d => d.time[d.time.length - 1]);
 
     return Math.max(...lastValues);
+}
+
+export function getEmptyAlignedData(startTime: number, dt: number, segments: number, length: number): uPlot.AlignedData {
+    let currentTime = startTime;
+    let timeArr = new Array<number>(length);
+    for (let i = 0; i < length; i++) {
+        timeArr[i] = currentTime;
+        currentTime += dt;
+    }
+
+    let dataArrs = new Array<(undefined | null | number)[]>(segments);
+    for (let i = 0; i < dataArrs.length; i++) {
+        dataArrs[i] = new Array<(undefined | null | number)>(length);
+        for (let j = 0; j < dataArrs.length; j++) {
+            dataArrs[i][j] = undefined;
+        }
+    }
+
+    return [timeArr, ...dataArrs];
 }

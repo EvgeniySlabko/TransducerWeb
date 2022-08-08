@@ -1,9 +1,8 @@
-import { notification } from 'antd';
 import React from 'react';
+import { notification } from 'antd';
 import { AllChannelsInfo, CreateAllChannels } from '../Channel/AllChannelsFactory';
-import { changeGroupColor } from '../Common/ChannelColorChanger';
-import { getRandomInt, sleep } from '../Common/Common';
-import { GetMinAvgFactor } from '../Common/SensorsHelpers';
+import { changeGroupColor as SetupColors } from '../Common/ChannelColorChanger';
+import { sleep } from '../Common/Common';
 import { FileWorker } from '../Files/FileWorker';
 import { RecordigGroup, RecordManager } from '../ReportListener/RecordManager';
 import { Snapshot } from '../ReportListener/Snapshot';
@@ -16,6 +15,8 @@ import { PlotsManager } from '../uPlot/PlotManager';
 import { GroupsContainer } from './GroupsContainer';
 import { Navbar } from './navbar';
 import { SaveModal } from './SaveModal/SaveModal';
+import { SetupGroup, SetupGroup as SetupGroupsAlignment } from '../Common/GroupHelpers';
+import { SetupPlotManager } from '../Common/PlotHelpers';
 
 export interface Props {
     sensorService: SensorController;
@@ -66,9 +67,10 @@ export class App extends React.Component<Props, IState>
     }
 
     componentDidMount = () => {
-        let plotController = new PlotsManager(document.getElementById('gd'));
+        let plotsManager = new PlotsManager(document.getElementById('gd'));
+        SetupPlotManager(plotsManager);
         this.setState((prev, props) => ({
-            plotsManager: plotController,
+            plotsManager: plotsManager,
         }));
     }
 
@@ -101,8 +103,8 @@ export class App extends React.Component<Props, IState>
 
     newSensorHandler = async (args: SensorControllerArgs) => {
         if (this.state.plotsManager) {
-            let allChannelsInfo = CreateAllChannels(args.sensor, args.fullSensorInfo, getRandomInt(10));
-            changeGroupColor(allChannelsInfo.channelGroups, this.state.groups.length);
+            let allChannelsInfo = CreateAllChannels(args.sensor, args.fullSensorInfo);
+            SetupColors(allChannelsInfo.channelGroups, this.state.groups.length);
             ApplayLocalStorageSettingsForGroups(allChannelsInfo.channelGroups, args.fullSensorInfo.SensorId);
             
             let group : Group ={
@@ -112,14 +114,13 @@ export class App extends React.Component<Props, IState>
                     sensor: args.sensor,
                     worker: args.worker,
                 }
-            } 
+            }
 
             await ApplaySensorStorageParameters(group, args.fullSensorInfo.SensorId);
             //let plotChannels = CreateAllSensorChannelsForPlot(args.sensor, args.fullSensorInfo);
             this.setState((prev, props) => ({
                 firstStart: true,
-                groups: this.state.groups.concat([group]
-                )
+                groups: this.state.groups.concat([group])
             }));
 
             allChannelsInfo.absolutePeackDetected.sub((channel, peakArgs) => {
@@ -131,8 +132,7 @@ export class App extends React.Component<Props, IState>
                     text: peakArgs.peakValue.toFixed(group?.cellChannel.Style.accurency) + " " + group?.cellChannel.Style.unitsName,
                     value: peakArgs.peakValue,
                 })
-            }
-            )
+            });
 
             //this.setState((prev, props) => ({}));
             this.state.plotsManager.AddChannels(allChannelsInfo.channelGroups.map(g => g.plotChannel));
@@ -215,6 +215,8 @@ export class App extends React.Component<Props, IState>
         let started = await this.props.sensorService.StartAll();
         if (!started) return;
 
+        SetupGroup(this.state.groups, this.state.plotsManager as PlotsManager); //настраиваем выравнивание даных согласно сетке графика. 
+
         this.setState((prev, props) => ({
             streaming: true,
         }));
@@ -285,7 +287,7 @@ export class App extends React.Component<Props, IState>
                 saveReport={this.saveReport}
                 sensorService={this.props.sensorService}
                 recordController={this.props.recordController}
-                openReportCallback={async (file) => await this.openFileHandler(file)}
+                openReportCallback={this.openFileHandler}
                 enable={this.state.groups.length > 0}
                 streaming={this.state.streaming}
                 toggleStreaming={this.handleStartClick}

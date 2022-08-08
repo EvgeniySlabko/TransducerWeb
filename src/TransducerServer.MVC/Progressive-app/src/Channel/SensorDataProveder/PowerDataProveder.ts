@@ -13,12 +13,9 @@ export class PowerDataProvider implements ISensorDataProvider {
     private lastMainTime: number | undefined = undefined;
 
     constructor(toqueDataSourse: ISensorDataProvider, speedDataSourse: ISensorDataProvider) {
-        //toqueDataSourse.onClose.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
-        //toqueDataSourse.onMessage.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
 
         speedDataSourse.onClose.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
         speedDataSourse.onMessage.sub((sensor, msg) => this._onMessage.dispatch(sensor, msg));
-
 
         toqueDataSourse.onData.sub((sensor, args) => {
             this.lastMainValue = args.data[args.data.length - 1];
@@ -32,7 +29,6 @@ export class PowerDataProvider implements ISensorDataProvider {
                     data: [power],
                     time: [args.time[0]],
                 })
-
             }
         });
     }

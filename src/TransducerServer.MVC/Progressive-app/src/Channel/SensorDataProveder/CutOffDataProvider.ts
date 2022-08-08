@@ -30,14 +30,11 @@ export class CutOffDataProvider implements ISensorDataProvider {
             }
 
             if (args.msgType === SensorMessage.StartStreaming){
-                
-                
-                    sleep(30).then(() =>
-                    {
-                        this.isStreaming = true;
-                        this.firstStart = false;
-                    });
-                
+                sleep(30).then(() =>
+                {
+                    this.isStreaming = true;
+                    this.firstStart = false;
+                });
             }
 
             if (args.msgType === SensorMessage.StopStreaming){

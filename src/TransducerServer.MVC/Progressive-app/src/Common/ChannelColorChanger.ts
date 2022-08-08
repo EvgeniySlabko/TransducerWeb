@@ -1,5 +1,6 @@
 import { ChannelsGroup } from "../Channel/AllChannelsFactory";
 import { ValueType } from "../Channel/ChannelStyle/ChanneStyleCommon";
+import { Group } from "../Components/App";
 
 let mainColors =
     [

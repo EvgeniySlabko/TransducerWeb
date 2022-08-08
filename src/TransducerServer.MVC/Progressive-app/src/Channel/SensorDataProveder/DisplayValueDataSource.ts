@@ -1,8 +1,7 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
-import { SensorData, SensorMessage, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { SensorData, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";
-import { SensorDataProvider } from "./SensorDataProvider";
 
 //выдает данные не чаще fps.
 export class DisplayValueDataSource implements ISensorDataProvider {

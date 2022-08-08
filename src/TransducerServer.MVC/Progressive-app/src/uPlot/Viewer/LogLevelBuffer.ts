@@ -1,5 +1,4 @@
 import { AlignedData } from "uplot";
-import { getEmptyAlignedData } from "../../Common/Common";
 import { Snapshot, TrackData } from "../../ReportListener/Snapshot"
 import { MaxFrameSize, PlotBufferManager } from "../StreamingPlot/StreamingBufferManager";
 
@@ -21,7 +20,7 @@ export class LogLevelBugger {
 
     public get Source(): AlignedData {
         let range = this.rangeGetter();
-        let rangeValue = (range[1] - range[0]) * 2;
+        let rangeValue = (range[1] - range[0]) * 4;
         let maxPointsPerSecond = MaxFrameSize / rangeValue;
         let currentDt = 1 / maxPointsPerSecond;
         for (let i = 0; i < this.levels.length; i++) 
