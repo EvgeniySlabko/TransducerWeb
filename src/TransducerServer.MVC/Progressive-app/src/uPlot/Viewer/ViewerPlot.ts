@@ -1,7 +1,7 @@
-import uPlot, { AlignedData } from "uplot";
+import { AlignedData } from "uplot";
 import { PlotChannelStyle } from "../../Channel/ChannelStyle/PlotChannelStyle";
 import { Snapshot } from "../../ReportListener/Snapshot";
-import { MyUPlotBase, PlotParameters } from "../PlotBase";
+import { MyUPlotBase } from "../PlotBase";
 import { LogLevelBugger as LogLevelBuffer } from "./LogLevelBuffer";
 
 export class MyUPlotViewer extends MyUPlotBase {

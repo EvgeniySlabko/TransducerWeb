@@ -1,5 +1,5 @@
 import { AlignedData } from "uplot";
-import { SensorData as DataEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { SensorData as DataEventArgs } from "../../Sensor/SensorDefinitions";
 import { SeriesValue } from "../PlotCommon";
 
 export declare class PlotBufferManagerConfig {

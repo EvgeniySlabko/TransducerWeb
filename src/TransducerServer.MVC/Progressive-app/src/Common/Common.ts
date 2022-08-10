@@ -30,3 +30,13 @@ export function groupBy<T, K>(arr: T[], keySelector: (el: T) => K): [K, T[]][] {
 
     return result;
 };
+
+export function AsShortArray(data: Uint8Array, littleEndian = true): number[] {
+    let view = new DataView(data.buffer);
+    let registers: number[] = [];
+    for (let i = 0; i < data.length / 2; i++) {
+        registers.push(view.getUint16(i * 2, littleEndian));
+    }
+        
+    return registers;
+};

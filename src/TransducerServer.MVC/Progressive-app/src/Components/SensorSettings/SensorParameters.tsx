@@ -1,10 +1,12 @@
 import { Button, Checkbox, Collapse, Divider, InputNumber, Select, Space } from 'antd';
 import React from 'react';
+import { Group } from '../App';
 import { MenuItem } from '../MenuItem';
 const { Panel } = Collapse;
 const { Option } = Select;
 
 export interface Props {
+  group: Group,
   tareAccurency: number
 
   trackMaximum: boolean;
@@ -60,7 +62,7 @@ export class SensorParameters extends React.Component<Props>{
       <MenuItem label='Коэффицент усреднения:' 
         children={
         <InputNumber className='vertical-align' 
-                    min={1} max={5000} step={1} 
+                    min={this.props.group.node.worker.DecoderParams.minAvgRatio} max={5000} step={1} 
                     size="small" 
                     style={{ height: "25px" }} 
                     defaultValue={this.props.avgRatio} 

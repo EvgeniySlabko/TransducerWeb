@@ -1,6 +1,6 @@
 import { Collapse } from 'antd';
 import React from 'react';
-import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISingleComponentSensor';
+import { SensorWorker } from '../Sensor/SensorWorker';
 import { PlotsManager } from '../uPlot/PlotManager';
 import { Group } from './App';
 import { CellsGroup } from './CellsGroup';
@@ -9,7 +9,7 @@ const { Panel } = Collapse;
 export interface Props {
   groups: Group[],
   plotsManager?: PlotsManager;
-  sensorRemove: (sensor: ISingleComponentSensor) => void,
+  sensorRemove: (sensor: SensorWorker) => void,
   allowSettings: boolean;
 }
 
@@ -25,7 +25,7 @@ export class GroupsContainer extends React.Component<Props>{
         allowSettings={this.props.allowSettings}
         plotsManager={this.props.plotsManager}
         group={group}
-        sensorRemove={(sensor: ISingleComponentSensor) => this.props.sensorRemove(sensor)}
+        sensorRemove={(sensor: SensorWorker) => this.props.sensorRemove(sensor)}
       />)
     )
   }

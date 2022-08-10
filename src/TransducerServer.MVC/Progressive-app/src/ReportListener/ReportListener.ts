@@ -1,6 +1,6 @@
 import { ChannelCloseArgs } from "../Channel/Channel/CellChannel";
 import { PlotChannelDataArgs, PlotChannel } from "../Channel/Channel/PlotChannel";
-import { SensorData } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { SensorData } from "../Sensor/SensorDefinitions";
 import { Snapshot, TrackData } from "./Snapshot";
 
 export class ReportListener {

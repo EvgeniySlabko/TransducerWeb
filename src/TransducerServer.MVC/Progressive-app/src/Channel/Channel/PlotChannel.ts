@@ -1,7 +1,7 @@
 import { PlotChannelStyle as PlotChannelStyle } from "../ChannelStyle/PlotChannelStyle";
 import { ISensorDataProvider } from "../SensorDataSource/ISensorDataProvider";
 import { EventDispatcher } from "strongly-typed-events";
-import { SensorData, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { SensorData, SensorMessageEventArgs } from "../../Sensor/SensorDefinitions";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
 //import { CreateDefaultStyle } from "./ChannelStyleFactory";
 

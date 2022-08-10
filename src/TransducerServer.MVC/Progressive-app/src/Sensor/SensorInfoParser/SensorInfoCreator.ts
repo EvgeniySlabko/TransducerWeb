@@ -1,10 +1,10 @@
-import { ISingleComponentSensor } from "../SingleComponentSensor.ts/ISingleComponentSensor";
-import * as SDefs from "../SingleComponentSensor.ts/SensorDefinitions";
-import { HoldingRegisters } from "../SingleComponentSensor.ts/SensorDefinitions";
+import * as SDefs from "../SensorDefinitions";
+import { HoldingRegisters } from "../SensorDefinitions";
+import { SensorWorker } from "../SensorWorker";
 import * as Defs from "./SensorsDefinitons";
 
 let count = 0;
-export async function GetFullSensorInfo(sensor: ISingleComponentSensor): Promise<SDefs.FullSensorInfo> {
+export async function GetFullSensorInfo(sensor: SensorWorker): Promise<SDefs.FullSensorInfo> {
   if (sensor == null) throw "Sensor is null.";
   var sk = await sensor.GetSkInfo();
   var holdingRegisters = await sensor.GetHoldingRegisters();

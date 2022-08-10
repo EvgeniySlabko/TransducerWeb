@@ -1,7 +1,6 @@
-import { ISingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
+import { SensorWorker } from "../Sensor/SensorWorker";
 
-//TO DO использоваь SensorWorker вместо ISingleComponentSensor
-export async function GetMinAvgFactor(sensors: ISingleComponentSensor[]) : Promise<number> {
+export async function GetMinAvgFactor(sensors: SensorWorker[]) : Promise<number> {
     if (sensors.length == 0) throw "No sensors";
     let avgFactors: number[] = [];
 

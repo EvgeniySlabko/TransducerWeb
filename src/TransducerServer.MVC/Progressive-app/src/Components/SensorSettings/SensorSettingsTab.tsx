@@ -58,7 +58,7 @@ export class SensorSettingsTab extends React.Component<Props, IState>{
   async componentDidMount() {
     try {
       let filterParameters = this.props.group.channelsInfo.getFilterParameters();
-      let holdingRegisters = await this.props.group.node.sensor.GetHoldingRegisters();
+      let holdingRegisters = await this.props.group.node.worker.GetHoldingRegisters();
       let sensorparameters = await GetSensorParameters(this.props.group.node.fullSensorInfo.SensorId);
         this.setState(() => ({
           absolute: this.props.group.channelsInfo.getAbsoluteSourceState(),
@@ -183,6 +183,7 @@ export class SensorSettingsTab extends React.Component<Props, IState>{
           <Tabs defaultActiveKey="1">
             <TabPane tabKey='1' tab="Общие" key="1">
             <SensorParameters key = {2}
+              group = {this.props.group}
               absolute = {this.state.absolute}
               invertion = {this.state.invertion}
               tareAccurency={2}

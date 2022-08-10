@@ -1,7 +1,7 @@
 import { CloseOutlined, SettingOutlined } from '@ant-design/icons';
 import { Button, Collapse, notification } from 'antd';
 import React from 'react';
-import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISingleComponentSensor';
+import { SensorWorker } from '../Sensor/SensorWorker';
 import { SetOffset } from '../Storage/ChannelsDataStorage';
 import { PlotsManager } from '../uPlot/PlotManager';
 import { Group } from './App';
@@ -14,7 +14,7 @@ export type PeackMode = "none" | "absolute" | "relative";
 export interface Props {
   group: Group,
   plotsManager?: PlotsManager;
-  sensorRemove: (sensor: ISingleComponentSensor) => void,
+  sensorRemove: (sensor: SensorWorker) => void,
   allowSettings: boolean;
 }
 
@@ -93,7 +93,7 @@ export class CellsGroup extends React.Component<Props, IState>{
                 onClick={event => { event.stopPropagation(); this.setZeroClick() }} >{">0<"}</Button>
 
               <Button
-                onClick={event => { event.stopPropagation(); this.props.sensorRemove(this.props.group.node.sensor); }}
+                onClick={event => { event.stopPropagation(); this.props.sensorRemove(this.props.group.node.worker); }}
                 className='horizontal-padding'
                 disabled={!this.props.allowSettings}
                 icon={<CloseOutlined />} />

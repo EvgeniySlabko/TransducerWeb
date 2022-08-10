@@ -1,7 +1,7 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
 import { sleep } from "../../Common/Common";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
-import { SensorData, SensorMessage, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { SensorData, SensorMessage, SensorMessageEventArgs } from "../../Sensor/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
 // После в StopStreaming остаются данные во внутреннем буффере декодера. 

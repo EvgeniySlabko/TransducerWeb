@@ -1,6 +1,6 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
-import { SensorData, SensorMessage, SensorMessageEventArgs, SetAvgEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { SensorData, SensorMessage, SensorMessageEventArgs, SetAvgEventArgs } from "../../Sensor/SensorDefinitions";
 import { FilterParameters, FilterType } from "../../Storage/ChannelsDataStorage";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 

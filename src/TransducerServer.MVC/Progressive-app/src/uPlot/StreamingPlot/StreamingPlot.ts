@@ -1,5 +1,5 @@
 import { PlotChannelDataArgs, PlotChannelMessageArgs, PlotChannel } from "../../Channel/Channel/PlotChannel";
-import { SensorData, SensorMessage } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { SensorData, SensorMessage } from "../../Sensor/SensorDefinitions";
 import { Label, MyUPlotBase, PlotParameters, SeriesInfo } from "../PlotBase";
 import { ChannelLabel } from "../PlotManager";
 import { PlotBufferManager } from "./StreamingBufferManager";

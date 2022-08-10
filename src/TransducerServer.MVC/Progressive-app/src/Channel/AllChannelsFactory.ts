@@ -1,6 +1,6 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
 import { ISingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
-import { FullSensorInfo } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { FullSensorInfo } from "../Sensor/SensorDefinitions";
 import { FilterParameters } from "../Storage/ChannelsDataStorage";
 import { CellChannel } from "./Channel/CellChannel";
 import { PlotChannel } from "./Channel/PlotChannel";
@@ -20,6 +20,7 @@ import { DataSourseType, ISensorDataProvider } from "./SensorDataSource/ISensorD
 import { OffsetDataSource } from "./SensorDataSource/OffseDataSource";
 import { PowerDataSource } from "./SensorDataSource/PowerDataSource";
 import { SensorDataProvider } from "./SensorDataSource/SensorDataProvider";
+import { SensorWorker } from "../Sensor/SensorWorker";
 
 const CellFps = 6;
 export interface ChannelsGroup {
@@ -46,10 +47,12 @@ export interface AllChannelsInfo {
     setCurrentOffset: () => number,
 }
 
-export function CreateAllChannels(sensor: ISingleComponentSensor, fullSensorInfo: FullSensorInfo): AllChannelsInfo {
+export function CreateAllChannels(worker: SensorWorker, fullSensorInfo: FullSensorInfo): AllChannelsInfo {
     let plotChannels: PlotChannel[] = [];
     let savingChannels: PlotChannel[] = [];
     let cellChannels: CellChannel[] = [];
+
+    let sensor = worker.Source;
 
     //Torque
     let mainDataSource = CreateMainValueDataSource(sensor);                                             // создаем источник основной измеряемой величины.

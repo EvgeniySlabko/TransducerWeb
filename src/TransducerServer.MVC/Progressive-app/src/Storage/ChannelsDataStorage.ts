@@ -128,7 +128,10 @@ export async function ApplySensorParameters(group: Group, sensorId: string)
     let parameters = await GetSensorParameters(sensorId);
     
     await group.node.worker.SetExternalSpeedSensorState(parameters.externalSpeedSensor);
-    await group.node.worker.SetAverageRatio(parameters.avgRatio);
+    
+    let minAvgRatio = group.node.worker.DecoderParams.minAvgRatio;
+    await group.node.worker.SetAverageRatio(parameters.avgRatio < minAvgRatio ? minAvgRatio : parameters.avgRatio);
+
     await group.node.worker.SetSpeedPeriod(parameters.speedPeriod);
     group.channelsInfo.setInvertiorSourceState(parameters.invertion);
     group.channelsInfo.setAbsoluteSourceState(parameters.absolute);

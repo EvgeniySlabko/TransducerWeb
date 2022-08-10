@@ -1,14 +1,14 @@
 
-import { ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, PlusCircleOutlined, SaveOutlined, SettingOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, SaveOutlined, SettingOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Menu } from 'antd';
 import React from 'react';
 import { keyCodes as keyCode } from '../Common/KeyCodes';
 import { SetupPlotManager } from '../Common/PlotManagerHelpers';
 import { RecordManager } from '../ReportListener/RecordManager';
-import { CreateSerialSensor } from '../Sensor/SensorFactory';
+import { CeateSensorWorker } from '../Sensor/SensorFactory';
 import { SensorController } from '../Sensor/SensorsManager/SensorsManager';
-import { Facker } from '../Sensor/SingleComponentSensor.ts/Faker/FackerSensor';
 import { PlotsManager } from '../uPlot/PlotManager';
+import { AddSensor } from './AddSensor';
 import { Group } from './App';
 import { AppSettingsTab } from './AppSettings/AppSettingsTab';
 import { PlotControlPanel } from './ControlPanel/PlotControlPanel';
@@ -51,7 +51,6 @@ export class Navbar extends React.Component<Props, IState>
 			switch (event.keyCode) {
 				case keyCode.SPACE: await this.onStartClick(); break;
 				case keyCode.KEY_C: await this.onClearClick(); break;
-				case keyCode.KEY_A: await this.onAddClick(); break;
 				case keyCode.KEY_S: await this.onScreenShotClick(); break;
 				case keyCode.KEY_R: await this.onSaveClick(); break;
 				case keyCode.KEY_O: await this.onOpenReportClick(); break;
@@ -77,22 +76,9 @@ export class Navbar extends React.Component<Props, IState>
 		input.click();
 	}
 
-	async handleAddClick() {
-		let port: SerialPort;
-		try {
-			port = await navigator.serial.requestPort();    //запрашиваем выбор порта у пользователя
-		}
-		catch {
-			return;
-		}
-
-		var sensor = await CreateSerialSensor(port);
-		await this.props.sensorService.AddSensor(sensor);
-	}
-
 	handleFakerClick = async () => {
-		let facker = new Facker();
-		await this.props.sensorService.AddSensor(facker);
+		let sensorWorker = await CeateSensorWorker("Faker");
+		await this.props.sensorService.AddSensor(sensorWorker);
 	}
 
 	handleScreen = async () => {
@@ -146,11 +132,6 @@ export class Navbar extends React.Component<Props, IState>
 		}
 	}
 
-	private onAddClick = async () =>{
-		if (!this.disableAddClick())
-			await this.handleAddClick()
-	}
-
 	private onScreenShotClick = async () =>{
 		await this.handleScreen()
 	}
@@ -169,100 +150,91 @@ export class Navbar extends React.Component<Props, IState>
 		return (
 			<div className='nav-tab-container'>
 
-				<div className="btn-group" role="group" aria-label="First group">
+			<Button title="Начать измерение. (Space)" size='large' id="Start" shape="default" disabled={ this.disableStartClick() }
+				icon={
+					this.props.reportVieving ? <ArrowLeftOutlined /> :
+						this.props.streaming ? <PauseOutlined /> : <CaretRightOutlined />
+				}
 
-					<Button title="Начать измерение. (Space)" size='large' id="Start" shape="default" disabled={ this.disableStartClick() }
-						icon={
-							this.props.reportVieving ? <ArrowLeftOutlined /> :
-								this.props.streaming ? <PauseOutlined /> : <CaretRightOutlined />
-						}
+				onClick={ this.onStartClick }
+					/>
 
-						onClick={ this.onStartClick }
-						 />
+			<Button title="Очистить результаты / Окончить эксперимент. (C)"
+				disabled={this.disableClearClick()}
+				size='large'
+				id="clear"
+				shape="default"
+				icon={<BorderOutlined />}
+				onClick={this.onClearClick} />
 
-					<Button title="Очистить результаты / Окончить эксперимент. (C)"
-						disabled={this.disableClearClick()}
-						size='large'
-						id="clear"
-						shape="default"
-						icon={<BorderOutlined />}
-						onClick={this.onClearClick} />
+			<Button title="Сохранить как отчет. (R)"
+				disabled={ this.disableSaveClick() }
+				size='large'
+				id="screen"
+				shape="default"
+				icon={<SaveOutlined />}
+				onClick={this.props.saveReport} />
 
-					<Button title="Добавить датчик. (A)"
-						size='large'
-						disabled={ this.disableAddClick() }
-						id="open"
-						shape="default"
-						icon={<PlusCircleOutlined />}
-						onClick={ this.onAddClick} />
+			<Button title="Сделать скриншот. (S)"
+				size='large'
+				id="screen"
+				shape="default"
+				icon={<CameraOutlined />}
+				onClick={this.onScreenShotClick} />
 
-					<Button title="Сохранить как отчет. (R)"
-						disabled={ this.disableSaveClick() }
-						size='large'
-						id="screen"
-						shape="default"
-						icon={<SaveOutlined />}
-						onClick={this.props.saveReport} />
+			<Button title="Открыть отчет. (O)"
+				size='large'
+				id="openfile"
+				shape="default"
+				icon={<FolderOpenOutlined />}
+				onClick={this.onOpenReportClick} />
 
-					<Button title="Сделать скриншот. (S)"
-						size='large'
-						id="screen"
-						shape="default"
-						icon={<CameraOutlined />}
-						onClick={this.onScreenShotClick} />
+			{
+				!this.props.reportVieving ? <></> :
+				<Button title="Экспортировать файл."
+				size='large'
+				id="openfile"
+				shape="default"
+				icon={<FileSyncOutlined />}
+				onClick={this.props.export} />
+			}
 
-					<Button title="Открыть отчет. (O)"
-						size='large'
-						id="openfile"
-						shape="default"
-						icon={<FolderOpenOutlined />}
-						onClick={this.onOpenReportClick} />
+			<AddSensor enabled={!this.disableAddClick()} sensorService={this.props.sensorService}/>
+	
+			<Button title="Настройки."
+				disabled={ this.props.streaming || !this.props.allowSettings}
+				size='large'
+				id="openfile"
+				shape="default"
+				icon={<SettingOutlined />}
+				onClick={this.handleSettings} />
 
-					{
-						!this.props.reportVieving ? <></> :
-							<Button title="Экспортировать файл."
-								size='large'
-								id="openfile"
-								shape="default"
-								icon={<FileSyncOutlined />}
-								onClick={this.props.export} />
-					}
-			
-					<Button title="Настройки."
-						disabled={ this.props.streaming || !this.props.allowSettings}
-						size='large'
-						id="openfile"
-						shape="default"
-						icon={<SettingOutlined />}
-						onClick={this.handleSettings} />
+			<Dropdown overlay=
+				{
+					<Menu
+						items={[
+							{
+								key: '1',
+								disabled: this.props.streaming || this.props.reportVieving,
+								label: (
+									<a onClick={this.handleFakerClick} target="_blank" rel="noopener noreferrer">
+										Add faker
+									</a>
+								),
+							}
+						]}
+					/>
+				} arrow>
+				<Button size='large' icon={<BarsOutlined />} />
+			</Dropdown>
 
-					<Dropdown overlay=
-						{
-							<Menu
-								items={[
-									{
-										key: '1',
-										disabled: this.props.streaming || this.props.reportVieving,
-										label: (
-											<a onClick={this.handleFakerClick} target="_blank" rel="noopener noreferrer">
-												Add faker
-											</a>
-										),
-									}
-								]}
-							/>
-						} arrow>
-						<Button size='large' icon={<BarsOutlined />} />
-					</Dropdown>
-
-					<AppSettingsTab 
-						visible={this.state.settings}
-						onClose={this.handleSettingsClose}/>
-				</div>
-
-				<PlotControlPanel
-					plotsManager={this.props.plotsManager}
-					reportVieving={this.props.reportVieving} />
+			<AppSettingsTab 
+				visible={this.state.settings}
+				onClose={this.handleSettingsClose}/>
+				
+			<PlotControlPanel
+				plotsManager={this.props.plotsManager}
+				reportVieving={this.props.reportVieving} />
 
 			</div>
 		)

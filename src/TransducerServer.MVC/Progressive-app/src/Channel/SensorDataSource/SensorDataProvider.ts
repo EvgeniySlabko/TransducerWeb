@@ -1,6 +1,6 @@
 import { EventDispatcher } from "strongly-typed-events";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
-import { SensorData, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { SensorData, SensorMessageEventArgs } from "../../Sensor/SensorDefinitions";
 import { DataSourseType, ISensorDataProvider } from "./ISensorDataProvider";
 
 export class SensorDataProvider implements ISensorDataProvider {

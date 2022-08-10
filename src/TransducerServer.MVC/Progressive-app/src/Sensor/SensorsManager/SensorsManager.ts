@@ -1,14 +1,11 @@
 import { EventDispatcher } from "@foxandfly/ts-event-dispatcher";
-import { sleep } from "../../Common/Common";
+import { FullSensorInfo } from "../SensorDefinitions";
 import { GetFullSensorInfo } from "../SensorInfoParser/SensorInfoCreator";
 import { SensorWorker } from "../SensorWorker";
-import { ISingleComponentSensor } from "../SingleComponentSensor.ts/ISingleComponentSensor";
-import { FullSensorInfo } from "../SingleComponentSensor.ts/SensorDefinitions";
 
 export type SensorControllerArgs =
     {
         sender: SensorController,
-        sensor: ISingleComponentSensor,
         fullSensorInfo: FullSensorInfo
         worker: SensorWorker,
     }
@@ -20,8 +17,7 @@ export enum SensorControllerEventType{
 
 type SensorNode =
     {
-        sensor: ISingleComponentSensor
-        worker: SensorWorker
+        sensorWorker: SensorWorker
         fullSensorInfo: FullSensorInfo
     }
 
@@ -29,32 +25,29 @@ export class SensorController {
     private sensors: SensorNode[] = new Array();
     private _dispatcher = new EventDispatcher<SensorControllerArgs>();
 
-    private GetIndex(sensor: ISingleComponentSensor) {
+    private GetIndex(sensor: SensorWorker) {
         let index = -1;
         for (let i = 0; i < this.sensors.length; i++) {
-            if (this.sensors[i].sensor === sensor)
+            if (this.sensors[i].sensorWorker === sensor)
                 index = i;
         }
-
+        
         return index;
     }
 
-    public async AddSensor(sensor: ISingleComponentSensor) {
-        let index = this.GetIndex(sensor);
+    public async AddSensor(sensorWorker: SensorWorker) {
+        let index = this.GetIndex(sensorWorker);
         if (index !== -1) {
             throw "Such sensor is already exists";
         }
 
-        let sensorWOrker = new SensorWorker(sensor);
+        await sensorWorker.Initialize();
+        await sensorWorker.SetT0();
 
-        await sensorWOrker.Initialize();
-        await sensorWOrker.SetT0();
-
-        let fullSensorInfo = await GetFullSensorInfo(sensor);
+        let fullSensorInfo = await GetFullSensorInfo(sensorWorker);
 
         var node: SensorNode = {
-            sensor: sensor,
-            worker: sensorWOrker,
+            sensorWorker: sensorWorker,
             fullSensorInfo: fullSensorInfo,
         };
 
@@ -62,41 +55,35 @@ export class SensorController {
 
         await this._dispatcher.dispatch('Add', {
             sender: this,
-            sensor: sensor,
             fullSensorInfo: fullSensorInfo,
-            worker: sensorWOrker,
+            worker: sensorWorker,
         });
     }
 
-    public async RemoveSensor(sensor: ISingleComponentSensor) {
-        var index = this.GetIndex(sensor);
+    public async RemoveSensor(sensorWorker: SensorWorker) {
+        var index = this.GetIndex(sensorWorker);
         try {
+            console.info("Removing sensor.");
             let node = this.sensors[index];
-            await node.worker.Close();
+            await node.sensorWorker.Close();
         }
         catch (ex) {
-            console.log("Error while closing sensor")
-            throw ex;
+            console.warn("Error while removing sensor.", ex);
         }
         finally {
-            if (index !== -1) {
-                this.sensors.splice(index, 1);
-                await this._dispatcher.dispatch('Remove', {
-                    sender: this,
-                    sensor: sensor,
-                });
-
-            }
-            else {
-                throw "there is no such sensor";
-            }
+            await this._dispatcher.dispatch('Remove', {
+                sender: this,
+                worker: sensorWorker,
+            });
+            
+            this.sensors.splice(index, 1);
         }
     }
 
     public async SetT0() {
         if (this.sensors.length == 0) return false;
         this.sensors.forEach(async node => {
-            await node.worker.SetT0();
+            await node.sensorWorker.SetT0();
         });
     }
 
@@ -104,7 +91,7 @@ export class SensorController {
         if (this.sensors.length == 0) return false;
 
         this.sensors.forEach(async node => {
-            await node.worker.StartStreaming();
+            await node.sensorWorker.StartStreaming();
         });
 
         return true;
@@ -112,7 +99,7 @@ export class SensorController {
 
     public async StopAll() {
         this.sensors.forEach(async node => {
-            await node.worker.StopStreaming();
+            await node.sensorWorker.StopStreaming();
             //await node.worker.StopReading();
         });
     }

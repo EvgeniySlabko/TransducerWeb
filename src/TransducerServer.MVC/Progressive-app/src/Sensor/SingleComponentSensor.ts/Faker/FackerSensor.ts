@@ -2,7 +2,7 @@ import { EventDispatcher, IEvent } from "strongly-typed-events";
 import { SinGenerator } from "./Generators/SinGennerator";
 import { SmoothGenerator } from "./Generators/SmoothGenerator";
 import { ISingleComponentSensor } from "../ISingleComponentSensor";
-import { SensorData, HoldingRegisters, SensorMessage, SensorMessageEventArgs, SensorSK } from "../SensorDefinitions";
+import { SensorData, HoldingRegisters, SensorMessage, SensorMessageEventArgs, SensorSK, InputComplex } from "../../SensorDefinitions";
 
 export class Facker implements ISingleComponentSensor {
     private generator: SmoothGenerator
@@ -11,6 +11,10 @@ export class Facker implements ISingleComponentSensor {
     constructor() {
         this.generator = new SmoothGenerator(100);
         this.sinGenerator = new SinGenerator();
+    }
+    
+    ReadInputComplex(): Promise<InputComplex> {
+        throw new Error("Method not implemented.");
     }
 
     SetUsingFloatState(state: boolean): Promise<void> {
@@ -188,6 +192,7 @@ export class Facker implements ISingleComponentSensor {
             resolve();
         });
     }
+    
     CloseConnection(): Promise<void> {
         return new Promise<void>(async (resolve, reject) => {
             this._onClose.dispatch(this, "Соединение закрыто");

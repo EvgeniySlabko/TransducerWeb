@@ -1,13 +1,13 @@
 import { PlotChannel } from "../Channel/Channel/PlotChannel";
 import { GetMinAvgFactor } from "../Common/SensorHelpers";
-import { ISingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
+import { SensorWorker } from "../Sensor/SensorWorker";
 import { ReportListener } from "./ReportListener";
 import { Snapshot } from "./Snapshot";
 
 export declare class RecordigGroup
 {
     savingChannels: PlotChannel[];
-    sensor: ISingleComponentSensor;
+    sensorWorker: SensorWorker;
 }
 
 export class RecordManager {
@@ -26,8 +26,8 @@ export class RecordManager {
     public SetChannels(groups: RecordigGroup[]) {
         this.listener.Reset();
         this.recordingGroups = groups;
-        this.recordingGroups.forEach(g => g.sensor.onClose.sub((sensor =>{
-            let index = this.recordingGroups.findIndex(rg => rg.sensor === sensor);
+        this.recordingGroups.forEach(g => g.sensorWorker.onClose.sub((sensor =>{
+            let index = this.recordingGroups.findIndex(rg => rg.sensorWorker === sensor);
             this.recordingGroups.splice(index);
         })));
 
@@ -37,7 +37,7 @@ export class RecordManager {
     }   
 
     public async StartListening() {
-        this.currentMinAvg =  await GetMinAvgFactor(this.recordingGroups.map(g => g.sensor));
+        this.currentMinAvg =  await GetMinAvgFactor(this.recordingGroups.map(g => g.sensorWorker));
         this.listener.StartListening();
     }
 

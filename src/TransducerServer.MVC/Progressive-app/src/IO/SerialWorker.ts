@@ -59,7 +59,6 @@ export class SerialWorker {
 
   public async GetChunk(): Promise<Uint8Array> {
     let result = await this.reader!.read();
-
     if (!result.done)
       return result.value;
       

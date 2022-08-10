@@ -6,7 +6,7 @@ export enum SensorCommand {
     PRESET_SINGLE_REGISTER = 6,     // запись значения в один регистр хранения;
     PRESET_MULTIPLE_REGISTERS = 16, // запись значений в несколько регистров хранения;
     REPORT_SLAVE_ID = 17,           // чтение служебной информации об устройстве.
-  }
+}
 
 //Адреса флагов
 export enum FlagRegistersAddresses {
@@ -18,6 +18,12 @@ export enum FlagRegistersAddresses {
     COMPUTER_CONNECTION = 5,
 }
 
+export declare class InputComplex{
+    mainValue: number;
+    speed: number;
+    temperature: number;
+}
+
 //Адреса хранения
 export enum StorageRegistersAddresses {
     FLAGS = 0,
@@ -27,6 +33,27 @@ export enum StorageRegistersAddresses {
     TIME_HIGH = 4,
 }
 
+//Адреса ввода
+export enum InputRegistersAddresses {
+    MainValue = 0,
+    MainValuePower = 1,
+    SpeedValue = 2,
+    SpeedValuePower = 3,
+    Temperature = 4,
+    DecoderState = 5,
+    MessagesCounter = 6,
+    Message1 = 7,
+    Message2 = 8,
+    Message3 = 9,
+    Message4 = 10,
+    Message5 = 11,
+    Message6 = 12,
+    Message7 = 13,
+    Message8 = 14,
+    Message9 = 15,
+    Message10 = 16,
+    FirmvareVersion = 17, 
+}
 
 export enum SensorCoilValue
 {

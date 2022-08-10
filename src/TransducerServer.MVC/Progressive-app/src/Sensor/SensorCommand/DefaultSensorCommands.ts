@@ -1,14 +1,16 @@
+import { SensorCommand } from "../SensorDefinitions";
+
 export interface ISensorCommand {
-    readonly Command: number;
+    readonly Command: SensorCommand;
     GetBytes(): Uint8Array
 }
 
 export class DefaultCommand implements ISensorCommand {
-    public Command: number;
+    public Command: SensorCommand;
     private address: number;
     private value: number;
 
-    constructor(command: number, address: number, value: number) {
+    constructor(command: SensorCommand, address: number, value: number) {
         this.Command = command;
         this.address = address;
         this.value = value;
@@ -27,10 +29,10 @@ export class DefaultCommand implements ISensorCommand {
 }
 
 export class SingleCommand implements ISensorCommand {
-    readonly Command: number;
+    readonly Command: SensorCommand;
 
-    constructor(Command: number) {
-        this.Command = Command;
+    constructor(command: SensorCommand) {
+        this.Command = command;
     }
 
     GetBytes(): Uint8Array {
@@ -41,11 +43,11 @@ export class SingleCommand implements ISensorCommand {
 }
 
 export class MultipleCommand implements ISensorCommand {
-    readonly Command: number;
+    readonly Command: SensorCommand;
     private bytes: Uint8Array
     private address: number
 
-    constructor(command: number, address: number, bytes: Uint8Array) {
+    constructor(command: SensorCommand, address: number, bytes: Uint8Array) {
         this.Command = command;
         this.address = address;
         this.bytes = bytes;

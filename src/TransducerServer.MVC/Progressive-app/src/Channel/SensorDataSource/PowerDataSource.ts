@@ -1,7 +1,7 @@
 import { EventDispatcher } from "strongly-typed-events";
 import { CalculatePower } from "../../Common/Common";
 import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
-import { SensorData, SensorMessageEventArgs } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { SensorData, SensorMessageEventArgs } from "../../Sensor/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
 export class PowerDataSource implements ISensorDataProvider {

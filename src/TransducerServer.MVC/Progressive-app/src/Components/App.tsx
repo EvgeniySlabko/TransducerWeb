@@ -1,22 +1,21 @@
-import React from 'react';
 import { notification } from 'antd';
+import React from 'react';
 import { AllChannelsInfo, CreateAllChannels } from '../Channel/AllChannelsFactory';
+import { ChangeGroupColor } from '../Common/ColorHelpers';
 import { sleep } from '../Common/Common';
+import { FileWorker } from '../Common/FileHelpers';
+import { SetupGroup } from '../Common/GroupHelpers';
+import { SetupPlotManager } from '../Common/PlotManagerHelpers';
 import { RecordigGroup, RecordManager } from '../ReportListener/RecordManager';
 import { Snapshot } from '../ReportListener/Snapshot';
+import { FullSensorInfo } from '../Sensor/SensorDefinitions';
 import { SensorController, SensorControllerArgs } from '../Sensor/SensorsManager/SensorsManager';
 import { SensorWorker } from '../Sensor/SensorWorker';
-import { ISingleComponentSensor } from '../Sensor/SingleComponentSensor.ts/ISingleComponentSensor';
-import { FullSensorInfo } from '../Sensor/SingleComponentSensor.ts/SensorDefinitions';
 import { ApplayLocalStorageSettingsForGroups, ApplySensorParameters as ApplaySensorStorageParameters } from '../Storage/ChannelsDataStorage';
 import { PlotsManager } from '../uPlot/PlotManager';
 import { GroupsContainer } from './GroupsContainer';
 import { Navbar } from './navbar';
 import { SaveModal } from './SaveModal/SaveModal';
-import { SetupGroup, SetupGroup as SetupGroupsAlignment } from '../Common/GroupHelpers';
-import { SetupPlotManager } from '../Common/PlotManagerHelpers';
-import { ChangeGroupColor as ChangeGroupColor } from '../Common/ColorHelpers';
-import { FileWorker } from '../Common/FileHelpers';
 
 export interface Props {
     sensorService: SensorController;
@@ -29,7 +28,6 @@ export interface Group {
 }
 
 export interface SensorNode {
-    sensor: ISingleComponentSensor,
     fullSensorInfo: FullSensorInfo
     worker: SensorWorker,
 }
@@ -72,8 +70,8 @@ export class App extends React.Component<Props, IState>
         }));
     }
 
-    sensorCloseHandler = async (sensor: ISingleComponentSensor, args: string) => {
-        let index = this.state.groups.findIndex(g => g.node.sensor == sensor);
+    sensorCloseHandler = async (sensorWorker: SensorWorker, args: string) => {
+        let index = this.state.groups.findIndex(g => g.node.worker == sensorWorker);
         this.state.groups.splice(index, 1);
 
         if (!this.state.streaming && this.state.firstStart){
@@ -89,18 +87,13 @@ export class App extends React.Component<Props, IState>
         this.forceUpdate();
     }
 
-    sensorManualCloseHandler = async (sensor: ISingleComponentSensor) => {
-        this.props.sensorService.RemoveSensor(sensor);
-    }
-
-    sensorClose = async (sensor: ISingleComponentSensor) => {
-        let group = this.state.groups.find(g => g.node.sensor == sensor);
-        await group?.node.worker.Close();
+    sensorManualCloseHandler = async (sensorWorker: SensorWorker) => {
+        this.props.sensorService.RemoveSensor(sensorWorker);
     }
 
     newSensorHandler = async (args: SensorControllerArgs) => {
         if (this.state.plotsManager) {
-            let allChannelsInfo = CreateAllChannels(args.sensor, args.fullSensorInfo);
+            let allChannelsInfo = CreateAllChannels(args.worker, args.fullSensorInfo);
             ChangeGroupColor(allChannelsInfo.channelGroups, this.state.groups.length);
             ApplayLocalStorageSettingsForGroups(allChannelsInfo.channelGroups, args.fullSensorInfo.SensorId);
             
@@ -108,7 +101,6 @@ export class App extends React.Component<Props, IState>
                 channelsInfo: allChannelsInfo,
                 node: {
                     fullSensorInfo: args.fullSensorInfo,
-                    sensor: args.sensor,
                     worker: args.worker,
                 }
             }
@@ -137,12 +129,12 @@ export class App extends React.Component<Props, IState>
                 {
                     return {
                         savingChannels: g.channelsInfo.channelGroups.map(cg => cg.savingChannel),
-                        sensor: g.node.sensor,
+                        sensorWorker: g.node.worker,
                     }
                 });
 
             this.props.recordController.SetChannels(recodingChannels);
-            args.sensor.onClose.sub(this.sensorCloseHandler);
+            args.worker.onClose.sub(this.sensorCloseHandler);
 
             notification.success({
                 message: `Добавлен датчик ${args.fullSensorInfo.SensorType}`,
@@ -166,7 +158,7 @@ export class App extends React.Component<Props, IState>
             return;
         }
 
-        if (!this.state.viewingReport) this.state.groups.forEach(async (g) => this.props.sensorService.RemoveSensor(g.node.sensor));
+        if (!this.state.viewingReport) this.state.groups.forEach(async (g) => this.props.sensorService.RemoveSensor(g.node.worker));
 
         try {
             this.state.plotsManager?.UploadSnapshot(snapshot);
@@ -209,15 +201,6 @@ export class App extends React.Component<Props, IState>
     starthandler = async () : Promise<void> => {
         
         await this.props.recordController.StartListening();
-        let started = await this.props.sensorService.StartAll();
-        if (!started) return;
-
-        SetupGroup(this.state.groups, this.state.plotsManager as PlotsManager); //настраиваем выравнивание даных согласно сетке графика. 
-
-        this.setState((prev, props) => ({
-            streaming: true,
-        }));
-
         if (this.state.firstStart) {
             this.setState((prev, props) => ({
                 firstStart: false,
@@ -225,6 +208,10 @@ export class App extends React.Component<Props, IState>
 
             await this.props.sensorService.SetT0();
         }
+        
+        await this.props.sensorService.StartAll();
+        
+        SetupGroup(this.state.groups, this.state.plotsManager as PlotsManager); //настраиваем выравнивание даных согласно сетке графика. 
 
         this.setState((prev, props) => ({
             streaming: true,

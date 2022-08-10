@@ -3,7 +3,6 @@ const webpack = require('webpack');
 const path = require('path');
 
 module.exports = {
-  devtool: 'source-map',      //создает map файл для отладки
   devtool: 'inline-source-map',
   entry: './src/main.tsx',
   mode: 'development',
@@ -18,6 +17,9 @@ module.exports = {
     port: 9000,
   },
   */
+  optimization: {
+    //minimize: true,
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
@@ -43,7 +45,7 @@ module.exports = {
         filename: "index.html", //Name of file in ./dist/
         template: "index.html", //Name of template in ./src
         hash: true,
-      }),
+      })
     ],
 
   resolve: {

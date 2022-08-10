@@ -1,5 +1,5 @@
 import { CalculatePower } from "../../Common/Common";
-import { FullSensorInfo } from "../../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { FullSensorInfo } from "../../Sensor/SensorDefinitions";
 import { PlotChannelStyle } from "./PlotChannelStyle";
 import { powerBaseColor, speedBaseColor, tmpBaseColor, torqueBaseColor } from "./ChanneStyleCommon";
 

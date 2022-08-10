@@ -1,5 +1,5 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
-import { SensorData, HoldingRegisters, SensorMessageEventArgs, SensorSK } from "./SensorDefinitions";
+import { SensorData, HoldingRegisters, SensorMessageEventArgs, SensorSK, InputComplex } from "../SensorDefinitions";
 
 export const ADCFrequency = 5000;
 
@@ -21,8 +21,8 @@ export interface ISingleComponentSensor {
 
   Initialize(): Promise<void>;
 
+  ReadInputComplex() : Promise<InputComplex>
   GetHoldingRegisters(): Promise<HoldingRegisters>;
-
   GetSkInfo(): Promise<SensorSK>;
   StartStreaming(): Promise<void>;
   StopStreaming(): Promise<void>;

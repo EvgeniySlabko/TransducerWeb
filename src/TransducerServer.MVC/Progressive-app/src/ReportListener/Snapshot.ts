@@ -1,7 +1,7 @@
 
 import { PlotChannelStyle } from "../Channel/ChannelStyle/PlotChannelStyle";
 import { AlignedData } from "../Common/AlignedDataHelpers";
-import { SensorData } from "../Sensor/SingleComponentSensor.ts/SensorDefinitions";
+import { SensorData } from "../Sensor/SensorDefinitions";
 import { SeriesValue } from "../uPlot/PlotCommon";
 
 export declare class TrackData
