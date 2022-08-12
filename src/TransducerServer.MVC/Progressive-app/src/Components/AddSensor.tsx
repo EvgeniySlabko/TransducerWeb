@@ -82,8 +82,8 @@ export class AddSensor extends React.Component<Props, IState>
 	render() {
 		return (
             !this.state.dataReceived ? <></> : 
-            <div className="horizontal-flex">
-                <Row>
+            <span className='horizontal-flex' style={{paddingLeft: "40px"}}>
+                
                 <Select defaultValue={this.state.decoderType} size={'large'} style={{ width: 100 }} onChange={this.onSelect}>
                     <Option value="VCOM">VCOM</Option>
                     <Option value="RS485">RS485</Option>
@@ -95,8 +95,8 @@ export class AddSensor extends React.Component<Props, IState>
                     shape="default"
                     icon={<PlusCircleOutlined />}
                     onClick={ this.onAddClick} />
-                </Row>
-            </div>	
+                
+            </span>	
 		)
 	}
 }

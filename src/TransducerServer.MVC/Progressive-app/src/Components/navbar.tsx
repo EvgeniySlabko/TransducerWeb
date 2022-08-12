@@ -29,7 +29,7 @@ export interface Props {
 	toggleStreaming: () => Promise<void>,
 	openReportCallback: (file: File) => void
 	setStreamingModeView: () => void
-	export: () => void
+	exportCsv: () => void
 }
 
 interface IState {
@@ -196,10 +196,9 @@ export class Navbar extends React.Component<Props, IState>
 				id="openfile"
 				shape="default"
 				icon={<FileSyncOutlined />}
-				onClick={this.props.export} />
+				onClick={this.props.exportCsv} />
 			}
 
-			<AddSensor enabled={!this.disableAddClick()} sensorService={this.props.sensorService}/>
 	
 			<Button title="Настройки."
 				disabled={ this.props.streaming || !this.props.allowSettings}
@@ -223,14 +222,17 @@ export class Navbar extends React.Component<Props, IState>
 								),
 							}
 						]}
-					/>
-				} arrow>
+						/>
+					} arrow>
 				<Button size='large' icon={<BarsOutlined />} />
 			</Dropdown>
 
+				
 			<AppSettingsTab 
 				visible={this.state.settings}
 				onClose={this.handleSettingsClose}/>
+				
+			<AddSensor enabled={!this.disableAddClick()} sensorService={this.props.sensorService}/>
 				
 			<PlotControlPanel
 				plotsManager={this.props.plotsManager}

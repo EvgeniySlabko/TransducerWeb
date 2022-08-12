@@ -140,6 +140,10 @@ legend {
 	flex-flow: row;
 }
 
+.column-gap {
+	column-gap: 10px;
+}
+
 .uplot .cursor-pt {
 	pointer-events: auto !important;
 }
@@ -164,6 +168,7 @@ legend {
 .horizontal-flex {
 	display: flex;
 	flex-direction: "row";
+	
 }
 
 .cell-group-title {
@@ -195,7 +200,6 @@ legend {
 .cell-control-panel-row {
 	display: flex;
 	flex-flow: row;
-	align-items: flex-end;
 	height: 40px;
 	position: relative;
 	z-index: 10;

@@ -44,7 +44,7 @@ export class SaveModal extends React.Component<Props, IState>{
           onOk={this.props.onClose}
           centered={false}>
           <div className='vertical-flex'>
-            <SaveModalItem 
+            <SaveModalItem
               download={this.onCSVDownload}
               label='Сохранить в формате CSV:'
               placeHolder="Имя отчета"

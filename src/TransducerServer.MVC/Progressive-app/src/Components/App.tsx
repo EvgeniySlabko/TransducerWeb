@@ -3,7 +3,7 @@ import React from 'react';
 import { AllChannelsInfo, CreateAllChannels } from '../Channel/AllChannelsFactory';
 import { ChangeGroupColor } from '../Common/ColorHelpers';
 import { sleep } from '../Common/Common';
-import { FileWorker } from '../Common/FileHelpers';
+import { CreateCsvFileDialog, FileWorker } from '../Common/FileHelpers';
 import { SetupGroup } from '../Common/GroupHelpers';
 import { SetupPlotManager } from '../Common/PlotManagerHelpers';
 import { RecordigGroup, RecordManager } from '../ReportListener/RecordManager';
@@ -15,7 +15,6 @@ import { ApplayLocalStorageSettingsForGroups, ApplySensorParameters as ApplaySen
 import { PlotsManager } from '../uPlot/PlotManager';
 import { GroupsContainer } from './GroupsContainer';
 import { Navbar } from './navbar';
-import { SaveModal } from './SaveModal/SaveModal';
 
 export interface Props {
     sensorService: SensorController;
@@ -36,7 +35,6 @@ interface IState {
     groups: Group[],
     plotsManager?: PlotsManager;
     viewingReport: boolean;
-    saveDialog: boolean;
     streaming: boolean;
     currentSnapshot: Snapshot | undefined;
     firstStart: boolean;
@@ -53,7 +51,6 @@ export class App extends React.Component<Props, IState>
             plotsManager: undefined,
             groups: [],
             viewingReport: false,
-            saveDialog: false,
             streaming: false,
             currentSnapshot: undefined,
             firstStart: true,
@@ -261,7 +258,10 @@ export class App extends React.Component<Props, IState>
         });
     }
 
-    export = () => this.setState(() => ({ saveDialog: true }));
+    onCSVDownload = async () => {
+        let currentFile = await CreateCsvFileDialog();
+        this.state.currentSnapshot?.ToCSV(currentFile);
+    }
 
     render() {
         return [
@@ -278,7 +278,7 @@ export class App extends React.Component<Props, IState>
                 groups={this.state.groups}
                 reportVieving={this.state.viewingReport}
                 clear={this.clear}
-                export={this.export}
+                exportCsv={this.onCSVDownload}
                 setStreamingModeView={this.streamingModeViewHandler}
                 plotsManager={this.state.plotsManager} />,
 
@@ -296,11 +296,6 @@ export class App extends React.Component<Props, IState>
                     <div id="gd" className="plot" />
                 </div>
             </div>,
-
-            <SaveModal key={3}
-                onClose={() => this.setState({ saveDialog: false })}
-                snapshot={this.state.currentSnapshot}
-                visible={this.state.saveDialog} />
         ]
     }
 }
