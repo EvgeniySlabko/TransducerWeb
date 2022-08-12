@@ -26,7 +26,7 @@ export class LogLevelBugger {
         for (let i = 0; i < this.levels.length; i++) 
         {
             if (this.levels[i] >= currentDt){
-                console.log(i);
+                //console.log(i);
                 this.currentDt = this.buffers[i].Dt;
                 return this.buffers[i].Source;
             } 

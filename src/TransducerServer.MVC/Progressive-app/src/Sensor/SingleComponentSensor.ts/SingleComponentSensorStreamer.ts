@@ -13,8 +13,8 @@ export class SingleComponentSensor extends SingleComponentSensorBase {
     //private serialWorker: IReaderWriter;
     constructor(commandFactory: ISensorCommandFacory,
                 seensorDataCommandReceiver: ISensorStreamerDataEncoder,
-                sensorCommandWriter: ISensorCommandWriter) {
-        super(commandFactory, seensorDataCommandReceiver, sensorCommandWriter);
+                sensorCommandWriter: ISensorCommandWriter, id: string) {
+        super(commandFactory, seensorDataCommandReceiver, sensorCommandWriter, id + " base");
         this.seensorDataCommandReceiver = seensorDataCommandReceiver;
     }
 

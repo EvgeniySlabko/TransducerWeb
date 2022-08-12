@@ -68,7 +68,7 @@ function CreateVCOMSensor(bufferedWorker: SerialBufferedWorker) : SingleComponen
     let seensorDataCommandReceiver = CreateStreamingSensorDataCommandEncoder(bufferedWorker);
     let sensorCommandWriter = CreateDefaultSensorCommandWriter(bufferedWorker);
 
-    return new SingleComponentSensor(commandFactory, seensorDataCommandReceiver, sensorCommandWriter)
+    return new SingleComponentSensor(commandFactory, seensorDataCommandReceiver, sensorCommandWriter, "Single component VCOM")
 } 
 
 function GreateFacker() : Facker
@@ -85,5 +85,5 @@ function CreateRS485Sensor(bufferedWorker: SerialBufferedWorker) : SingleCompone
     let seensorDataCommandReceiver = CreateModBusSensorDataCommandEncoder(bufferedWorker);
     let sensorCommandWriter = CreateDefaultSensorCommandWriter(bufferedWorker);
 
-    return new SingleComponentSensorExchanger(commandFactory, seensorDataCommandReceiver, sensorCommandWriter)
+    return new SingleComponentSensorExchanger(commandFactory, seensorDataCommandReceiver, sensorCommandWriter, "Single component RS485")
 } 

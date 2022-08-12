@@ -9,8 +9,6 @@ export class SingleComponentSensorExchanger extends SingleComponentSensorBase {
     private stopStreamingRequired: boolean = false;
 
     protected timeBase?: number;
-
-    private lastTimeRead = 0;
     private intervalReadingMain = 100;
     private intervalReadingSpeed = 100;
     private intervalReadingTemperature = 3000;
@@ -21,8 +19,9 @@ export class SingleComponentSensorExchanger extends SingleComponentSensorBase {
     private timeAwaitig = 100;
     constructor(commandFactory: ISensorCommandFacory,
                 sensorDataCommandReceiver: ISensorDataCommandEncoder,
-                sensorCommandWriter: ISensorCommandWriter) {
-        super(commandFactory, sensorDataCommandReceiver, sensorCommandWriter);
+                sensorCommandWriter: ISensorCommandWriter,
+                id: string) {
+        super(commandFactory, sensorDataCommandReceiver, sensorCommandWriter, id + " base");
     }
 
     public StartStreaming = async () => {
@@ -33,6 +32,7 @@ export class SingleComponentSensorExchanger extends SingleComponentSensorBase {
         this.timeAwaitig = Math.min(this.intervalReadingMain, this.intervalReadingSpeed, this.intervalReadingTemperature);
         
         console.info("Starting exchanging: ", "main_interval: ", this.intervalReadingMain, "speed_interval: ", this.intervalReadingSpeed, "tmp_interval: ", this.intervalReadingTemperature);
+        console.info("Awaiting time",  this.timeAwaitig);
         this.Reading();
         this._onMessage.dispatch(this, {
             msgType: SensorMessage.StartStreaming
@@ -74,7 +74,7 @@ export class SingleComponentSensorExchanger extends SingleComponentSensorBase {
                 }
                 
                 let currentSpeedInterval = currentTime - this.lastSpeedMeasuringTime;
-                if (currentSpeedInterval >= this.intervalReadingTemperature!){
+                if (currentSpeedInterval >= this.intervalReadingSpeed!){
                     this.lastSpeedMeasuringTime = currentTime;
                     this._onSpeedData.dispatch(this, {
                         data: [inputValues.speed],

@@ -189,17 +189,6 @@ export class Navbar extends React.Component<Props, IState>
 				icon={<FolderOpenOutlined />}
 				onClick={this.onOpenReportClick} />
 
-			{
-				!this.props.reportVieving ? <></> :
-				<Button title="Экспортировать файл."
-				size='large'
-				id="openfile"
-				shape="default"
-				icon={<FileSyncOutlined />}
-				onClick={this.props.exportCsv} />
-			}
-
-	
 			<Button title="Настройки."
 				disabled={ this.props.streaming || !this.props.allowSettings}
 				size='large'
@@ -207,6 +196,16 @@ export class Navbar extends React.Component<Props, IState>
 				shape="default"
 				icon={<SettingOutlined />}
 				onClick={this.handleSettings} />
+
+			{
+				!this.props.reportVieving ? <></> :
+				<Button title="Сохранить как CSV файл."
+				size='large'
+				id="openfile"
+				shape="default"
+				icon={<FileSyncOutlined />}
+				onClick={this.props.exportCsv} />
+			}
 
 			<Dropdown overlay=
 				{

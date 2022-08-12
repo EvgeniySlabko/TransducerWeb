@@ -8,6 +8,7 @@ import { ISingleComponentSensor } from './ISingleComponentSensor';
 
 export class SingleComponentSensorBase implements ISingleComponentSensor {
 
+    public readonly id: string;
     protected readonly baseFrequency: number = 5000;
     protected readonly decoderClock: number = 62500;
     protected readonly timeout: number = 500;             // Максимальное время ожидание ответа на командуж
@@ -28,8 +29,9 @@ export class SingleComponentSensorBase implements ISingleComponentSensor {
     protected sensorCommandWriter: ISensorCommandWriter;
     constructor(commandFactory: ISensorCommandFacory,
                 seensorDataCommandReceiver: ISensorDataCommandEncoder,
-                sensorCommandWriter: ISensorCommandWriter) 
+                sensorCommandWriter: ISensorCommandWriter, id: string) 
     {
+        this.id = id;
         this.sensorDataCommandReceiver = seensorDataCommandReceiver;
         this.commandFactory = commandFactory;
         this.sensorCommandWriter = sensorCommandWriter;
@@ -47,6 +49,7 @@ export class SingleComponentSensorBase implements ISingleComponentSensor {
     public get onMessage() { return this._onMessage.asEvent(); }
 
     public async Initialize() {
+        console.info(this.id, "Begining reading.");
         this.processbytes();
         let holdingRegisters = await this.GetHoldingRegisters();
         this.avgRatio = holdingRegisters.AverageRatio;
@@ -68,7 +71,7 @@ export class SingleComponentSensorBase implements ISingleComponentSensor {
         speedValueBytes[1] = (registers[2] >> 8) & 0XFF;
         speedValueBytes[2] = registers[3] & 0XFF;
         speedValueBytes[3] = (registers[3] >> 8) & 0XFF;
-        let speedView = new DataView(mainValueBytes.buffer);
+        let speedView = new DataView(speedValueBytes.buffer);
         
         return {
             mainValue: mainView.getFloat32(0, true),
@@ -78,6 +81,7 @@ export class SingleComponentSensorBase implements ISingleComponentSensor {
     }
 
     public async GetHoldingRegisters(): Promise<HoldingRegisters> {
+        console.info(this.id, "Getting holding registers.");
         var command = this.commandFactory.CreateDefaultCommand(SensorCommand.READ_HOLDING_REGISTERS, StorageRegistersAddresses.FLAGS, 5);
         var registers = await this.SendRequesAndWaitResponse<number[]>(command);
         var holdingRegisters = new HoldingRegisters(registers);
@@ -85,20 +89,25 @@ export class SingleComponentSensorBase implements ISingleComponentSensor {
     }
 
     public async SetExternalSensorState(state: boolean): Promise<void> {
+        console.info(this.id, "Seting external sensor state: ", state);
         await this.SendRequesAndWaitResponse<void>(this.commandFactory.CreateDefaultCommand(SensorCommand.FORCE_SINGLE_COIL, FlagRegistersAddresses.EXTERNAL_SPEED_SENSOR, state ? SensorCoilValue.COIL_ON_VALUE : SensorCoilValue.COIL_OFF_VALUE));
     }
 
     public async SetUsingFloatState(state: boolean): Promise<void> {
+        console.info(this.id, "Seting using floating point state: ", state);
         await this.SendRequesAndWaitResponse<void>(this.commandFactory.CreateDefaultCommand(SensorCommand.FORCE_SINGLE_COIL, FlagRegistersAddresses.IS_FLOAT_USING, state ? SensorCoilValue.COIL_ON_VALUE : SensorCoilValue.COIL_OFF_VALUE));
     }
 
     public async GetSkInfo(): Promise<SensorSK> {
+        console.info(this.id, "Getting sensor sk: ");
         var command = this.commandFactory.CreateSingleCommand(SensorCommand.REPORT_SLAVE_ID);
         var sensorSk = await this.SendRequesAndWaitResponse<SensorSK>(command);
+        console.info(this.id, "Sensor sk: ", sensorSk);
         return sensorSk;
     }
 
     public StartStreaming = async () => {
+        console.info(this.id, "Starting streaming");
         this._onMessage.dispatch(this, {
             msgType: SensorMessage.StartStreaming
         })
@@ -109,12 +118,10 @@ export class SingleComponentSensorBase implements ISingleComponentSensor {
         });
     }
 
-    public async StopStreaming(waitAnswer: boolean = true) {
+    public async StopStreaming() {
+        console.info(this.id, "Stop streaming.");
         var command = this.commandFactory.CreateDefaultCommand(SensorCommand.FORCE_SINGLE_COIL, FlagRegistersAddresses.START_STREAMING, SensorCoilValue.COIL_OFF_VALUE);
-        if (waitAnswer)
-            await this.SendRequesAndWaitResponse<void>(command);
-        else
-            await this.sensorCommandWriter.Write(command);
+        await this.SendRequesAndWaitResponse<void>(command);
 
         this._onMessage.dispatch(this, {
             msgType: SensorMessage.StopStreaming
@@ -122,6 +129,7 @@ export class SingleComponentSensorBase implements ISingleComponentSensor {
     }
 
     public async SetAvgRatio(avgRatio: number) {
+        console.info(this.id, "Setting avg ratio: ", avgRatio);
         await this.SendRequesAndWaitResponse<void>(this.commandFactory.CreateDefaultCommand(SensorCommand.PRESET_SINGLE_REGISTER, StorageRegistersAddresses.AVG_RATIO, avgRatio));
         let eventArgs: SetAvgEventArgs = {
             avg: avgRatio, 
@@ -135,7 +143,7 @@ export class SingleComponentSensorBase implements ISingleComponentSensor {
     public SetComputerConnection = async () => await this.SendRequesAndWaitResponse<void>(this.commandFactory.CreateDefaultCommand(SensorCommand.FORCE_SINGLE_COIL, FlagRegistersAddresses.COMPUTER_CONNECTION, SensorCoilValue.COIL_ON_VALUE));
     public UnsetComputerConnection = async () => this.SendRequesAndWaitResponse<void>(this.commandFactory.CreateDefaultCommand(SensorCommand.FORCE_SINGLE_COIL, FlagRegistersAddresses.COMPUTER_CONNECTION, SensorCoilValue.COIL_OFF_VALUE));
     public async SetT0() {
-
+        console.info(this.id, "Setting time 0: ");
         // TO DO не работает запись времени в память декодера
         //await this.SendRequesAndWaitResponse<void>(this.commandFactory.CreateDefaultCommand(Defs.PRESET_SINGLE_REGISTER, 3, 0));
         //await this.SendRequesAndWaitResponse<void>(this.commandFactory.CreateDefaultCommand(Defs.PRESET_SINGLE_REGISTER, 4, 0));
@@ -144,6 +152,7 @@ export class SingleComponentSensorBase implements ISingleComponentSensor {
     }
     
     public SetSpeedPeriod = async (speedPerion: number) => {
+        console.info(this.id, "Setting speed period: ", speedPerion);
         await this.SendRequesAndWaitResponse<void>(this.commandFactory.CreateDefaultCommand(SensorCommand.PRESET_SINGLE_REGISTER, StorageRegistersAddresses.SPEED_PERIOD, speedPerion));
         this.speedPeriod = speedPerion;
     }
@@ -151,6 +160,7 @@ export class SingleComponentSensorBase implements ISingleComponentSensor {
     public async CloseConnection() {
         try
         {
+            console.info(this.id, "Closing connection: ");
             await this.sensorDataCommandReceiver.Close();
         }
         catch
@@ -164,11 +174,13 @@ export class SingleComponentSensorBase implements ISingleComponentSensor {
     }
 
     public async StopMeasuring() {
+        console.info(this.id, "Stop measuring.");
         var command = this.commandFactory.CreateDefaultCommand(SensorCommand.FORCE_SINGLE_COIL, FlagRegistersAddresses.START_MEASURING, SensorCoilValue.COIL_OFF_VALUE);
         await this.SendRequesAndWaitResponse<void>(command);
     }
 
     public async StartMeasuring() {
+        console.info(this.id, "Start measuring.");
         var command = this.commandFactory.CreateDefaultCommand(SensorCommand.FORCE_SINGLE_COIL, FlagRegistersAddresses.START_MEASURING, SensorCoilValue.COIL_ON_VALUE);
         await this.SendRequesAndWaitResponse<void>(command);
     }
@@ -259,14 +271,15 @@ export class SingleComponentSensorBase implements ISingleComponentSensor {
 
             handeled = await this.ProcessCommand(dataType);
             if (!handeled) {
-                this.ReadingErrorHandler();
+
+                console.warn('Data were not handled. Stop reading.');
                 return;
             }
 
             nextIteration();
         }
         catch (ex) {
-            await this.ReadingErrorHandler();
+            console.warn('Sensor reading error');
         }
     }
 
@@ -276,12 +289,6 @@ export class SingleComponentSensorBase implements ISingleComponentSensor {
         return new Promise((resolve, reject) => {
             resolve(false);
         })
-    }
-
-    protected async ReadingErrorHandler() {
-        console.log('Sensor reading error');
-        //await this.CloseConnection();
-        //this._onClose.dispatch(this, "Reading error");
     }
 
     private DispatchCommandListener(command: number, data: any): void {
