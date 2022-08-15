@@ -1,5 +1,6 @@
 import { SerialBufferedWorker } from "../IO/SerialBufferWorker";
 import { SerialWorker } from "../IO/SerialWorker";
+import { SerialSensorIOWorker } from "../SensorIOWorker/SerialSensorIOWorker";
 import { CreateDecoderParameters } from "./DecoderParameters/DecoderParametersFactory";
 import { CreateDefaultCommandFactory } from "./SensorCommand/DefaultCommandFactory";
 import { CreateModBusCommandFactory } from "./SensorCommand/ModBusCommandFactory";
@@ -64,11 +65,12 @@ async function CreateIOWorker()
 
 function CreateVCOMSensor(bufferedWorker: SerialBufferedWorker) : SingleComponentSensor
 {
+    let sensorIOWorker = new SerialSensorIOWorker(bufferedWorker.baseWorker);
     let commandFactory = CreateDefaultCommandFactory();
     let seensorDataCommandReceiver = CreateStreamingSensorDataCommandEncoder(bufferedWorker);
     let sensorCommandWriter = CreateDefaultSensorCommandWriter(bufferedWorker);
 
-    return new SingleComponentSensor(commandFactory, seensorDataCommandReceiver, sensorCommandWriter, "Single component VCOM")
+    return new SingleComponentSensor(sensorIOWorker, commandFactory, seensorDataCommandReceiver, sensorCommandWriter, "Single component VCOM")
 } 
 
 function GreateFacker() : Facker
@@ -80,10 +82,10 @@ function CreateRS485Sensor(bufferedWorker: SerialBufferedWorker) : SingleCompone
 {
     //TO DO Params.
     const deviceAddress = 1;
-
+    let sensorIOWorker = new SerialSensorIOWorker(bufferedWorker.baseWorker);
     let commandFactory = CreateModBusCommandFactory(deviceAddress);
     let seensorDataCommandReceiver = CreateModBusSensorDataCommandEncoder(bufferedWorker);
     let sensorCommandWriter = CreateDefaultSensorCommandWriter(bufferedWorker);
 
-    return new SingleComponentSensorExchanger(commandFactory, seensorDataCommandReceiver, sensorCommandWriter, "Single component RS485")
+    return new SingleComponentSensorExchanger(sensorIOWorker, commandFactory, seensorDataCommandReceiver, sensorCommandWriter, "Single component RS485")
 } 

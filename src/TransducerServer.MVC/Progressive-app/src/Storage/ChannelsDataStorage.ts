@@ -82,20 +82,20 @@ export function ApplayLocalStorageSettingsForGroups(groups: ChannelsGroup[], sen
             g.cellChannel.Style.limits = cellStyle.limits;
             g.cellChannel.Style.color = cellStyle.color;
             g.cellChannel.Style.visible = cellStyle.visible;
-            g.cellChannel.Style.accurency = cellStyle.accurency;
+            g.cellChannel.Style.accuracy = cellStyle.accuracy;
             
             
             g.plotChannel.Style.color = plotStyle.color;
             g.plotChannel.Style.drawLimits = plotStyle.drawLimits;
             g.plotChannel.Style.grid = plotStyle.grid;
-            g.plotChannel.Style.legendValueAccurency = plotStyle.legendValueAccurency;
+            g.plotChannel.Style.legendValueAccuracy = plotStyle.legendValueAccuracy;
             g.plotChannel.Style.visible = plotStyle.visible;
             g.plotChannel.Style.width = plotStyle.width;
 
             g.savingChannel.Style.color = savingStyle.color;
             g.savingChannel.Style.drawLimits = savingStyle.drawLimits;
             g.savingChannel.Style.grid = savingStyle.grid;
-            g.savingChannel.Style.legendValueAccurency = savingStyle.legendValueAccurency;
+            g.savingChannel.Style.legendValueAccuracy = savingStyle.legendValueAccuracy;
             g.savingChannel.Style.visible = savingStyle.visible;
             g.savingChannel.Style.width = savingStyle.width;
         }

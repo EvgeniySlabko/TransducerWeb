@@ -25,7 +25,7 @@ export class CellModal extends React.Component<Props, IState>{
   constructor(prop: Props) {
     super(prop);
     this.state = {
-      accurency: this.props.group.cellChannel.Style.accurency,
+      accurency: this.props.group.cellChannel.Style.accuracy,
       color: this.props.group.cellChannel.Style.color,
       limits: this.props.group.plotChannel.Style.drawLimits
     }
@@ -36,7 +36,7 @@ export class CellModal extends React.Component<Props, IState>{
   }
 
   onOk = () => {
-    this.props.group.cellChannel.Style.accurency = this.state.accurency;
+    this.props.group.cellChannel.Style.accuracy = this.state.accurency;
     this.props.group.cellChannel.Style.color = this.state.color;
     
     this.props.group.plotChannel.Style.color = this.state.color;

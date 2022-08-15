@@ -66,7 +66,7 @@ export class Cell extends React.Component<Props, IState>{
     }
 
     this.setState((prev, props) => ({
-      value: args.data.data[0].toFixed(this.props.channelGroup.cellChannel.Style.accurency),
+      value: args.data.data[0].toFixed(this.props.channelGroup.cellChannel.Style.accuracy),
     }));
   }
 

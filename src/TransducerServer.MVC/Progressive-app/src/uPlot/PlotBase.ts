@@ -230,7 +230,7 @@ export class MyUPlotBase {
       hooks: {
         ready: (u: any) => {
           xMin = u.scales.x.min;
-          xMax = u.scales.x.max //+ this.params.rightGap;
+          xMax = u.scales.x.max;
           yMin = u.scales.y.min;
           yMax = u.scales.y.max;
 
@@ -616,6 +616,7 @@ export class MyUPlotBase {
     let range = this.seriesInfos[index - 1].curRange
     let curRangeVal = range[1] - range[0];
 
+    //console.debug(`YAxisRangeChanged(${index}): ${dy}`);
     //вычисляем относительное смещение 
     let dVal = curRangeVal * dy;
 
@@ -654,7 +655,7 @@ export class MyUPlotBase {
         let strValue = "--";
         if (nearestVal){
           let scaledValue = nearestVal / seriesInfo.style.valueRatio;
-          strValue = scaledValue.toFixed(seriesInfo.style.legendValueAccurency).toString()
+          strValue = scaledValue.toFixed(seriesInfo.style.legendValueAccuracy).toString()
         }
 
         if (this.legendItems) {
@@ -760,11 +761,17 @@ export class MyUPlotBase {
     let dragStart = false;
     let yCoord = 0;
     let xCoord = 0;
+    let initRange: [number, number];
+    let initRangeValue : number;
 
     divAxis.addEventListener('mousedown', (e: any) => {
       dragStart = true;
       yCoord = e.clientY;
       xCoord = e.clientX;
+      initRange = i == 0 ? [this.params.range[0], this.params.range[1]] : [this.seriesInfos[i - 1].curRange[0], this.seriesInfos[i - 1].curRange[1]];
+      initRangeValue = initRange[1] - initRange[0];
+      console.debug(`yCoord: (${yCoord})`);
+      console.debug(`xCoord: (${xCoord})`);
     });
 
     document.addEventListener('mouseup', (e: any) => {
@@ -777,17 +784,22 @@ export class MyUPlotBase {
           let curX = e.clientX;
           let divWidth = divAxis.clientWidth;
           let cursorDx = curX - xCoord;
-          xCoord = curX
           let l = cursorDx / divWidth;
-          this.XAxisRangeChanged(-l);
+          let dX = initRangeValue * l;
+
+          this.SetScale(initRange[0] - dX, initRange[1] - dX);
+          console.debug(`dX: (${dX})`);
         }
         else {
           let curY = e.clientY;
           let divHeigh = divAxis.clientHeight;
           let cursorDy = curY - yCoord;
-          yCoord = curY
           let l = cursorDy / divHeigh;
-          this.YAxisRangeChanged(i, l);
+          let dY = initRangeValue * l;
+
+          this.seriesInfos[i - 1].curRange[0] = initRange[0] + dY; 
+          this.seriesInfos[i - 1].curRange[1] = initRange[1] + dY;
+          console.debug(`dY: (${cursorDy})`);
         }
       }
     });

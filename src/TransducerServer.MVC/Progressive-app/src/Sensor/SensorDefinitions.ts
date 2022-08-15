@@ -164,7 +164,7 @@ export class FullSensorInfo {
     public Popravka: number = 0;
     public UnitValueName: string = "";
     public MaxSpeed: number = 0;
-    public MasEdRazm: number = 0;
+    public Accuracy: number = 0;
     public MaxDopustBase: number = 0;
     public MaxValue: number = 0;
     public MinValue: number = 0;

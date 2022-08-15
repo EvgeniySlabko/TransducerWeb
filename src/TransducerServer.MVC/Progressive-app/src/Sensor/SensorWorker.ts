@@ -27,7 +27,7 @@ export class SensorWorker {
         this.decoderParams = decoderParams;
         sensor.onClose.sub((sender, args) => 
         {
-            console.info(this.name, "Closing event ocured.");
+            console.debug(this.name, "Closing event ocured.");
             this._onClose.dispatch(this, args)
         });
     }
@@ -45,11 +45,10 @@ export class SensorWorker {
     }
 
     public async Initialize() {
-        console.info(this.name, "Start initializing");
+        console.debug(this.name, "Start initializing");
         try
         {
             await this.sensor.Initialize();
-            await this.sensor.StopStreaming();
             await this.sensor.SetComputerConnection();
             await this.sensor.SetT0();
             await this.sensor.SetAvgRatio(1);
@@ -62,26 +61,26 @@ export class SensorWorker {
         }
         //await this.startReading();
 
-        console.info(this.name, "Initialization finished.");
+        console.debug(this.name, "Initialization finished.");
         this.isStreaming = false;
         this.isInit = true;
     }
 
     public async SetT0() {
         if (!this.isInit) throw "Sersor is not initialized";
-        console.info(this.name, "Set zero.");
+        console.debug(this.name, "Set zero.");
         await this.sensor.SetT0();
     }
 
     public async GetSkInfo()
     {
-        console.info(this.name, "Getting sk info.");
+        console.debug(this.name, "Getting sk info.");
         return await this.sensor.GetSkInfo();
     }
 
     public async GetHoldingRegisters() : Promise<HoldingRegisters>
     {
-        console.info(this.name, "Getting holder registers.");
+        console.debug(this.name, "Getting holder registers.");
         return await this.sensor.GetHoldingRegisters();
     }
 
@@ -89,7 +88,7 @@ export class SensorWorker {
         if (!this.isInit) throw "Sersor is not initialized";
 
         if (!this.isStreaming) {
-            console.info(this.name, "Starting streaming.");
+            console.debug(this.name, "Starting streaming.");
             await this.sensor.StartStreaming();
             this.isStreaming = true;
         }
@@ -98,29 +97,29 @@ export class SensorWorker {
     public async StopStreaming() {
         if (!this.isInit) throw "Sersor is not initialized";
         if (this.isStreaming) {
-            console.info(this.name, "Stopping streaming.");
+            console.debug(this.name, "Stopping streaming.");
             await this.sensor.StopStreaming();
             this.isStreaming = false;
         }
     }
 
     public async SetExternalSpeedSensorState(state: boolean) {
-        console.info(this.name, "Setting external speed sensor.");
+        console.debug(this.name, "Setting external speed sensor.");
         await this.sensor.SetExternalSensorState(state);
     }
 
     public async SetSpeedPeriod(period: number) {
-        console.info(this.name, "Setting speed period.");
+        console.debug(this.name, "Setting speed period.");
         await this.sensor.SetSpeedPeriod(period);
     }
 
     public async SetAverageRatio(avg: number) {
-        console.info(this.name, "Setting avg ratio.");
+        console.debug(this.name, "Setting avg ratio.");
         await this.sensor.SetAvgRatio(avg);
     }
 
     public async Close() {
-        console.info(this.name, "Closing");
+        console.debug(this.name, "Closing");
         try
         {
             await this.sensor.StopStreaming();
@@ -132,7 +131,7 @@ export class SensorWorker {
         finally
         {
             await this.sensor.CloseConnection();
-            console.info(this.name, "Connection closed.");
+            console.debug(this.name, "Connection closed.");
             this.isStreaming = false;
             this.isReading = false;
         }

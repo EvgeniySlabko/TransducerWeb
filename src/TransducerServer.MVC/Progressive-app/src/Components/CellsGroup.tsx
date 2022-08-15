@@ -66,7 +66,7 @@ export class CellsGroup extends React.Component<Props, IState>{
     SetOffset(currentOffset, this.props.group.node.fullSensorInfo.SensorId);
 
     notification.success({
-      message: `Смещение установлено для датчика ${this.props.group.node.fullSensorInfo.SensorType} - ${currentOffset.toFixed(2)}${this.props.group.node.fullSensorInfo.UnitValueName}`,
+      message: `Смещение установлено для датчика ${this.props.group.node.fullSensorInfo.SensorType} - ${currentOffset.toFixed(this.props.group.node.fullSensorInfo.Accuracy)}${this.props.group.node.fullSensorInfo.UnitValueName}`,
       duration: 2,
     });
   }

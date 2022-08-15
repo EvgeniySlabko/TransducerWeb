@@ -7,7 +7,7 @@ const { Option } = Select;
 
 export interface Props {
   group: Group,
-  tareAccurency: number
+  tareAccuracy: number
 
   trackMaximum: boolean;
   avgRatio: number;
@@ -103,7 +103,7 @@ export class SensorParameters extends React.Component<Props>{
             <Button size='small'
             onClick={ () => this.props.onOffsetChanged(0) } >Сбросить</Button>
             <p style={{width: "50px", paddingLeft: "10px"}}>
-                {this.props.offset.toFixed(this.props.tareAccurency)}
+                {this.props.offset.toFixed(this.props.tareAccuracy)}
             </p>
           </div>
         }/>

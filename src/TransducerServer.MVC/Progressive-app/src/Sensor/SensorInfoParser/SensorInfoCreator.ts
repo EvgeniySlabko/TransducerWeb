@@ -24,7 +24,7 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
   var IndMnog = (serviceInfo.ID[1] & 0x0f);     // Цифра 4
   if (IndMnog > 9) IndMnog = 0;
   fullInfo.Mnogitel = Defs.Mas_Mnog[IndMnog];
-
+  
   fullInfo.isRotative = 0; //По умолчанию датчик не вращающийся
   let formatDigit = (n: number): string => {
 
@@ -214,8 +214,9 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
 
   fullInfo.Popravka = Defs.MasEdinicPopravok[index];
   //................... Максимально допустимое значение основной измеряемой величины
-  fullInfo.MasEdRazm = Defs.MasEdRazm[index];
-  fullInfo.MaxDopustBase = 1000 * fullInfo.Mnogitel * fullInfo.MasEdRazm;
+  let MasEdRazm =  Defs.MasEdRazm[index]
+  fullInfo.Accuracy =MasEdRazm.toString().length - 1;
+  fullInfo.MaxDopustBase = 1000 * fullInfo.Mnogitel * MasEdRazm;
   //................. Максимально допустимое значение основной измеряемой величины
   fullInfo.MaxValue = fullInfo.MaxDopustBase;
   fullInfo.MinValue = -fullInfo.MaxDopustBase;

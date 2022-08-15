@@ -115,7 +115,7 @@ export class App extends React.Component<Props, IState>
                 this.state.plotsManager?.AddLabelForChannel({
                     channel: channel,
                     time: peakArgs.time,
-                    text: peakArgs.peakValue.toFixed(group?.cellChannel.Style.accurency) + " " + group?.cellChannel.Style.unitsName,
+                    text: peakArgs.peakValue.toFixed(group?.cellChannel.Style.accuracy) + " " + group?.cellChannel.Style.unitsName,
                     value: peakArgs.peakValue,
                 })
             });

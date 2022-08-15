@@ -16,7 +16,7 @@ export interface Props {
 }
 
 interface IState {
-  tareAccurency: number,
+  tareAccuracy: number,
   dataReceived: boolean,
 
   trackMaximum: boolean;
@@ -40,7 +40,7 @@ export class SensorSettingsTab extends React.Component<Props, IState>{
       this.state = {
         absolute: false,
         invertion: false,
-        tareAccurency: 2,
+        tareAccuracy: 2,
         avgRatio: 1,
         dataReceived: false,
         enabled: false,
@@ -186,7 +186,7 @@ export class SensorSettingsTab extends React.Component<Props, IState>{
               group = {this.props.group}
               absolute = {this.state.absolute}
               invertion = {this.state.invertion}
-              tareAccurency={2}
+              tareAccuracy={2}
               avgRatio={this.state.avgRatio}
               externalSpeedSensor={this.state.externalSpeedSensor}
               offset={this.state.offset}

@@ -11,5 +11,4 @@ export declare class ISensorDataCommandEncoder
     GetPresetMultipleRegisterAnswer() : Promise<number[]>;
     GetID() : Promise<SensorSK>;
     GetCommand() : Promise<number>;
-    Close() : Promise<void>
 }

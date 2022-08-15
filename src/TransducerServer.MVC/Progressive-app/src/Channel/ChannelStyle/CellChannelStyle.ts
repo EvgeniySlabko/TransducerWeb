@@ -9,7 +9,7 @@ export declare interface CellChannelStyle {
     valueName: string;
     unitsName: string;
     sensorType: string;
-    accurency: number;
+    accuracy: number;
     valueType: ChannelDataType;
     maxValue?: number;
     minValue?: number;

@@ -1,3 +1,4 @@
+import { ISensorIOWorker } from "../../SensorIOWorker/ISensorIOWorker";
 import { ISensorCommandFacory } from "../SensorCommand/ISensorCommandFactory";
 import { ISensorCommandWriter } from "../SensorCommandWriter/SensorCommandWriter";
 import { CalculateTime, ISensorStreamerDataEncoder } from "../SensorDataEncoder/ISensorStreamerDataEncoder";
@@ -11,10 +12,11 @@ export class SingleComponentSensor extends SingleComponentSensorBase {
     private requiredStopStreaming: boolean = false;
     protected timeBase: number = 0;
     //private serialWorker: IReaderWriter;
-    constructor(commandFactory: ISensorCommandFacory,
+    constructor(sensorIOWorker: ISensorIOWorker,
+                commandFactory: ISensorCommandFacory,
                 seensorDataCommandReceiver: ISensorStreamerDataEncoder,
                 sensorCommandWriter: ISensorCommandWriter, id: string) {
-        super(commandFactory, seensorDataCommandReceiver, sensorCommandWriter, id + " base");
+        super(sensorIOWorker, commandFactory, seensorDataCommandReceiver, sensorCommandWriter, id + " base");
         this.seensorDataCommandReceiver = seensorDataCommandReceiver;
     }
 
@@ -31,26 +33,24 @@ export class SingleComponentSensor extends SingleComponentSensorBase {
 
     protected async ProcessCommand(byte: number): Promise<boolean> {
         let header = await this.seensorDataCommandReceiver.GetHeader();
-        if (!this.avgRatio) throw "Avg did not set."
         //console.log("Process C: ", commonData);
         let calculatedTime = header.time - this.timeBase;
 
         switch (byte) {
             case StramingPackageType.TORQUE:
-                let torqueSensorData = await  this.seensorDataCommandReceiver.GetTorque(this.avgRatio, calculatedTime);
-                this._onTorqueData.dispatch(this, torqueSensorData);
-
+                let torqueSensorData = await  this.seensorDataCommandReceiver.GetTorque(this.avgRatio ?? 1, calculatedTime);
+                    if (this.avgRatio) this._onTorqueData.dispatch(this, torqueSensorData);
                 break;
 
             case StramingPackageType.SPEED:
                 let speedSensorData = await this.seensorDataCommandReceiver.GetSpeed(calculatedTime);
-                this._onSpeedData.dispatch(this, speedSensorData);
+                if (this.avgRatio) this._onSpeedData.dispatch(this, speedSensorData);
                 //console.log(speedSensorData);
                 break;
 
             case StramingPackageType.TEMPERATUR:
                 let temperatureSensorData = await this.seensorDataCommandReceiver.GetSpeed(calculatedTime);
-                this._onTmpData.dispatch(this, temperatureSensorData);
+                if (this.avgRatio) this._onTmpData.dispatch(this, temperatureSensorData);
                 break;
 
             case StramingPackageType.MESSAGE:

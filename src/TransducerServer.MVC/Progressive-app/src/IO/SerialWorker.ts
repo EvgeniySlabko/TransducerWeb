@@ -10,16 +10,19 @@ export class SerialWorker {
   private writer: WritableStreamDefaultWriter<Uint8Array> | undefined;
 
   constructor(port: SerialPort) {
-    this.port = port
+    this.port = port;
     port.onconnect = () => {
+      console.debug("SerialPort onConnect event ocured.")
       // console.log("connect");
       this._onConnect.dispatch(this);
     }
 
-    port.ondisconnect = () => {
-      // console.log("disconnect");
-      this._onDisconnect.dispatch(this);
-    }
+    port.ondisconnect = this.disconnect;
+  }
+
+  private disconnect = () => {
+    console.debug("SerialPort onDisconnect event ocured.");
+    this._onDisconnect.dispatch(this);
   }
 
   public async OpenPort() {
@@ -70,10 +73,22 @@ export class SerialWorker {
   }
 
   public async Close(): Promise<void> {
+    
     this.reader?.cancel();
     this.reader?.releaseLock();
     this.writer?.releaseLock();
-    await this.port.close();
+
+    if (!this.writer?.closed)
+        this.writer!.close();
+    try
+    {
+      await this.port.close();
+      this.disconnect();
+    }
+    catch(ex)
+    {
+      console.warn("SerialPort error while closing port.");
+    }
   }
 }
 

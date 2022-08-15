@@ -9,7 +9,7 @@ export declare interface PlotChannelStyle {
     yTitle: string;
     axisColor: string;
     legendTitle: string;
-    legendValueAccurency: number,
+    legendValueAccuracy: number,
     range: number[];
     line: "dash" | "solid";
     yAxeSide: "right" | "left";

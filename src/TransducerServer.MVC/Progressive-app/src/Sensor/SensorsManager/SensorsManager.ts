@@ -63,7 +63,7 @@ export class SensorController {
     public async RemoveSensor(sensorWorker: SensorWorker) {
         var index = this.GetIndex(sensorWorker);
         try {
-            console.info("Removing sensor.");
+            console.debug("Removing sensor.");
             let node = this.sensors[index];
             await node.sensorWorker.Close();
         }
