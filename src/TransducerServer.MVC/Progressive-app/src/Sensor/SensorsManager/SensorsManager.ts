@@ -53,6 +53,11 @@ export class SensorController {
 
         this.sensors.push(node);
 
+        sensorWorker.onClose.sub(() =>{
+            var index = this.GetIndex(sensorWorker);
+            this.sensors.splice(index, 1);
+        });
+        
         await this._dispatcher.dispatch('Add', {
             sender: this,
             fullSensorInfo: fullSensorInfo,
@@ -71,11 +76,6 @@ export class SensorController {
             console.warn("Error while removing sensor.", ex);
         }
         finally {
-            await this._dispatcher.dispatch('Remove', {
-                sender: this,
-                worker: sensorWorker,
-            });
-            
             this.sensors.splice(index, 1);
         }
     }

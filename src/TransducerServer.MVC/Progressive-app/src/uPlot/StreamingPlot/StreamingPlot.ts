@@ -23,6 +23,11 @@ export class MyUPlot extends MyUPlotBase {
     this.BuildNewPlot([]);
   }
 
+  public get Traces() : number
+  {
+    return this.traces.length;
+  }
+  
   protected GetData(): uPlot.AlignedData {
     return this.bufferManager ? this.bufferManager.Source : [[], []]
   }

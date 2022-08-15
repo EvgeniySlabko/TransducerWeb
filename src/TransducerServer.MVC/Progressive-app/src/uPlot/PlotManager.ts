@@ -109,6 +109,14 @@ export class PlotsManager {
         }
     }
 
+    public RebuildIfNessesary = () =>{
+        if (this.currentPlotType == PlotType.StremimgPlot){
+            let streamingPlot = this.plot as StreamingPlot
+            if (streamingPlot.Traces != this.plotChannels.length)
+                this.Rebuild();
+        }
+    }
+
     private PlotChannelCloseHandler = (plotChannel: PlotChannel) =>
     {
         let index = this.plotChannels.indexOf(plotChannel);

@@ -556,8 +556,10 @@ export class MyUPlotBase {
   }
 
   public DestroyPlot() {
+    let axisDivs = this.element.getElementsByClassName("u-axis");
     if (this.plot) {
       this.plot.destroy();
+
       this.options = this.getOptions();
       if (this.interval)
         clearInterval(this.interval);
@@ -610,29 +612,6 @@ export class MyUPlotBase {
 
   protected Wheel(e: number): boolean {
     return false;
-  }
-
-  private YAxisRangeChanged(index: number, dy: number) {
-    let range = this.seriesInfos[index - 1].curRange
-    let curRangeVal = range[1] - range[0];
-
-    //console.debug(`YAxisRangeChanged(${index}): ${dy}`);
-    //вычисляем относительное смещение 
-    let dVal = curRangeVal * dy;
-
-    range[0] += dVal / 2;
-    range[1] += dVal / 2;
-  }
-
-  private XAxisRangeChanged(dx: number) {
-    let range = this.params.range
-    let curRangeVal = range[1] - range[0];
-
-    //вычисляем относительное смещение 
-    let dVal = curRangeVal * dx;
-
-    range[0] += dVal;
-    range[1] += dVal;
   }
 
   protected setCursor() {

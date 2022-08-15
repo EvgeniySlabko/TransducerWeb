@@ -236,11 +236,11 @@ export class App extends React.Component<Props, IState>
             await this.stophandler();
             await sleep(100);
         }
-
         this.state.plotsManager?.Clear();
 		this.state.plotsManager?.ClearLabels();
+        this.state.plotsManager?.RebuildIfNessesary();
 		this.state.groups.forEach(g => g.channelsInfo.resetPeackAnalizer());
-
+        
         this.setState(() => ({
             firstStart: true,
         }));
