@@ -1,12 +1,12 @@
-import html2canvas from 'html2canvas';
-import uPlot, { Axis, Scale, Series } from 'uplot';
-import { PlotChannelStyle } from '../Channel/ChannelStyle/PlotChannelStyle';
-import { NearestPoint } from '../Common/AlignedDataHelpers';
-import { IncreaseBrightness } from '../Common/ColorHelpers';
-import { groupBy as GroupBy } from '../Common/Common';
-import { GetDefaultAxe, GetScale, GetSeries } from './PlotCommon';
+import html2canvas from "html2canvas";
+import uPlot, { Axis, Scale, Series } from "uplot";
+import { PlotChannelStyle } from "../Channel/ChannelStyle/PlotChannelStyle";
+import { NearestPoint } from "../Common/AlignedDataHelpers";
+import { IncreaseBrightness } from "../Common/ColorHelpers";
+import { groupBy as GroupBy } from "../Common/Common";
+import { GetDefaultAxe, GetScale, GetSeries } from "./PlotCommon";
 
-export declare class PlotParameters{
+export declare class PlotParameters {
   pointsPerSecond: number;
   maxScreenSize: number;
 }
@@ -33,19 +33,18 @@ export declare class Label {
   value: number;
 }
 
-export type SeriesInfo =
-  {
-    style: PlotChannelStyle;
-    dataBufferIndex: number;
-    curRange: number[];
-    axis: Axis;
-    series: Series;
-    scale: Scale;
-  }
+export type SeriesInfo = {
+  style: PlotChannelStyle;
+  dataBufferIndex: number;
+  curRange: number[];
+  axis: Axis;
+  series: Series;
+  scale: Scale;
+};
 
 export class MyUPlotBase {
-  protected element: HTMLElement;                               // uplot container
-  protected parent: HTMLElement | null;                         // parent container
+  protected element: HTMLElement; // uplot container
+  protected parent: HTMLElement | null; // parent container
   protected plot: uPlot | undefined;
   protected options: uPlot.Options;
   protected legendItems: LegendItem[] | undefined = undefined;
@@ -53,11 +52,11 @@ export class MyUPlotBase {
   protected limits: LimitLine[] = [];
   protected seriesInfos: SeriesInfo[] = [];
 
-  private _data: uPlot.AlignedData = [[], []]
+  private _data: uPlot.AlignedData = [[], []];
   protected interval?: NodeJS.Timer;
 
   protected GetData(): uPlot.AlignedData {
-    return this._data
+    return this._data;
   }
 
   protected params = {
@@ -65,40 +64,40 @@ export class MyUPlotBase {
     maxScreenSize: 100,
     screenSize: () => this.params.range[1] - this.params.range[0],
     setScreenSize: (size: number) => {
-      let actualSize = size > this.params.maxScreenSize ? this.params.maxScreenSize : size;
+      let actualSize =
+        size > this.params.maxScreenSize ? this.params.maxScreenSize : size;
       let rangeVal = this.params.range[1] - this.params.range[0];
-      let mid = this.params.range[0] + (rangeVal / 2);
+      let mid = this.params.range[0] + rangeVal / 2;
       this.params.range[0] = mid - actualSize / 2;
-      this.params.range[1] = mid + actualSize / 2
+      this.params.range[1] = mid + actualSize / 2;
     },
 
     t0: 0,
     th: 0,
-    range: [0, 5],      // Time range.
-    dt: () => 1 / this.params.pointsPerSecond
-  }
+    range: [0, 5], // Time range.
+    dt: () => 1 / this.params.pointsPerSecond,
+  };
 
   constructor(element: HTMLElement, parameters: PlotParameters) {
-    this.params.pointsPerSecond = parameters.pointsPerSecond,
-    this.params.maxScreenSize = parameters.maxScreenSize;
+    (this.params.pointsPerSecond = parameters.pointsPerSecond),
+      (this.params.maxScreenSize = parameters.maxScreenSize);
     this.element = element;
     this.parent = this.element.parentElement;
     this.options = this.getOptions();
 
-    window.addEventListener("resize", e => {
+    window.addEventListener("resize", (e) => {
       this.plot?.setSize(this.getSize());
     });
   }
 
   private timeToIndex = (time: number): number => {
-    let firstBufferTime = this.GetData()[0][0];                                 
+    let firstBufferTime = this.GetData()[0][0];
     let firsIndex = Math.round(firstBufferTime / this.params.dt());
     let curIndex = Math.round(time / (1 / this.params.pointsPerSecond));
     return curIndex - firsIndex;
-  }
+  };
 
   public ClearLabels = () => this.labels.splice(0, this.labels.length);
-
 
   public AddSeries(style: PlotChannelStyle): SeriesInfo {
     let axis: uPlot.Axis;
@@ -107,7 +106,9 @@ export class MyUPlotBase {
     let series: uPlot.Series;
     let index = this.seriesInfos.length + 1;
 
-    let sameTypeChannel = this.seriesInfos.find(s => s.style.valueType == style.valueType);
+    let sameTypeChannel = this.seriesInfos.find(
+      (s) => s.style.valueType == style.valueType
+    );
 
     if (sameTypeChannel) {
       let scaleName = <string>sameTypeChannel.axis.scale;
@@ -119,12 +120,9 @@ export class MyUPlotBase {
       scale = sameTypeChannel.scale;
       range = sameTypeChannel.curRange;
 
-      if (style.range[0] < range[0])
-        range[0] = style.range[0];
-      if (style.range[1] > range[1])
-        range[1] = style.range[1];
-    }
-    else {
+      if (style.range[0] < range[0]) range[0] = style.range[0];
+      if (style.range[1] > range[1]) range[1] = style.range[1];
+    } else {
       let scaleName = "y" + index.toString();
       series = GetSeries(scaleName);
       series.scale = scaleName;
@@ -149,7 +147,6 @@ export class MyUPlotBase {
     series.points!.stroke = style.color;
     this.options.series.push(series);
 
-
     let addLimit = (limitValue: number) => {
       this.limits.push({
         axis: axis,
@@ -158,19 +155,20 @@ export class MyUPlotBase {
         range: () => range,
         value: limitValue,
         enabled: () => {
-          return (this.legendItems
-            && this.legendItems.at(index) ? this.legendItems[index].isActive() : false)
-            && style.drawLimits != undefined
-            && style.drawLimits
-        }
-      })
-    }
+          return (
+            (this.legendItems && this.legendItems.at(index)
+              ? this.legendItems[index].isActive()
+              : false) &&
+            style.drawLimits != undefined &&
+            style.drawLimits
+          );
+        },
+      });
+    };
 
-    if (style.maxValue)
-      addLimit(style.maxValue);
+    if (style.maxValue) addLimit(style.maxValue);
 
-    if (style.minValue)
-      addLimit(style.minValue);
+    if (style.minValue) addLimit(style.minValue);
 
     let info: SeriesInfo = {
       axis: axis,
@@ -179,7 +177,7 @@ export class MyUPlotBase {
       curRange: range,
       dataBufferIndex: index,
       style: style,
-    }
+    };
 
     this.seriesInfos.push(info);
     return info;
@@ -187,15 +185,19 @@ export class MyUPlotBase {
 
   public async GetScreen(): Promise<string> {
     const canvas = await html2canvas(this.element);
-    return canvas.toDataURL("image/png", 1).replace("image/png", "image/octet-stream");
+    return canvas
+      .toDataURL("image/png", 1)
+      .replace("image/png", "image/octet-stream");
   }
 
-  protected Clear = () => { return }
+  protected Clear = () => {
+    return;
+  };
 
   protected SetScale(min: number, max: number) {
     if (min >= max) throw "min higher then max";
     let rangeValue = max - min;
-    if (rangeValue > this.params.maxScreenSize){
+    if (rangeValue > this.params.maxScreenSize) {
       this.params.setScreenSize(this.params.maxScreenSize);
       return;
     }
@@ -212,17 +214,27 @@ export class MyUPlotBase {
     return {
       width: this.parent!.clientWidth - summaryOthersWidth,
       height: this.element.clientHeight - 100,
-    }
+    };
   }
 
   private wheelZoomPlugin(opts: any) {
     let factor = 0.75;
 
-    let xMin: number, xMax: number, yMin: number, yMax: number, xRange: number, yRange: number;
+    let xMin: number,
+      xMax: number,
+      yMin: number,
+      yMax: number,
+      xRange: number,
+      yRange: number;
 
-    function clamp(nRange: number, nMin: number, nMax: number, fRange: number, fMin: number, fMax: number) {
-
-
+    function clamp(
+      nRange: number,
+      nMin: number,
+      nMax: number,
+      fRange: number,
+      fMin: number,
+      fMax: number
+    ) {
       return [nMin, nMax];
     }
 
@@ -240,12 +252,10 @@ export class MyUPlotBase {
           let over = u.over;
           let rect = over.getBoundingClientRect();
 
-
           over.addEventListener("dblclick", (e: MouseEvent) => {
             this.DbClick(e);
             e.stopPropagation();
           });
-
 
           over.addEventListener("contextmenu", (e: Event) => {
             e.preventDefault();
@@ -256,13 +266,12 @@ export class MyUPlotBase {
             if (e.button == 2) {
               e.preventDefault();
 
-
               let left0 = e.clientX;
 
               let scXMin0 = this.params.range[0];
               let scXMax1 = this.params.range[1];
 
-              let xUnitsPerPx = u.posToVal(1, 'x') - u.posToVal(0, 'x');
+              let xUnitsPerPx = u.posToVal(1, "x") - u.posToVal(0, "x");
 
               let onmove = (e: any) => {
                 e.preventDefault();
@@ -270,7 +279,7 @@ export class MyUPlotBase {
                 let left1 = e.clientX;
                 let dx = xUnitsPerPx * (left1 - left0);
                 this.SetScale(scXMin0 - dx, scXMax1 - dx);
-              }
+              };
 
               function onup(e: any) {
                 document.removeEventListener("mousemove", onmove);
@@ -286,8 +295,7 @@ export class MyUPlotBase {
           over.addEventListener("wheel", (e: any) => {
             e.preventDefault();
 
-            if (this.Wheel(e))
-              return;
+            if (this.Wheel(e)) return;
 
             xMin = this.params.range[0];
             xMax = this.params.range[1];
@@ -295,8 +303,7 @@ export class MyUPlotBase {
             //yMax = u.scales.y1.max;
             xRange = xMax - xMin;
             //yRange = yMax - yMin;
-            if (xRange < 0.001 && e.deltaY < 0)
-              return;
+            if (xRange < 0.001 && e.deltaY < 0) return;
             rect = over.getBoundingClientRect();
 
             let { left, top } = u.cursor;
@@ -306,8 +313,7 @@ export class MyUPlotBase {
             let xVal = u.posToVal(left, "x");
             let yVal = u.posToVal(top, "y1");
             let oxRange = u.scales.x.max - u.scales.x.min;
-            let oyRange = u.scales.y.max -
-              u.scales.y.min;
+            let oyRange = u.scales.y.max - u.scales.y.min;
 
             let nxRange = e.deltaY < 0 ? oxRange * factor : oxRange / factor;
             let nxMin = xVal - nxRange * leftPct;
@@ -316,20 +322,19 @@ export class MyUPlotBase {
 
             this.SetScale(nxMin, nxMax);
           });
-        }
-      }
+        },
+      },
     };
   }
 
-  private labelsPlugin(labels: Label[],) {
-
+  private labelsPlugin(labels: Label[]) {
     function drawBg(u: uPlot) {
       //console.log("left: ", left, "top: ", top, "width", width, "height", height);
-      labels.forEach(l => {
+      labels.forEach((l) => {
         let { left, top, width, height } = u.bbox;
 
         //if (l.value > l.yRange[1] || l.value < l.yRange[0]) return;
-        let xRange = <number[]>[u.scales['x']!.min, u.scales['x']!.max];
+        let xRange = <number[]>[u.scales["x"]!.min, u.scales["x"]!.max];
 
         if (l.time > xRange[1] || l.time < xRange[0]) return;
 
@@ -355,7 +360,7 @@ export class MyUPlotBase {
         u.ctx.fill();
         u.ctx.stroke();
 
-        u.ctx.stroke();          // Отображает путь
+        u.ctx.stroke(); // Отображает путь
         u.ctx.restore();
       });
     }
@@ -363,15 +368,14 @@ export class MyUPlotBase {
     return {
       hooks: {
         draw: drawBg,
-      }
+      },
     };
   }
 
   private limitsPlugin(limits: LimitLine[]) {
-
     function drawBg(u: uPlot) {
       //console.log("left: ", left, "top: ", top, "width", width, "height", height);
-      limits.forEach(l => {
+      limits.forEach((l) => {
         if (!l.enabled()) return;
         let { left, top, width, height } = u.bbox;
         let range = l.range();
@@ -383,7 +387,7 @@ export class MyUPlotBase {
         let tmpV = l.value + -range[0];
 
         let relVal = tmpV - tmpR[0];
-        let limitHeight = relVal * height / rangeValue;
+        let limitHeight = (relVal * height) / rangeValue;
 
         u.ctx.save();
         u.ctx.strokeStyle = IncreaseBrightness(l.color(), 40);
@@ -417,7 +421,7 @@ export class MyUPlotBase {
     return {
       hooks: {
         drawClear: drawBg,
-      }
+      },
     };
   }
 
@@ -430,12 +434,12 @@ export class MyUPlotBase {
       cursor: {
         points: {
           size: 6,
-        }
+        },
       },
       plugins: [
         this.limitsPlugin(this.limits),
         this.wheelZoomPlugin({ factor: 0.75 }),
-        this.labelsPlugin(this.labels)
+        this.labelsPlugin(this.labels),
       ],
       mode: 1,
 
@@ -468,14 +472,15 @@ export class MyUPlotBase {
         {
           show: true,
           space: 100,
-          values: (u, vals, space) => vals.map(v => {
-            let rounded = v.toFixed(4).replace(/0*$/, "");
-            if (rounded[rounded.length - 1] == ".") {
-              rounded = rounded.replace(".", "");
-            }
+          values: (u, vals, space) =>
+            vals.map((v) => {
+              let rounded = v.toFixed(4).replace(/0*$/, "");
+              if (rounded[rounded.length - 1] == ".") {
+                rounded = rounded.replace(".", "");
+              }
 
-            return rounded;
-          })
+              return rounded;
+            }),
           //side: 0,
         } as Axis, //x axe
         GetDefaultAxe("y1", 1),
@@ -500,27 +505,29 @@ export class MyUPlotBase {
             if (left) {
               this.setCursor();
             }
-          }
+          },
         ],
         drawSeries: [
           (u, seriesIdx) => {
             this.SeriesDraw(seriesIdx);
-          }
+          },
         ],
         setSelect: [
-          u => {
+          (u) => {
             if (u.select.width == 0) return;
             this.SelectCommited();
-            let min = u.posToVal(u.select.left, 'x');
-            let max = u.posToVal(u.select.left + u.select.width, 'x');
+            let min = u.posToVal(u.select.left, "x");
+            let max = u.posToVal(u.select.left + u.select.width, "x");
             this.SetScale(min, max);
             u.setSelect(
               {
                 width: 0,
-                height: 0
-              } as any, false);
-          }
-        ]
+                height: 0,
+              } as any,
+              false
+            );
+          },
+        ],
       },
       series: [
         {
@@ -532,8 +539,7 @@ export class MyUPlotBase {
 
   protected InitAxes() {
     let axisDivs = this.element.getElementsByClassName("u-axis");
-    for (let i = 0; i < axisDivs.length; i++)
-      this.SetupYAxis(i);
+    for (let i = 0; i < axisDivs.length; i++) this.SetupYAxis(i);
   }
 
   protected BuildPlot() {
@@ -556,14 +562,12 @@ export class MyUPlotBase {
   }
 
   public DestroyPlot() {
-    let axisDivs = this.element.getElementsByClassName("u-axis");
     if (this.plot) {
       this.plot.destroy();
 
       this.options = this.getOptions();
-      if (this.interval)
-        clearInterval(this.interval);
-      this.element.innerHTML = '';
+      if (this.interval) clearInterval(this.interval);
+      this.element.innerHTML = "";
     }
   }
 
@@ -573,30 +577,38 @@ export class MyUPlotBase {
     let e = this.element.getElementsByClassName("u-over")[0];
     e.addEventListener("mouseleave", () => {
       if (this.legendItems) {
-        this.legendItems.forEach(la => la.setValue("--"));
+        this.legendItems.forEach((la) => la.setValue("--"));
       }
     });
     Array.from(legendSeries).forEach((e, i) => {
-
       let item = legendSeries[i];
 
       this.legendItems?.push({
-        getValue: () => { return item.getElementsByClassName("u-value")[0].innerHTML; },
-        setValue: (value: string) => { item.getElementsByClassName("u-value")[0].innerHTML = value; },
+        getValue: () => {
+          return item.getElementsByClassName("u-value")[0].innerHTML;
+        },
+        setValue: (value: string) => {
+          item.getElementsByClassName("u-value")[0].innerHTML = value;
+        },
         isActive: () => !item.classList.contains("u-off"),
-      })
-    })
+      });
+    });
 
     let timeSeries = this.element.getElementsByClassName("u-series")[0];
     let label = timeSeries.getElementsByClassName("u-label");
     let value = timeSeries.getElementsByClassName("u-value");
     label[0].innerHTML = "Время";
 
-    let prev = ""
-    value[0].addEventListener('DOMSubtreeModified', function (e) {
+    let prev = "";
+    value[0].addEventListener("DOMSubtreeModified", function (e) {
       let val = value[0].innerHTML;
       e.stopPropagation();
-      if (val != "--" && val != prev && val.length != 0 && val[val.length - 1] != "с") {
+      if (
+        val != "--" &&
+        val != prev &&
+        val.length != 0 &&
+        val[val.length - 1] != "с"
+      ) {
         let newVal = val + " с";
         value[0].innerHTML = newVal;
         prev = newVal;
@@ -615,83 +627,91 @@ export class MyUPlotBase {
   }
 
   protected setCursor() {
-    if (!this.plot || !this.legendItems)
-      return;
+    if (!this.plot || !this.legendItems) return;
 
     const findTime = 5;
     let left = this.plot?.cursor.left as number;
-    let xVal = this.plot.posToVal(left, 'x');
+    let xVal = this.plot.posToVal(left, "x");
     let dt = 1 / this.params.pointsPerSecond;
     let maxCount = findTime / dt;
     let index = this.timeToIndex(xVal);
 
-    if (left && this.legendItems && xVal < this.params.th && xVal > this.params.t0) {
+    if (
+      left &&
+      this.legendItems &&
+      xVal < this.params.th &&
+      xVal > this.params.t0
+    ) {
       // let curValues = GetApproximateValues(this.data, xVal);
 
       for (let i = 0; i < this.GetData().length - 1; i++) {
         let nearestVal = NearestPoint(this.GetData()[i + 1], index, maxCount);
         let seriesInfo = this.seriesInfos[i];
         let strValue = "--";
-        if (nearestVal){
+        if (nearestVal) {
           let scaledValue = nearestVal / seriesInfo.style.valueRatio;
-          strValue = scaledValue.toFixed(seriesInfo.style.legendValueAccuracy).toString()
+          strValue = scaledValue
+            .toFixed(seriesInfo.style.legendValueAccuracy)
+            .toString();
         }
 
         if (this.legendItems) {
           try {
             this.legendItems[i + 1].setValue(strValue);
-          }
-          catch { }
+          } catch {}
         }
-      };
+      }
     }
   }
 
-  public ZoomX(step: number = 20) // в процентах
-  {
+  public ZoomX(
+    step: number = 20 // в процентах
+  ) {
     let ratio = step / 100;
     let screenSize = this.params.screenSize();
-    let min = this.params.range[0] + (ratio * screenSize);
-    let max = this.params.range[1] - (ratio * screenSize);
+    let min = this.params.range[0] + ratio * screenSize;
+    let max = this.params.range[1] - ratio * screenSize;
     this.SetScale(min, max);
   }
 
-  public MoveX(step: number) // в процентах
-  {
+  public MoveX(
+    step: number // в процентах
+  ) {
     let ratio = step / 100;
     let screenSize = this.params.screenSize();
     this.params.range[0] += ratio * screenSize;
     this.params.range[1] += ratio * screenSize;
   }
 
-  public ZoomY(step: number = 20) // в процентах
-  {
-    let grouped = GroupBy(this.seriesInfos, s => s.style.valueType);
+  public ZoomY(
+    step: number = 20 // в процентах
+  ) {
+    let grouped = GroupBy(this.seriesInfos, (s) => s.style.valueType);
     let ratio = step / 100;
-    grouped.forEach(g => {
+    grouped.forEach((g) => {
       let range = g[1][0].curRange[1] - g[1][0].curRange[0];
       g[1][0].curRange[0] += ratio * range;
       g[1][0].curRange[1] -= ratio * range;
-    })
+    });
   }
 
   public HorizontalAlign() {
-    this.SetScale(0, this.params.th === 0 ? 5 : this.params.th)
+    this.SetScale(0, this.params.th === 0 ? 5 : this.params.th);
   }
 
   public VerticalAlign() {
     let groupedByType = GroupBy(this.seriesInfos, (e) => e.style.valueType);
-    groupedByType.forEach(g => {
+    groupedByType.forEach((g) => {
       let maxRange: number[] = [0, 0];
 
       // Find max y range element/
-      g[1].forEach(el => {
+      g[1].forEach((el) => {
         if (Math.abs(el.style.range[0]) > Math.abs(maxRange[0]))
           maxRange[0] = el.style.range[0];
 
         if (Math.abs(el.style.range[1]) > Math.abs(maxRange[1]))
           maxRange[1] = el.style.range[1];
-      })
+      });
 
       g[1][0].curRange[0] = maxRange[0];
       g[1][0].curRange[1] = maxRange[1];
@@ -710,13 +730,13 @@ export class MyUPlotBase {
     this.params.range[0] = this.params.th - screenSize;
   }
 
-  protected SeriesDraw(i: number) { }
+  protected SeriesDraw(i: number) {}
 
-  protected SelectCommited() { }
+  protected SelectCommited() {}
 
-  protected DbClick(e: any) { }
+  protected DbClick(e: any) {}
 
-  protected AxisWheel(dy: number) { }
+  protected AxisWheel(dy: number) {}
 
   protected AxisZoom(index: number, dy: number): void {
     let dir = dy > 0 ? 1 : -1;
@@ -741,23 +761,29 @@ export class MyUPlotBase {
     let yCoord = 0;
     let xCoord = 0;
     let initRange: [number, number];
-    let initRangeValue : number;
+    let initRangeValue: number;
 
-    divAxis.addEventListener('mousedown', (e: any) => {
+    divAxis.addEventListener("mousedown", (e: any) => {
       dragStart = true;
       yCoord = e.clientY;
       xCoord = e.clientX;
-      initRange = i == 0 ? [this.params.range[0], this.params.range[1]] : [this.seriesInfos[i - 1].curRange[0], this.seriesInfos[i - 1].curRange[1]];
+      initRange =
+        i == 0
+          ? [this.params.range[0], this.params.range[1]]
+          : [
+              this.seriesInfos[i - 1].curRange[0],
+              this.seriesInfos[i - 1].curRange[1],
+            ];
       initRangeValue = initRange[1] - initRange[0];
       console.debug(`yCoord: (${yCoord})`);
       console.debug(`xCoord: (${xCoord})`);
     });
 
-    document.addEventListener('mouseup', (e: any) => {
+    document.addEventListener("mouseup", (e: any) => {
       dragStart = false;
     });
 
-    document.addEventListener('mousemove', (e: any) => {
+    document.addEventListener("mousemove", (e: any) => {
       if (dragStart) {
         if (i == 0) {
           let curX = e.clientX;
@@ -768,15 +794,14 @@ export class MyUPlotBase {
 
           this.SetScale(initRange[0] - dX, initRange[1] - dX);
           console.debug(`dX: (${dX})`);
-        }
-        else {
+        } else {
           let curY = e.clientY;
           let divHeigh = divAxis.clientHeight;
           let cursorDy = curY - yCoord;
           let l = cursorDy / divHeigh;
           let dY = initRangeValue * l;
 
-          this.seriesInfos[i - 1].curRange[0] = initRange[0] + dY; 
+          this.seriesInfos[i - 1].curRange[0] = initRange[0] + dY;
           this.seriesInfos[i - 1].curRange[1] = initRange[1] + dY;
           console.debug(`dY: (${cursorDy})`);
         }
@@ -784,10 +809,10 @@ export class MyUPlotBase {
     });
 
     if (i != 0) {
-      divAxis.addEventListener('mousewheel', (e: any) => {
+      divAxis.addEventListener("mousewheel", (e: any) => {
         e.preventDefault();
         this.AxisZoom(i, e.deltaY);
       });
     }
-  }
+  };
 }

@@ -22,248 +22,243 @@
 *,
 *::after,
 *::before {
-	box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 .u-legend.u-inline .u-value {
-	width: 50px;
-	text-align: left;
-	height: auto;
+  width: 50px;
+  text-align: left;
+  height: auto;
 }
 
 /* Clear floats (clearfix hack) */
 .nav-btn-group {
-	display: flex;
-	gap: 2px;
+  display: flex;
+  gap: 2px;
 }
 
 /* Add a background color on hover */
 
-
 a {
-	color: #546e7a;
+  color: #546e7a;
 }
 
 ul,
-
 li {
-	list-style: none;
-	padding: 0;
-	margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 table {
-	margin-left: auto !important;
-	margin-right: auto;
+  margin-left: auto !important;
+  margin-right: auto;
 }
 
 .no--select {
-	-moz-user-select: none;
-	-ms-user-select: none;
-	-webkit-user-select: none;
-	user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .left-container {
-	flex-basis: 220px;
-	flex-grow: 0;
-	flex-shrink: 0;
-	overflow-y: auto;
-	overflow-x: hidden;
-	height: 92%;
-	display: flex;
-	flex-direction: column;
+  flex-basis: 220px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 92%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* MAIN styles */
 html,
 body {
-	font-size: 14px;
-	-webkit-font-smoothing: antialiased;
-	-webkit-text-size-adjust: 100%;
-	scroll-behavior: smooth;
-	height: 100%;
-	margin: 0;
-	overflow: hidden;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
 }
 
 .all {
-	height: 100%;
+  height: 100%;
 }
 
 .middle-container {
-	display: flex;
-	flex-direction: row;
-	height: 100%;
-	width: 100%;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
 }
 
 .plot {
-	flex-grow: 1;
+  flex-grow: 1;
 }
 
 .control-buttons {
-	height: 100%;
-	display: flex;
-	align-items: center;
-	margin-right: 100px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin-right: 100px;
 }
 
 legend {
-	padding: 10px;
-	font-size: 5px;
+  padding: 10px;
+  font-size: 5px;
 }
 
 .ant-collapse-content-box {
-	padding: 0px !important;
+  padding: 0px !important;
 }
 
 .ant-collapse-header {
-	padding: 0px !important;
-	justify-content: space-around !important;
-	flex-wrap: nowrap !important;
-	align-items: center !important;
+  padding: 0px !important;
+  justify-content: space-around !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
 }
 
 .navbar {
-	gap: 2px;
+  gap: 2px;
 }
 
 .u-value {
-	white-space: nowrap
+  white-space: nowrap;
 }
 
 .nav-tab-container {
-	width: 100%;
-	align-items: flex-start;
-	display: flex;
-	flex-flow: row;
+  width: 100%;
+  align-items: flex-start;
+  display: flex;
+  flex-flow: row;
 }
 
 .column-gap {
-	column-gap: 10px;
+  column-gap: 10px;
 }
 
 .uplot .cursor-pt {
-	pointer-events: auto !important;
+  pointer-events: auto !important;
 }
 
 .tooltip {
-	width: 50;
-	height: 50;
-	background-color: black;
+  width: 50;
+  height: 50;
+  background-color: black;
 }
 
 .horizontal-padding {
-	padding-left: 2px !important;
-	padding-right: 2px !important;
+  padding-left: 2px !important;
+  padding-right: 2px !important;
 }
 
-
 .vertical-flex {
-	display: flex;
-	flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .horizontal-flex {
-	display: flex;
-	flex-direction: "row";
-	
+  display: flex;
+  flex-direction: "row";
 }
 
 .cell-group-title {
-	font-size: 12px !important;
-	display: table-cell !important;
-	vertical-align: middle !important;
-	margin: 0px;
-	margin-top: 3px;
-	width: 77px;
-	height: 100%;
-	text-align: center;
+  font-size: 12px !important;
+  display: table-cell !important;
+  vertical-align: middle !important;
+  margin: 0px;
+  margin-top: 3px;
+  width: 77px;
+  height: 100%;
+  text-align: center;
 }
 
 .margin {
-	padding: 10px !important;
-	;
+  padding: 10px !important;
 }
 
 .margin-left {
-	margin-left: 10px;
+  margin-left: 10px;
 }
 
 .vertical-align {
-	display: inline-block !important;
-	vertical-align: middle !important;
-	height: auto;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  height: auto;
 }
 
 .cell-control-panel-row {
-	display: flex;
-	flex-flow: row;
-	height: 40px;
-	position: relative;
-	z-index: 10;
-	top: 20px;
-	left: 36px;
+  display: flex;
+  flex-flow: row;
+  height: 40px;
+  position: relative;
+  z-index: 10;
+  top: 20px;
+  left: 36px;
 }
 
 :root {
-	--code-color: darkred;
-	--code-bg-color: #aaaaaa;
-	--code-font-size: 14px;
-	--code-line-height: 1.4;
-	--scroll-bar-color: #c5c5c5;
-	--scroll-bar-bg-color: #f6f6f6;
+  --code-color: darkred;
+  --code-bg-color: #aaaaaa;
+  --code-font-size: 14px;
+  --code-line-height: 1.4;
+  --scroll-bar-color: #c5c5c5;
+  --scroll-bar-bg-color: #f6f6f6;
 }
 
 pre {
-	color: var(--code-color);
-	font-size: var(--code-font-size);
-	line-height: var(--code-line-height);
-	background-color: var(--code-bg-color);
+  color: var(--code-color);
+  font-size: var(--code-font-size);
+  line-height: var(--code-line-height);
+  background-color: var(--code-bg-color);
 }
 
-.control-panel-button{
-	height: "20px";
-	width: "20px"; 
+.control-panel-button {
+  height: "20px";
+  width: "20px";
 }
 
 .save-sensor-params-button {
-	position: absolute;
-	
-	right: 480px;
-	top: 360px;
+  position: absolute;
+
+  right: 480px;
+  top: 360px;
 }
 
 .code-block {
-	max-height: 100px;
-	overflow: auto;
-	padding: 8px 7px 5px 15px;
-	margin: 0px 0px 0px 0px;
-	border-radius: 7px;
+  max-height: 100px;
+  overflow: auto;
+  padding: 8px 7px 5px 15px;
+  margin: 0px 0px 0px 0px;
+  border-radius: 7px;
 }
 
 /* Scrole */
 ::-webkit-scrollbar-corner {
-	background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.5);
 }
 
 * {
-	scrollbar-width: thin;
-	scrollbar-color: var(--scroll-bar-color) var(--scroll-bar-bg-color);
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll-bar-color) var(--scroll-bar-bg-color);
 }
 
 *::-webkit-scrollbar {
-	width: 12px;
-	height: 12px;
+  width: 12px;
+  height: 12px;
 }
 
 *::-webkit-scrollbar-track {
-	background: var(--scroll-bar-bg-color);
+  background: var(--scroll-bar-bg-color);
 }
 
 *::-webkit-scrollbar-thumb {
-	background-color: var(--scroll-bar-color);
-	border-radius: 20px;
-	border: 3px solid var(--scroll-bar-bg-color);
+  background-color: var(--scroll-bar-color);
+  border-radius: 20px;
+  border: 3px solid var(--scroll-bar-bg-color);
 }

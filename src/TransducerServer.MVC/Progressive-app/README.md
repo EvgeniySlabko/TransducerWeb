@@ -2,7 +2,7 @@
 
 # [Progressive Web Application](https://demopwa.surge.sh)
 
-*A demo for progressive web application with features like offline, push notifications, background sync etc,*
+_A demo for progressive web application with features like offline, push notifications, background sync etc,_
 
 ### [Live](https://demopwa.surge.sh)
 

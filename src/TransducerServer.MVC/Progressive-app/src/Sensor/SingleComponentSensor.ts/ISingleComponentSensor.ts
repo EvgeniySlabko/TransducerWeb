@@ -1,12 +1,18 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
-import { SensorData, HoldingRegisters, SensorMessageEventArgs, SensorSK, InputComplex } from "../SensorDefinitions";
+import {
+  SensorData,
+  HoldingRegisters,
+  SensorMessageEventArgs,
+  SensorSK,
+  InputComplex,
+} from "../SensorDefinitions";
 
 export const ADCFrequency = 5000;
 
 export enum SensorDateType {
   float = 1,
   integer = 0,
-};
+}
 
 export interface ISingleComponentSensor {
   get onData(): IEvent<ISingleComponentSensor, SensorData>;
@@ -21,7 +27,7 @@ export interface ISingleComponentSensor {
 
   Initialize(): Promise<void>;
 
-  ReadInputComplex() : Promise<InputComplex>
+  ReadInputComplex(): Promise<InputComplex>;
   GetHoldingRegisters(): Promise<HoldingRegisters>;
   GetSkInfo(): Promise<SensorSK>;
   StartStreaming(): Promise<void>;
@@ -35,5 +41,5 @@ export interface ISingleComponentSensor {
   StartMeasuring(waitAnswer: boolean): Promise<void>;
   SetSpeedPeriod(speedPerion: number): Promise<void>;
   SetUsingFloatState(state: boolean): Promise<void>;
-  SetExternalSensorState(state: boolean): Promise<void>
+  SetExternalSensorState(state: boolean): Promise<void>;
 }

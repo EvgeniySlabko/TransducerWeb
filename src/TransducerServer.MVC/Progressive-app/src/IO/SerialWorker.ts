@@ -1,7 +1,6 @@
 import { SimpleEventDispatcher } from "strongly-typed-events";
 
 export class SerialWorker {
-
   private readonly port: SerialPort;
   private _onDisconnect = new SimpleEventDispatcher<SerialWorker>();
   private _onConnect = new SimpleEventDispatcher<SerialWorker>();
@@ -12,10 +11,10 @@ export class SerialWorker {
   constructor(port: SerialPort) {
     this.port = port;
     port.onconnect = () => {
-      console.debug("SerialPort onConnect event ocured.")
+      console.debug("SerialPort onConnect event ocured.");
       // console.log("connect");
       this._onConnect.dispatch(this);
-    }
+    };
 
     port.ondisconnect = this.disconnect;
   }
@@ -23,26 +22,24 @@ export class SerialWorker {
   private disconnect = () => {
     console.debug("SerialPort onDisconnect event ocured.");
     this._onDisconnect.dispatch(this);
-  }
+  };
 
   public async OpenPort() {
-    await this.port.open(
-      {
-        baudRate: 115200,
-        bufferSize: 50000,
-        dataBits: 8,
-        flowControl: "none",
-        parity: "none",
-        stopBits: 1,
-      });
+    await this.port.open({
+      baudRate: 115200,
+      bufferSize: 50000,
+      dataBits: 8,
+      flowControl: "none",
+      parity: "none",
+      stopBits: 1,
+    });
 
     if (this.port.readable != null && this.port.writable != null) {
       this.reader = this.port.readable.getReader();
       this.writer = this.port.writable.getWriter();
 
       await this.writer.ready;
-    }
-    else {
+    } else {
       await this.port.close();
       throw "Port unreadable or unwritable.";
     }
@@ -62,9 +59,8 @@ export class SerialWorker {
 
   public async GetChunk(): Promise<Uint8Array> {
     let result = await this.reader!.read();
-    if (!result.done)
-      return result.value;
-      
+    if (!result.done) return result.value;
+
     throw "No data";
   }
 
@@ -73,22 +69,16 @@ export class SerialWorker {
   }
 
   public async Close(): Promise<void> {
-    
     this.reader?.cancel();
     this.reader?.releaseLock();
     this.writer?.releaseLock();
 
-    if (!this.writer?.closed)
-        this.writer!.close();
-    try
-    {
+    if (!this.writer?.closed) this.writer!.close();
+    try {
       await this.port.close();
       this.disconnect();
-    }
-    catch(ex)
-    {
+    } catch (ex) {
       console.warn("SerialPort error while closing port.");
     }
   }
 }
-

@@ -1,70 +1,71 @@
 .cell-container {
-	display: flex;
-	flex-direction: column;
-	height: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .cell-info {
-	height: 20px;
-	font-size: 17px;
-	font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-	align-content: stretch;
-	align-items: flex-start;
-	flex-wrap: nowrap;
-	display: flex;
-	flex-direction: row;
+  height: 20px;
+  font-size: 17px;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  align-content: stretch;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  display: flex;
+  flex-direction: row;
 }
 
 .cell-name {
-	font-size: 15px;
-	font-weight: bold;
-	width: 100%;
-	height: auto;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+  font-size: 15px;
+  font-weight: bold;
+  width: 100%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .measure-box {
-	text-align: center;
-	width: 100%;
-	user-select: none;
+  text-align: center;
+  width: 100%;
+  user-select: none;
 }
 
 .cell-value {
-	text-align: right;
-	float: right;
-	margin: auto;
+  text-align: right;
+  float: right;
+  margin: auto;
 
-	font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-	padding-right: 2px;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+  padding-right: 2px;
 }
 
 .table {
-	margin-bottom: 0px !important;
-	height: auto;
+  margin-bottom: 0px !important;
+  height: auto;
 }
 
 th {
-	padding-bottom: 1em;
-	padding: 0px !important;
+  padding-bottom: 1em;
+  padding: 0px !important;
 }
 
 .table {
-	height: auto;
-	table-layout: fixed;
-	font-size: 20px;
+  height: auto;
+  table-layout: fixed;
+  font-size: 20px;
 }
 
 thead {
-	border-bottom: 0px !important;
+  border-bottom: 0px !important;
 }
 
 .width-auto {
-	white-space: nowrap;
-	width: auto;
+  white-space: nowrap;
+  width: auto;
 }
 
 .margin-bottom {
-	margin-bottom: 2px;
+  margin-bottom: 2px;
 }

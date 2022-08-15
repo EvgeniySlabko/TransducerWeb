@@ -1,29 +1,32 @@
-import { SettingOutlined } from '@ant-design/icons';
-import { Button, Collapse } from 'antd';
-import React from 'react';
-import { ChannelsGroup } from '../Channel/AllChannelsFactory';
-import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from '../Channel/Channel/CellChannel';
-import { PlotsManager } from '../uPlot/PlotManager';
-import { CellModal } from './CellModal';
-import { CellValue } from './CellValue';
+import { SettingOutlined } from "@ant-design/icons";
+import { Button, Collapse } from "antd";
+import React from "react";
+import { ChannelsGroup } from "../Channel/AllChannelsFactory";
+import {
+  CellChannel,
+  ChannelCloseArgs,
+  ChannelDataArgs,
+} from "../Channel/Channel/CellChannel";
+import { PlotsManager } from "../uPlot/PlotManager";
+import { CellModal } from "./CellModal";
+import { CellValue } from "./CellValue";
 
 const { Panel } = Collapse;
 
 export interface Props {
   channelGroup: ChannelsGroup;
   plotsManager?: PlotsManager;
-  allowSettings: boolean,
+  allowSettings: boolean;
 }
 
 interface IState {
-  value: string,
-  hide: boolean,
-  overload: boolean,
-  modalVisible: boolean,
+  value: string;
+  hide: boolean;
+  overload: boolean;
+  modalVisible: boolean;
 }
 
-export class Cell extends React.Component<Props, IState>{
-
+export class Cell extends React.Component<Props, IState> {
   constructor(prop: Props) {
     super(prop);
 
@@ -31,8 +34,8 @@ export class Cell extends React.Component<Props, IState>{
       hide: false,
       value: "",
       overload: false,
-      modalVisible: false
-    }
+      modalVisible: false,
+    };
 
     this.props.channelGroup.cellChannel.onClose.sub(this.closeHandler);
     this.props.channelGroup.cellChannel.onData.sub(this.dataHandler);
@@ -40,22 +43,28 @@ export class Cell extends React.Component<Props, IState>{
 
   closeHandler = (channel: CellChannel, args: ChannelCloseArgs) => {
     this.setState((prev, props) => ({
-      value: ""
+      value: "",
     }));
 
     this.props.channelGroup.cellChannel.onClose.unsub(this.closeHandler);
     this.props.channelGroup.cellChannel.onData.unsub(this.dataHandler);
-  }
+  };
 
   dataHandler = (channel: CellChannel, args: ChannelDataArgs) => {
     let value = args.data.data[0];
     let overload = false;
     // TO DO сделать DataProvider для анализа на перегрузку
-    if (this.props.channelGroup.cellChannel.Style.minValue && value <= this.props.channelGroup.cellChannel.Style.minValue) {
+    if (
+      this.props.channelGroup.cellChannel.Style.minValue &&
+      value <= this.props.channelGroup.cellChannel.Style.minValue
+    ) {
       overload = true;
     }
 
-    if (this.props.channelGroup.cellChannel.Style.maxValue && value >= this.props.channelGroup.cellChannel.Style.maxValue) {
+    if (
+      this.props.channelGroup.cellChannel.Style.maxValue &&
+      value >= this.props.channelGroup.cellChannel.Style.maxValue
+    ) {
       overload = true;
     }
 
@@ -66,58 +75,80 @@ export class Cell extends React.Component<Props, IState>{
     }
 
     this.setState((prev, props) => ({
-      value: args.data.data[0].toFixed(this.props.channelGroup.cellChannel.Style.accuracy),
+      value: args.data.data[0].toFixed(
+        this.props.channelGroup.cellChannel.Style.accuracy
+      ),
     }));
-  }
+  };
 
   limitHandler = (state: boolean) => {
     this.props.channelGroup.plotChannel.Style.drawLimits = state;
-  }
+  };
 
   onModalClose = () => {
     this.setState((prev, props) => ({
       modalVisible: false,
     }));
-  }
+  };
 
   onShow = () => {
     this.setState((prev, props) => ({
       modalVisible: true,
     }));
-  }
+  };
   render() {
     return (
-      <div className='measure-box'>
-
-        <div className='horizontal-flex'>
-
-          <div className={`cell-name`}
-            style={{ color: this.props.channelGroup.cellChannel.Style.color, background: this.state.overload ? "red" : "white" }} >
-            {this.props.channelGroup.cellChannel.Style.valueName + ` ${"(" + this.props.channelGroup.cellChannel.Style.unitsName + ")"}`}
+      <div className="measure-box">
+        <div className="horizontal-flex">
+          <div
+            className={`cell-name`}
+            style={{
+              color: this.props.channelGroup.cellChannel.Style.color,
+              background: this.state.overload ? "red" : "white",
+            }}
+          >
+            {this.props.channelGroup.cellChannel.Style.valueName +
+              ` ${
+                "(" + this.props.channelGroup.cellChannel.Style.unitsName + ")"
+              }`}
           </div>
 
-          <Button className='horizontal-padding'
-            onClick={event => { event.stopPropagation(); this.onShow(); }}
+          <Button
+            className="horizontal-padding"
+            onClick={(event) => {
+              event.stopPropagation();
+              this.onShow();
+            }}
             key={1}
-            icon={<SettingOutlined onClick={event => { event.stopPropagation(); this.onShow(); }} />} />
+            icon={
+              <SettingOutlined
+                onClick={(event) => {
+                  event.stopPropagation();
+                  this.onShow();
+                }}
+              />
+            }
+          />
 
-          {
-            this.state.modalVisible ? 
+          {this.state.modalVisible ? (
             <CellModal
               group={this.props.channelGroup}
               plotsManager={this.props.plotsManager}
               visible={this.state.modalVisible}
-              onClose={this.onModalClose} /> : <></>
-          }
-
+              onClose={this.onModalClose}
+            />
+          ) : (
+            <></>
+          )}
         </div>
 
-        <CellValue fontSize={this.props.channelGroup.cellChannel.Style.fontSize}
+        <CellValue
+          fontSize={this.props.channelGroup.cellChannel.Style.fontSize}
           fontStyle={this.props.channelGroup.cellChannel.Style.color}
           hide={this.state.hide}
-          value={this.state.value} />
-
+          value={this.state.value}
+        />
       </div>
-    )
+    );
   }
 }
