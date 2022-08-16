@@ -12,7 +12,4 @@ require("../css/measureCell.css");
 require("../css/uPlot.min.css");
 require("../src/initialStartup");
 
-ReactDOM.render(
-  <App sensorService={sensorService} recordController={recordController} />,
-  document.getElementById("root")
-);
+ReactDOM.render(<App sensorService={sensorService} recordController={recordController} />, document.getElementById("root"));

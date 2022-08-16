@@ -1,84 +1,85 @@
 import { SimpleEventDispatcher } from "strongly-typed-events";
+import { BaudRate, StopBit } from "../Storage/ConnectionParams/ConnectionCommon";
 
 export class SerialWorker {
-  private readonly port: SerialPort;
-  private _onDisconnect = new SimpleEventDispatcher<SerialWorker>();
-  private _onConnect = new SimpleEventDispatcher<SerialWorker>();
+    private readonly port: SerialPort;
+    private _onDisconnect = new SimpleEventDispatcher<SerialWorker>();
+    private _onConnect = new SimpleEventDispatcher<SerialWorker>();
 
-  private reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
-  private writer: WritableStreamDefaultWriter<Uint8Array> | undefined;
+    private reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+    private writer: WritableStreamDefaultWriter<Uint8Array> | undefined;
 
-  constructor(port: SerialPort) {
-    this.port = port;
-    port.onconnect = () => {
-      console.debug("SerialPort onConnect event ocured.");
-      // console.log("connect");
-      this._onConnect.dispatch(this);
+    constructor(port: SerialPort) {
+        this.port = port;
+        port.onconnect = () => {
+            console.debug("SerialPort onConnect event ocured.");
+            // console.log("connect");
+            this._onConnect.dispatch(this);
+        };
+
+        port.ondisconnect = this.disconnect;
+    }
+
+    private disconnect = () => {
+        console.debug("SerialPort onDisconnect event ocured.");
+        this._onDisconnect.dispatch(this);
     };
 
-    port.ondisconnect = this.disconnect;
-  }
+    public async OpenPort(baudRate: BaudRate, parity: ParityType, stopBits: StopBit) {
+        await this.port.open({
+            baudRate: baudRate,
+            bufferSize: 50000,
+            dataBits: 8,
+            flowControl: "none",
+            parity: parity,
+            stopBits: stopBits,
+        });
 
-  private disconnect = () => {
-    console.debug("SerialPort onDisconnect event ocured.");
-    this._onDisconnect.dispatch(this);
-  };
+        if (this.port.readable != null && this.port.writable != null) {
+            this.reader = this.port.readable.getReader();
+            this.writer = this.port.writable.getWriter();
 
-  public async OpenPort() {
-    await this.port.open({
-      baudRate: 115200,
-      bufferSize: 50000,
-      dataBits: 8,
-      flowControl: "none",
-      parity: "none",
-      stopBits: 1,
-    });
-
-    if (this.port.readable != null && this.port.writable != null) {
-      this.reader = this.port.readable.getReader();
-      this.writer = this.port.writable.getWriter();
-
-      await this.writer.ready;
-    } else {
-      await this.port.close();
-      throw "Port unreadable or unwritable.";
+            await this.writer.ready;
+        } else {
+            await this.port.close();
+            throw "Port unreadable or unwritable.";
+        }
     }
-  }
 
-  public get IsConnected(): boolean {
-    return this.port.readable != null && this.port.writable != null;
-  }
-
-  public get onDisconnect() {
-    return this._onDisconnect.asEvent();
-  }
-
-  public get onConnect() {
-    return this._onConnect.asEvent();
-  }
-
-  public async GetChunk(): Promise<Uint8Array> {
-    let result = await this.reader!.read();
-    if (!result.done) return result.value;
-
-    throw "No data";
-  }
-
-  public async write(bytes: Uint8Array): Promise<void> {
-    await this.writer!.write(bytes);
-  }
-
-  public async Close(): Promise<void> {
-    this.reader?.cancel();
-    this.reader?.releaseLock();
-    this.writer?.releaseLock();
-
-    if (!this.writer?.closed) this.writer!.close();
-    try {
-      await this.port.close();
-      this.disconnect();
-    } catch (ex) {
-      console.warn("SerialPort error while closing port.");
+    public get IsConnected(): boolean {
+        return this.port.readable != null && this.port.writable != null;
     }
-  }
+
+    public get onDisconnect() {
+        return this._onDisconnect.asEvent();
+    }
+
+    public get onConnect() {
+        return this._onConnect.asEvent();
+    }
+
+    public async GetChunk(): Promise<Uint8Array> {
+        let result = await this.reader!.read();
+        if (!result.done) return result.value;
+
+        throw "No data";
+    }
+
+    public async write(bytes: Uint8Array): Promise<void> {
+        await this.writer!.write(bytes);
+    }
+
+    public async Close(): Promise<void> {
+        this.reader?.cancel();
+        this.reader?.releaseLock();
+        this.writer?.releaseLock();
+
+        if (!this.writer?.closed) this.writer!.close();
+        try {
+            await this.port.close();
+            this.disconnect();
+        } catch (ex) {
+            console.warn("SerialPort error while closing port.");
+        }
+    }
 }

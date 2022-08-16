@@ -6,23 +6,20 @@ export declare class ExchangerArgs {
     args: any;
 }
 
-export enum ExchangerMessage
-{
+export enum ExchangerMessage {
     Start,
     Stop,
     Error,
     Data,
 }
 
-export declare class StartReadingParams
-{
+export declare class StartReadingParams {
     intervalReading: number;
     timeBase: number;
     sensor: ISingleComponentSensor;
 }
 
-export declare class DataParams
-{
+export declare class DataParams {
     data: InputComplex;
     time: number;
 }

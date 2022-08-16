@@ -1,3 +1,3 @@
 export declare interface IGenerator {
-  GenerateNext(n: number): number[];
+    GenerateNext(n: number): number[];
 }

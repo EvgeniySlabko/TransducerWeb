@@ -36,41 +36,41 @@ In browser, open [http://localhost:3000](http://localhost:3000)
 
 ## Main Features
 
-- [x] - App Shell Architecture
+-   [x] -   App Shell Architecture
 
-- [x] - Service Worker + [Navigation Preload](https://mattto.github.io/sw/demo/navigation-preload/) ([Origin Trial](https://docs.google.com/forms/d/e/1FAIpQLSfO0_ptFl8r8G0UFhT0xhV17eabG-erUWBDiKSRDTqEZ_9ULQ/viewform?fbzx=-8349956695398695000))
+-   [x] -   Service Worker + [Navigation Preload](https://mattto.github.io/sw/demo/navigation-preload/) ([Origin Trial](https://docs.google.com/forms/d/e/1FAIpQLSfO0_ptFl8r8G0UFhT0xhV17eabG-erUWBDiKSRDTqEZ_9ULQ/viewform?fbzx=-8349956695398695000))
 
-- [x] - Add to Home Screen, Splash Screen, Browser Mode, Notify user if site is updated etc,
+-   [x] -   Add to Home Screen, Splash Screen, Browser Mode, Notify user if site is updated etc,
 
-- [x] - Offline Support
+-   [x] -   Offline Support
 
-- [x] - Online/Offline Events
+-   [x] -   Online/Offline Events
 
-- [x] - Fetch API
+-   [x] -   Fetch API
 
-- [x] - Push Notifications
+-   [x] -   Push Notifications
 
-- [x] - Background Sync
+-   [x] -   Background Sync
 
-- [x] - Web Share API
+-   [x] -   Web Share API
 
 ### Get started with PWA Development
 
-- [Codelabs](https://pwa.tips/codelabs)
+-   [Codelabs](https://pwa.tips/codelabs)
 
 ### List of Progressive Web Apps
 
-- [PWA Rocks](https://pwa.rocks)
+-   [PWA Rocks](https://pwa.rocks)
 
 ### References
 
-- [Google Developer Site](https://developers.google.com/web/progressive-web-apps)
+-   [Google Developer Site](https://developers.google.com/web/progressive-web-apps)
 
-- [Web Share API](https://developers.google.com/web/updates/2016/10/navigator-share)
+-   [Web Share API](https://developers.google.com/web/updates/2016/10/navigator-share)
 
-- [Navigation Preload](https://developers.google.com/web/updates/2017/02/navigation-preload)
+-   [Navigation Preload](https://developers.google.com/web/updates/2017/02/navigation-preload)
 
-- [Awesome Meta and Manifest](https://github.com/gokulkrishh/awesome-meta-and-manifest)
+-   [Awesome Meta and Manifest](https://github.com/gokulkrishh/awesome-meta-and-manifest)
 
 #### License
 
