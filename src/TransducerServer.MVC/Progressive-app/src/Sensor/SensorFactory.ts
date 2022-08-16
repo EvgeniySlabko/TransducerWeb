@@ -9,7 +9,7 @@ import { CreateModBusSensorDataCommandEncoder } from "./SensorDataEncoder/ModBus
 import { CreateStreamingSensorDataCommandEncoder } from "./SensorDataEncoder/SensorStreamerDataEncoder";
 import { SensorWorker } from "./SensorWorker";
 import { Facker } from "./SingleComponentSensor.ts/Faker/FackerSensor";
-import { SingleComponentSensorExchanger } from "./SingleComponentSensor.ts/SingleComponentSensorExchanger";
+import { SingleComponentSensorExchanger } from "./SingleComponentSensor.ts/Exchanger/SingleComponentSensorExchanger";
 import { SingleComponentSensor } from "./SingleComponentSensor.ts/SingleComponentSensorStreamer";
 
 export type DecoderType = "RS485" | "VCOM" | "Faker";

@@ -1,6 +1,4 @@
-import { AsShortArray } from "../../Common/Common";
-import { IReaderWriter } from "../../IO/IReaderWriter";
-import { SensorCommand, SensorSK } from "../SensorDefinitions";
+import { SensorSK } from "../SensorDefinitions";
 
 export declare class ISensorDataCommandEncoder {
   GetHoldingRegistersAnswer(): Promise<number[]>;

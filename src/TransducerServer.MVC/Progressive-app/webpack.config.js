@@ -21,6 +21,7 @@ module.exports = {
     //minimize: true,
   },
   output: {
+    publicPath: "js/dist/",
     path: path.resolve(__dirname, "dist"),
     filename: "bundle.js",
   },
@@ -34,6 +35,10 @@ module.exports = {
       {
         test: /\.css$/i,
         use: ["style-loader", "css-loader"],
+      },
+      {
+        test: /\.worker\.js$/,
+        use: { loader: "worker-loader" },
       },
     ],
   },

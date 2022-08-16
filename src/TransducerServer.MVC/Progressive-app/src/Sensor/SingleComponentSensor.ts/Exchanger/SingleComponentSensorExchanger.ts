@@ -1,10 +1,10 @@
-import { sleep } from "../../Common/Common";
-import { ISensorIOWorker } from "../../SensorIOWorker/ISensorIOWorker";
-import { ISensorCommandFacory } from "../SensorCommand/ISensorCommandFactory";
-import { ISensorCommandWriter } from "../SensorCommandWriter/SensorCommandWriter";
-import { ISensorDataCommandEncoder } from "../SensorDataEncoder/ISensorDataEncoder";
-import { SensorMessage } from "../SensorDefinitions";
-import { SingleComponentSensorBase } from "./SingleComponentSensorBase";
+import { ISensorIOWorker } from "../../../SensorIOWorker/ISensorIOWorker";
+import { ISensorCommandFacory } from "../../SensorCommand/ISensorCommandFactory";
+import { ISensorCommandWriter } from "../../SensorCommandWriter/SensorCommandWriter";
+import { ISensorDataCommandEncoder } from "../../SensorDataEncoder/ISensorDataEncoder";
+import { SensorMessage } from "../../SensorDefinitions";
+import { SingleComponentSensorBase } from "../SingleComponentSensorBase";
+import { ExchangerArgs, ExchangerMessage, StartReadingParams } from "./ExchangerArgs";
 
 export class SingleComponentSensorExchanger extends SingleComponentSensorBase {
   private stopStreamingRequired: boolean = false;
@@ -19,8 +19,9 @@ export class SingleComponentSensorExchanger extends SingleComponentSensorBase {
   private lastTemperatureMeasuringTime = -1;
   private timeAwaitig = 100;
   private interval?: NodeJS.Timer;
-  private exchangeWorker = new Worker("ReadInputWorker.js");
+  private exchangeWorker;
 
+  
   constructor(
     sensorIOWorker: ISensorIOWorker,
     commandFactory: ISensorCommandFacory,
@@ -35,6 +36,9 @@ export class SingleComponentSensorExchanger extends SingleComponentSensorBase {
       sensorCommandWriter,
       id + " base"
     );
+
+    this.exchangeWorker = new Worker(new URL("./Exchanger", import.meta.url));
+    //this.exchangeWorker =  new Worker(new URL('../worker.js', import.meta.url));
   }
 
   public StartStreaming = async () => {
@@ -47,9 +51,9 @@ export class SingleComponentSensorExchanger extends SingleComponentSensorBase {
       this.intervalReadingSpeed,
       this.intervalReadingTemperature
     );
+
     this.timeAwaitig = this.timeAwaitig < 50 ? 50 : this.timeAwaitig;
-    console.debug(
-      "Starting exchanging: ",
+    console.debug("Starting exchanging: ",
       "main_interval: ",
       this.intervalReadingMain,
       "speed_interval: ",
@@ -57,7 +61,24 @@ export class SingleComponentSensorExchanger extends SingleComponentSensorBase {
       "tmp_interval: ",
       this.intervalReadingTemperature
     );
-    console.debug("Awaiting time", this.timeAwaitig);
+
+    /*
+    this.exchangeWorker.postMessage(
+     {
+      Message: ExchangerMessage.Start,
+      args:{
+        sensor: this,
+        intervalReading: this.timeAwaitig,
+        timeBase: this.timeBase,
+      } as StartReadingParams
+     }as ExchangerArgs
+    );
+
+    this.exchangeWorker.addEventListener('message', message => {
+      console.log(message);
+    });
+    */
+   
     this.interval = setInterval(() => {
       if (this.stopStreamingRequired && this.interval) {
         clearInterval(this.interval);
