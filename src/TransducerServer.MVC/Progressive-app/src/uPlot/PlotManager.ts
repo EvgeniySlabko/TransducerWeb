@@ -31,6 +31,10 @@ export class PlotsManager {
         pointsPerSecond: 50,
     };
 
+    public get Container(): HTMLElement{
+        return this.htmlElement;
+    }
+
     public get ManagerParameters(): PlotsManagerParameters {
         return this.parameters;
     }

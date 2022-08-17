@@ -167,6 +167,15 @@ legend {
     flex-direction: "row";
 }
 
+.tutorial-button-container{
+    width: 100%;
+}
+
+.tutorial-button{
+    margin-left: auto;
+    padding-right: 10px;
+}
+
 .cell-group-title {
     font-size: 12px !important;
     display: table-cell !important;
@@ -186,6 +195,11 @@ legend {
     margin-left: 10px;
 }
 
+li {
+    list-style-type: circle;
+}
+
+
 .vertical-align {
     display: inline-block !important;
     vertical-align: middle !important;
@@ -196,10 +210,10 @@ legend {
     display: flex;
     flex-flow: row;
     height: 40px;
-    position: relative;
+    position: absolute;
     z-index: 10;
-    top: 20px;
-    left: 36px;
+    top: 64px;
+    left: 381px;
 }
 
 :root {

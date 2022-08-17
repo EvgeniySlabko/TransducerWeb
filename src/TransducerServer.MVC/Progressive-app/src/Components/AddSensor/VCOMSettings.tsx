@@ -2,6 +2,7 @@ import { Collapse, Modal, Select } from "antd";
 import React from "react";
 import { BaudRate, Parity, StopBit } from "../../Storage/ConnectionParams/ConnectionCommon";
 import { GetVCOMParams, SetVCOMParams } from "../../Storage/ConnectionParams/ConnectionStorage";
+import { MenuItem } from "../MenuItem";
 import { COMPortParams } from "./COMPortParams";
 const { Panel } = Collapse;
 const { Option } = Select;
@@ -50,7 +51,7 @@ export class VCOMSettings extends React.Component<Props, IState> {
     render() {
         return (
             <Modal
-                title="Параметры подключения для VCOM"
+                title="Параметры подключения VCOM."
                 visible={true}
                 onOk={(event) => {
                     this.onOk();
@@ -61,10 +62,22 @@ export class VCOMSettings extends React.Component<Props, IState> {
                 cancelText={"Отмена"}
                 centered={false}
             >
-                {<COMPortParams baudRate={this.state.baudRate} 
-                parity={this.state.parity} stopBit={this.state.stopBits}
-                onParityChanged={this.onParityChanged} onSpeedChanged={this.onSpeedChanged} 
-                onStopBitChanged={this.onStopBitChanged} />}
+                {
+                    <COMPortParams baudRate={this.state.baudRate} 
+                    parity={this.state.parity} stopBit={this.state.stopBits}
+                    onParityChanged={this.onParityChanged} onSpeedChanged={this.onSpeedChanged} 
+                    onStopBitChanged={this.onStopBitChanged} />
+                }
+
+                <MenuItem
+                    children={
+                        <Select defaultValue={"TILKOM"} style={{ width: 120 }}>
+                            <Option>TILKOM</Option>
+                        </Select>
+                    }
+                    label="Протокол:"
+                />
+
             </Modal>
         );
     }

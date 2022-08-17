@@ -510,7 +510,8 @@ export class MyUPlotBase {
 
     protected InitAxes() {
         let axisDivs = this.element.getElementsByClassName("u-axis");
-        for (let i = 0; i < axisDivs.length; i++) this.SetupYAxis(i);
+        for (let i = 0; i < axisDivs.length; i++) 
+            this.SetupYAxis(i);
     }
 
     protected BuildPlot() {
@@ -726,8 +727,8 @@ export class MyUPlotBase {
             xCoord = e.clientX;
             initRange = i == 0 ? [this.params.range[0], this.params.range[1]] : [this.seriesInfos[i - 1].curRange[0], this.seriesInfos[i - 1].curRange[1]];
             initRangeValue = initRange[1] - initRange[0];
-            console.debug(`yCoord: (${yCoord})`);
-            console.debug(`xCoord: (${xCoord})`);
+            // console.debug(`yCoord: (${yCoord})`);
+            // console.debug(`xCoord: (${xCoord})`);
         });
 
         document.addEventListener("mouseup", (e: any) => {
@@ -744,7 +745,7 @@ export class MyUPlotBase {
                     let dX = initRangeValue * l;
 
                     this.SetScale(initRange[0] - dX, initRange[1] - dX);
-                    console.debug(`dX: (${dX})`);
+                    //console.debug(`dX: (${dX})`);
                 } else {
                     let curY = e.clientY;
                     let divHeigh = divAxis.clientHeight;
@@ -754,7 +755,7 @@ export class MyUPlotBase {
 
                     this.seriesInfos[i - 1].curRange[0] = initRange[0] + dY;
                     this.seriesInfos[i - 1].curRange[1] = initRange[1] + dY;
-                    console.debug(`dY: (${cursorDy})`);
+                    // console.debug(`dY: (${cursorDy})`);
                 }
             }
         });

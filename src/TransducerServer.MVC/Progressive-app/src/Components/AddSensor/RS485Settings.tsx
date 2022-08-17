@@ -77,6 +77,7 @@ export class RS485Settings extends React.Component<Props, IState> {
                         className="vertical-align" min={1} max={255} step={1} 
                         size="middle" defaultValue={this.state.deviceArrdess} 
                         onChange={this.onStopDeviceAddressChanged} />} />
+                        
                         <COMPortParams baudRate={this.state.baudRate} 
                         parity={this.state.parity} stopBit={this.state.stopBits} 
                         onParityChanged={this.onParityChanged} 

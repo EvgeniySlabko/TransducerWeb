@@ -1,4 +1,4 @@
-import { ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, SaveOutlined, SettingOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, QuestionOutlined, SaveOutlined, SettingOutlined } from "@ant-design/icons";
 import { Button, Dropdown, Menu } from "antd";
 import React from "react";
 import { keyCodes as keyCode } from "../Common/KeyCodes";
@@ -11,6 +11,7 @@ import { AddSensor } from "./AddSensor/AddSensor";
 import { Group } from "./App";
 import { AppSettingsTab } from "./AppSettings/AppSettingsTab";
 import { PlotControlPanel } from "./ControlPanel/PlotControlPanel";
+import { TutorialTab } from "./Tutorial/TutorialTab";
 
 export interface Props {
     sensorService: SensorController;
@@ -22,7 +23,7 @@ export interface Props {
     reportVieving: boolean;
     allowSettings: boolean;
     thereAreDataForSaving: boolean;
-
+    
     saveReport: () => Promise<void>;
     clear: () => Promise<void>;
     toggleStreaming: () => Promise<void>;
@@ -34,6 +35,7 @@ export interface Props {
 interface IState {
     settings: boolean;
     disableStart: boolean;
+    tutorialVisible: boolean;
 }
 
 export class Navbar extends React.Component<Props, IState> {
@@ -43,6 +45,7 @@ export class Navbar extends React.Component<Props, IState> {
         this.state = {
             settings: false,
             disableStart: false,
+            tutorialVisible: false,
         };
 
         document.addEventListener(
@@ -167,7 +170,24 @@ export class Navbar extends React.Component<Props, IState> {
 
                 {!this.props.reportVieving ? <></> : <Button title="Сохранить как CSV файл." size="large" id="openfile" shape="default" icon={<FileSyncOutlined />} onClick={this.props.exportCsv} />}
 
-                <Dropdown
+ 
+                <Button size="large" title="О программе" icon={<QuestionOutlined />} onClick={() => this.setState({tutorialVisible: true})} />
+
+                <PlotControlPanel plotsManager={this.props.plotsManager} reportVieving={this.props.reportVieving} />
+                <AppSettingsTab visible={this.state.settings} onClose={this.handleSettingsClose} />
+
+                <AddSensor enabled={!this.disableAddClick()} sensorService={this.props.sensorService} />
+              
+                 
+
+                <TutorialTab visible={this.state.tutorialVisible}  onClose={() => this.setState({tutorialVisible: false})}/>
+            </div>
+        );
+    }
+}
+
+/*
+               <Dropdown
                     overlay={
                         <Menu
                             items={[
@@ -187,22 +207,4 @@ export class Navbar extends React.Component<Props, IState> {
                 >
                     <Button size="large" icon={<BarsOutlined />} />
                 </Dropdown>
-
-                <AppSettingsTab visible={this.state.settings} onClose={this.handleSettingsClose} />
-
-                <AddSensor enabled={!this.disableAddClick()} sensorService={this.props.sensorService} />
-
-                <PlotControlPanel plotsManager={this.props.plotsManager} reportVieving={this.props.reportVieving} />
-            </div>
-        );
-    }
-}
-
-/*
-<Button title="Начать запись в файл" size='large' id="StartRec"
-						disabled={!this.props.enable || (this.props.streaming && !this.props.recordingState)}
-						icon={<AimOutlined style={{ color: this.props.recordingState ? "red" : "inherit" }} />}
-						shape="default"
-						onClick={this.props.toggleRecording}
-						style={{ borderColor: this.props.recordingState ? "red" : "#d9d9d9" }} />
 */
