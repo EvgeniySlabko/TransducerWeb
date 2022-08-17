@@ -248,7 +248,7 @@ export class SingleComponentSensorBase implements ISingleComponentSensor {
                 await this.sensorCommandWriter.Write(command);
             } catch (ex) {
                 clearInterval(interval);
-                console.warn("Sending command error: " + +SensorCommand[command.Command]);
+                console.warn("Sending command error: " + SensorCommand[command.Command]);
                 reject(ex);
             }
         });

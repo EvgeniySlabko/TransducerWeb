@@ -14,6 +14,10 @@ export function CreateDecoderParameters(decoderType: DecoderType): DecoderParame
             return {
                 minAvgRatio: 1,
             };
+        case "USB":
+            return {
+                minAvgRatio: 1,
+            };
         case "Faker":
             return {
                 minAvgRatio: 1,

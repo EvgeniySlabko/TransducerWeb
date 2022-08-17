@@ -13,8 +13,10 @@ import { SingleComponentSensorExchanger } from "./SingleComponentSensor.ts/Excha
 import { SingleComponentSensor } from "./SingleComponentSensor.ts/SingleComponentSensorStreamer";
 import { BaudRate, Parity, StopBit } from "../Storage/ConnectionParams/ConnectionCommon";
 import { GetRS485Params, GetVCOMParams } from "../Storage/ConnectionParams/ConnectionStorage";
+import { UsbSensorIOWorker } from "../SensorIOWorker/UsbSensorIOWorker";
+import { UsbWorker } from "../IO/UsbIOWorker";
 
-export type DecoderType = "RS485" | "VCOM" | "Faker";
+export type DecoderType = "USB" | "RS485" | "VCOM" | "Faker";
 
 export const Timeout = 100;
 
@@ -31,6 +33,13 @@ export async function CeateSensorWorker(decoderType: DecoderType): Promise<Senso
             let sensor = await CreateVCOMSensor(port);
             return new SensorWorker(sensor, CreateDecoderParameters(decoderType), decoderType);
         }
+
+        case "USB":{
+            let device = await GetUsbDevice()
+            let sensor = await CreateUSBSensor(device);
+            return new SensorWorker(sensor, CreateDecoderParameters(decoderType), decoderType);
+        }
+
         case "Faker": {
             return new SensorWorker(GreateFacker(), CreateDecoderParameters(decoderType), decoderType);
         }
@@ -39,16 +48,20 @@ export async function CeateSensorWorker(decoderType: DecoderType): Promise<Senso
     }
 }
 
-async function GetPort() : Promise<SerialPort> {
-    let port: SerialPort;
-    try {
-        console.info("Requesting port.");
-        port = await navigator.serial.requestPort(); //запрашиваем выбор порта у пользователя
-        return port;
-    } catch (ex) {
-        console.warn("Error while requesting port: ", ex);
-        throw ex;
-    }
+async function CreateUSBSensor(device: USBDevice){
+    console.debug(device.deviceProtocol);
+    console.debug(device.configurations);
+    await device.open()
+    await device.selectConfiguration(1);
+    await device.claimInterface(0);
+    let sensorIOWorker = new UsbSensorIOWorker(device);
+    let readerWriter = new UsbWorker(device);
+
+    let commandFactory = CreateDefaultCommandFactory();
+    let seensorDataCommandReceiver = CreateStreamingSensorDataCommandEncoder(readerWriter);
+    let sensorCommandWriter = CreateDefaultSensorCommandWriter(readerWriter);
+
+    return new SingleComponentSensor(sensorIOWorker, commandFactory, seensorDataCommandReceiver, sensorCommandWriter, "Single component USB");
 }
 
 async function CreateVCOMSensor(serialPort: SerialPort): Promise<SingleComponentSensor> {
@@ -57,10 +70,11 @@ async function CreateVCOMSensor(serialPort: SerialPort): Promise<SingleComponent
     await serialWorker.OpenPort(parameters.baudRate, parameters.parity, parameters.stopBits);
     let bufferedWorker = new SerialBufferedWorker(serialWorker);
     let sensorIOWorker = new SerialSensorIOWorker(bufferedWorker.baseWorker);
+
     let commandFactory = CreateDefaultCommandFactory();
     let seensorDataCommandReceiver = CreateStreamingSensorDataCommandEncoder(bufferedWorker);
     let sensorCommandWriter = CreateDefaultSensorCommandWriter(bufferedWorker);
-
+    
     return new SingleComponentSensor(sensorIOWorker, commandFactory, seensorDataCommandReceiver, sensorCommandWriter, "Single component VCOM");
 }
 
@@ -91,3 +105,29 @@ async function OpenPort(serialWorker: SerialWorker, baudRate: BaudRate, parity: 
         throw ex;
     }
 }
+
+async function GetPort() : Promise<SerialPort> {
+    let port: SerialPort;
+    try {
+        console.info("Requesting port.");
+        port = await navigator.serial.requestPort(); //запрашиваем выбор порта у пользователя
+        return port;
+    } catch (ex) {
+        console.warn("Error while requesting port: ", ex);
+        throw ex;
+    }
+}
+
+async function GetUsbDevice() {
+    let device: USBDevice;
+    try{
+        console.info("Requesting usb.");
+        let device = await  navigator.usb.requestDevice({filters: []});
+        return device
+    }
+    catch (ex){
+        console.warn("Error while requesting usb: ", ex);
+        throw ex;
+    }
+}
+

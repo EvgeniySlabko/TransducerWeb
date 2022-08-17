@@ -13,6 +13,7 @@
         "@types/plotly.js-basic-dist": "^1.54.0",
         "@types/react-addons-update": "^0.14.21",
         "@types/react-color": "^3.0.6",
+        "@types/usb": "^2.0.5",
         "@types/w3c-web-serial": "^1.0.2",
         "antd": "^4.20.6",
         "assert": "^2.0.0",

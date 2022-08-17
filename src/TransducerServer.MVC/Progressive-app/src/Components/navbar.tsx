@@ -1,5 +1,5 @@
-import { ArrowLeftOutlined, BarsOutlined, BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, QuestionOutlined, SaveOutlined, SettingOutlined } from "@ant-design/icons";
-import { Button, Dropdown, Menu } from "antd";
+import { ArrowLeftOutlined, BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, QuestionOutlined, SaveOutlined, SettingOutlined } from "@ant-design/icons";
+import { Button } from "antd";
 import React from "react";
 import { keyCodes as keyCode } from "../Common/KeyCodes";
 import { SetupPlotManager } from "../Common/PlotManagerHelpers";
@@ -178,33 +178,8 @@ export class Navbar extends React.Component<Props, IState> {
 
                 <AddSensor enabled={!this.disableAddClick()} sensorService={this.props.sensorService} />
               
-                 
-
                 <TutorialTab visible={this.state.tutorialVisible}  onClose={() => this.setState({tutorialVisible: false})}/>
             </div>
         );
     }
 }
-
-/*
-               <Dropdown
-                    overlay={
-                        <Menu
-                            items={[
-                                {
-                                    key: "1",
-                                    disabled: this.props.streaming || this.props.reportVieving,
-                                    label: (
-                                        <a onClick={this.handleFakerClick} target="_blank" rel="noopener noreferrer">
-                                            Add faker
-                                        </a>
-                                    ),
-                                },
-                            ]}
-                        />
-                    }
-                    arrow
-                >
-                    <Button size="large" icon={<BarsOutlined />} />
-                </Dropdown>
-*/

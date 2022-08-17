@@ -94,6 +94,7 @@ export class AddSensor extends React.Component<Props, IState> {
                 <Select defaultValue={this.state.decoderType} size={"large"} style={{ width: 100 }} onChange={this.onSelect} disabled={!this.props.enabled}>
                     <Option value="VCOM">VCOM</Option>
                     <Option value="RS485">RS485</Option>
+                    <Option value="USB">USB</Option>
                 </Select>
                 <Button title="Настройки." disabled={!this.props.enabled} size="large" id="openfile" shape="default" icon={<SettingOutlined />} onClick={() => this.onSettingsClick(true)} />
                 <Button title="Добавить датчик. (A)" disabled={!this.props.enabled} size="large" id="open" shape="default" icon={<PlusCircleOutlined />} onClick={this.onAddClick} />
