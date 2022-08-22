@@ -1,5 +1,5 @@
 import { InputComplex } from "../../SensorDefinitions";
-import { ISingleComponentSensor } from "../ISingleComponentSensor";
+import { ISingleComponentSensorBase } from "../ISingleComponentSensorBase";
 
 export declare class ExchangerArgs {
     Message: ExchangerMessage;
@@ -16,7 +16,7 @@ export enum ExchangerMessage {
 export declare class StartReadingParams {
     intervalReading: number;
     timeBase: number;
-    sensor: ISingleComponentSensor;
+    sensor: ISingleComponentSensorBase;
 }
 
 export declare class DataParams {

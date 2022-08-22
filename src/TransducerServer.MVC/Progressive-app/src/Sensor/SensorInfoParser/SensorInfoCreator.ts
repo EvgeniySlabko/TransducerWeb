@@ -5,22 +5,22 @@ import * as Defs from "./SensorsDefinitons";
 
 let count = 0;
 export async function GetFullSensorInfo(sensor: SensorWorker): Promise<SDefs.FullSensorInfo> {
-    if (sensor == null) throw "Sensor is null.";
-    var sk = await sensor.GetSkInfo();
-    var holdingRegisters = await sensor.GetHoldingRegisters();
-    var fullSensorInfo = await CreateFullSensorInfo(sk, holdingRegisters);
+    if (sensor === null) throw "Sensor is null.";
+    let sk = await sensor.GetSkInfo();
+    let holdingRegisters = await sensor.GetHoldingRegisters();
+    let fullSensorInfo = await CreateFullSensorInfo(sk, holdingRegisters);
     return fullSensorInfo;
 }
 
 //Формирует полную информацию о датчике
 export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingRegisters: HoldingRegisters): Promise<SDefs.FullSensorInfo> {
-    var fullInfo = new SDefs.FullSensorInfo();
+    let fullInfo = new SDefs.FullSensorInfo();
     fullInfo.id = count++;
-    var Index_Opis = serviceInfo.ID[0] >> 4; // Цифра 1 - старшая цифра
-    var Tip_Datch = serviceInfo.ID[0] & 0x0f; // Цифра 2
-    var Razmernost = serviceInfo.ID[1] >> 4; // Цифра 3
+    let Index_Opis = serviceInfo.ID[0] >> 4; // Цифра 1 - старшая цифра
+    let Tip_Datch = serviceInfo.ID[0] & 0x0f; // Цифра 2
+    let Razmernost = serviceInfo.ID[1] >> 4; // Цифра 3
     fullInfo.Razmernost = Razmernost;
-    var IndMnog = serviceInfo.ID[1] & 0x0f; // Цифра 4
+    let IndMnog = serviceInfo.ID[1] & 0x0f; // Цифра 4
     if (IndMnog > 9) IndMnog = 0;
     fullInfo.Mnogitel = Defs.Mas_Mnog[IndMnog];
 
@@ -31,9 +31,9 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
         return hex.toUpperCase();
     };
     fullInfo.SensorId = formatDigit(serviceInfo.ID[0]) + formatDigit(serviceInfo.ID[1]) + formatDigit(serviceInfo.ID[2]);
-    var typeString: string = "";
+    let typeString: string = "";
 
-    var rotativeFromDecoderType = false;
+    let rotativeFromDecoderType = false;
     switch (Index_Opis) {
         case 0: {
             // Момент
@@ -83,7 +83,7 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
             //................. Если это старый датчик (длина строки идентификатора = 5)
             //................. то СТ без номера (по старой классификации)
             //Len1 = strlen(PFBaseChannel->StrokaDatchikID);
-            //if (Len1 == 5) {
+            //if (Len1 === 5) {
             //AS = "СТ";
             //}
             //else {
@@ -97,10 +97,10 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
         }
     }
 
-    var nominalString = Defs.Mas_NomZn[IndMnog][Razmernost];
+    let nominalString = Defs.Mas_NomZn[IndMnog][Razmernost];
 
     /*
-  if ((Index_Opis == 2) && (Razmernost == 7)){
+  if ((Index_Opis === 2) && (Razmernost === 7)){
       p = PPP.Pos('K');
       PPP.Delete(p,1);
       PPP = PPP+"T";
@@ -113,14 +113,14 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
     fullInfo.Unitname = Defs.MasNazvD[Index_Opis][1];
     //  strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
     //................... Формирование названия изм величины
-    var unitNameStr = Defs.Mas_NazvIzmVel[Index_Opis];
+    let unitNameStr = Defs.Mas_NazvIzmVel[Index_Opis];
     fullInfo.ValueName = unitNameStr;
 
     //................... Формирование названия единицы измерения
     //................... Определяем размерность измеряемого момента либо силы
-    var stroks: string = "";
-    var EdIzm = Defs.MasEdIzm[Index_Opis];
-    var powerIndexName: number = 0;
+    let stroks: string = "";
+    let EdIzm = Defs.MasEdIzm[Index_Opis];
+    let powerIndexName: number = 0;
     switch (Razmernost) {
         case 0:
             switch (Index_Opis) {
@@ -242,7 +242,7 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
     }
     fullInfo.UnitValueName = stroks + EdIzm;
     fullInfo.MaxSpeed = serviceInfo.MaxSpeed * 100;
-    var index: number = 0;
+    let index: number = 0;
     //................... Вычисление индекса для установки форматов
     switch (Razmernost) {
         case 0:
@@ -280,7 +280,7 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
     fullInfo.MaxValue = fullInfo.MaxDopustBase;
     fullInfo.MinValue = -fullInfo.MaxDopustBase;
     //................... Вычисление степени 10 для округления при отображении
-    //var PowerOfTen = CalculatePowerOfTen(fullInfo.MinValue, fullInfo.MaxValue);                //To DO
+    //let PowerOfTen = CalculatePowerOfTen(fullInfo.MinValue, fullInfo.MaxValue);                //To DO
 
     //................... Установить признак "Есть идентификатор"
     //PFBaseChannel->EstID = true;

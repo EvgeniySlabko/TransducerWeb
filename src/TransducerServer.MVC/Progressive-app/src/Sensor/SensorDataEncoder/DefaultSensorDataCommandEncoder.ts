@@ -46,9 +46,9 @@ export class DefaultSensorDataCommandEncoder implements ISensorDataCommandEncode
     }
 
     public async GetID(): Promise<SensorSK> {
-        var data = await this.readerWriter.Read(60);
-        var idView = new DataView(data.buffer);
-        var sk = new SensorSK();
+        let data = await this.readerWriter.Read(60);
+        let idView = new DataView(data.buffer);
+        let sk = new SensorSK();
         Object.assign(sk.ID, data.slice(0, 3));
         sk.Temperature = idView.getUint8(3);
         sk.Korrect = idView.getUint8(4);

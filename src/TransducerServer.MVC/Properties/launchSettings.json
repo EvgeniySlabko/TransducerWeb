@@ -19,7 +19,7 @@
     "TicketManagement.MVC": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "https://192.168.100.122:5001;https://192.168.100.122:5000",
+      "applicationUrl": "http://192.168.100.122:5001;http://192.168.100.122:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation"

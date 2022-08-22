@@ -34,7 +34,7 @@ export class LogLevelBugger {
     }
 
     public FromSnapshot(snapshot: Snapshot) {
-        var trackData = snapshot.GetTrackData();
+        let trackData = snapshot.GetTrackData();
 
         let sourceBuffer = this.CreateBufferManager(snapshot.dt, trackData);
 

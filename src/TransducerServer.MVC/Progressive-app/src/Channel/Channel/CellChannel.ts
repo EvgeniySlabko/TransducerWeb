@@ -1,21 +1,21 @@
 import { EventDispatcher } from "strongly-typed-events";
-import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
+import { ISingleComponentSensorBase } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensorBase";
 import { SensorData, SensorMessageEventArgs } from "../../Sensor/SensorDefinitions";
 import { CellChannelStyle } from "../ChannelStyle/CellChannelStyle";
 import { ISensorDataProvider } from "../SensorDataSource/ISensorDataProvider";
 
 export type ChannelDataArgs = {
-    sensor: ISingleComponentSensor;
+    sensor: ISingleComponentSensorBase;
     data: SensorData;
 };
 
 export type ChannelMessageArgs = {
-    sensor: ISingleComponentSensor;
+    sensor: ISingleComponentSensorBase;
     sensorMsgArgs: SensorMessageEventArgs;
 };
 
 export type ChannelCloseArgs = {
-    sensor: ISingleComponentSensor;
+    sensor: ISingleComponentSensorBase;
     msg: string;
 };
 

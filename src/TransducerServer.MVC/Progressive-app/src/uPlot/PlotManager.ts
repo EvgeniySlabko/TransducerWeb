@@ -55,7 +55,7 @@ export class PlotsManager {
         streamingPlot.SetChannels(channels);
     }
 
-    public async AddChannels(channels: PlotChannel[]) {
+    public AddChannels(channels: PlotChannel[]) {
         this.SetEmptyStreamingPlot();
         channels.forEach((c) => c.onClose.sub(this.PlotChannelCloseHandler));
         let streamingPlot = this.plot as StreamingPlot;
@@ -70,7 +70,7 @@ export class PlotsManager {
     };
 
     public AddLabelForChannel(label: ChannelLabel) {
-        if (this.currentPlotType == PlotType.StremimgPlot) {
+        if (this.currentPlotType === PlotType.StremimgPlot) {
             let streamingPlot = <StreamingPlot>this.plot;
             streamingPlot.AddLabel(label);
             return;
@@ -80,7 +80,7 @@ export class PlotsManager {
     private AddChannel(channel: PlotChannel) {
         this.plotChannels.push(channel);
         channel.onClose.sub((c, args) => {
-            let index = this.plotChannels.findIndex((c) => c == channel);
+            let index = this.plotChannels.findIndex((c) => c === channel);
             this.plotChannels.splice(index);
         });
     }
@@ -104,7 +104,7 @@ export class PlotsManager {
     }
 
     public Rebuild = () => {
-        if (this.currentPlotType == PlotType.StremimgPlot) {
+        if (this.currentPlotType === PlotType.StremimgPlot) {
             this.plot.DestroyPlot();
             this.plot = this.GetStreamingPlot();
             this.AddChannels([]);
@@ -112,15 +112,15 @@ export class PlotsManager {
     };
 
     public RebuildIfNessesary = () => {
-        if (this.currentPlotType == PlotType.StremimgPlot) {
+        if (this.currentPlotType === PlotType.StremimgPlot) {
             let streamingPlot = this.plot as StreamingPlot;
-            if (streamingPlot.Traces != this.plotChannels.length) this.Rebuild();
+            if (streamingPlot.Traces !== this.plotChannels.length) this.Rebuild();
         }
     };
 
     private PlotChannelCloseHandler = (plotChannel: PlotChannel) => {
         let index = this.plotChannels.indexOf(plotChannel);
-        if (index != -1) this.plotChannels.splice(index, 1);
+        if (index !== -1) this.plotChannels.splice(index, 1);
     };
 
     private GetStreamingPlot = (): StreamingPlot =>

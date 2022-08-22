@@ -67,14 +67,14 @@ export class App extends React.Component<Props, IState> {
     };
 
     sensorCloseHandler = async (sensorWorker: SensorWorker, args: string) => {
-        let index = this.state.groups.findIndex((g) => g.node.worker == sensorWorker);
+        let index = this.state.groups.findIndex((g) => g.node.worker === sensorWorker);
         this.state.groups.splice(index, 1);
 
         if (!this.state.streaming && this.state.firstStart) {
             this.state.plotsManager?.Rebuild();
         }
 
-        if (this.state.groups.length == 0) {
+        if (this.state.groups.length === 0) {
             this.setState({
                 streaming: false,
             });
@@ -139,7 +139,7 @@ export class App extends React.Component<Props, IState> {
     };
 
     openFileHandler = async (file: File) => {
-        var snapshot = new Snapshot();
+        let snapshot = new Snapshot();
         try {
             await snapshot.FromFile(file);
         } catch {
@@ -176,7 +176,7 @@ export class App extends React.Component<Props, IState> {
     };
 
     streamingModeViewHandler = () => {
-        this.state.plotsManager?.Reset();
+        //this.state.plotsManager?.Reset();
         this.state.plotsManager?.SetChannels([]);
         this.setState((prev, props) => ({
             viewingReport: false,

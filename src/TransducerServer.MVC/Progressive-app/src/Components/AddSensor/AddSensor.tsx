@@ -66,15 +66,15 @@ export class AddSensor extends React.Component<Props, IState> {
         let sensorWorker: SensorWorker;
         try {
             sensorWorker = await CeateSensorWorker(this.state.decoderType);
-        } catch {
-            console.warn("Failed to create SensorWorker.");
+        } catch(ex) {
+            console.warn("Failed to create SensorWorker.", ex);
             return;
         }
 
         try {
             await this.props.sensorService.AddSensor(sensorWorker);
-        } catch {
-            console.warn("Failed to add sensor.");
+        } catch(ex) {
+            console.warn("Failed to add sensor.", ex);
         }
     }
 

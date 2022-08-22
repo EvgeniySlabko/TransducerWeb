@@ -52,11 +52,11 @@ export class MyUPlot extends MyUPlotBase {
 
     private StartStreamingHandler = (channel: PlotChannel) => {
         let index = this.traces.findIndex((t) => t.channel === channel);
-        if (this.bufferManager!.GetLastSegmentTime(index) != 0) this.traces[index].requireGap = true;
+        if (this.bufferManager!.GetLastSegmentTime(index) !== 0) this.traces[index].requireGap = true;
     };
 
     private HandleData = (channel: PlotChannel, args: PlotChannelDataArgs) => {
-        var curIndex = this.traces.find((c) => c.channel == channel)!.seriesInfo.dataBufferIndex - 1;
+        let curIndex = this.traces.find((c) => c.channel === channel)!.seriesInfo.dataBufferIndex - 1;
 
         if (this.traces[curIndex].requireGap) {
             this.traces[curIndex].requireGap = false;
@@ -112,7 +112,7 @@ export class MyUPlot extends MyUPlotBase {
         this.SetScale(0, this.params.screenSize());
         setTimeout(() => {
             this.plot!.over.addEventListener("mousedown", (e: any) => {
-                if (e.button == 2) {
+                if (e.button === 2) {
                     this.streaming = false;
                 }
             });
@@ -120,7 +120,7 @@ export class MyUPlot extends MyUPlotBase {
     };
 
     public AddLabel(channelLabel: ChannelLabel) {
-        let trace = this.traces.find((c) => c.channel == channelLabel.channel);
+        let trace = this.traces.find((c) => c.channel === channelLabel.channel);
         if (!trace) return;
 
         let label: Label = {
@@ -137,7 +137,7 @@ export class MyUPlot extends MyUPlotBase {
 
     protected SeriesDraw(i: number) {
         let channel = this.traces.at(i - 1);
-        if (channel != undefined) {
+        if (channel !== undefined) {
             let existsChannel = channel;
             this.plot!.series[i].stroke = () => existsChannel.channel.Style.color;
             this.plot!.series[i].width = existsChannel.channel.Style.width;
@@ -159,7 +159,7 @@ export class MyUPlot extends MyUPlotBase {
     protected SelectCommited = () => (this.streaming = false);
 
     protected DbClick(e: any) {
-        if (e.button == 0) {
+        if (e.button === 0) {
             e.preventDefault();
             this.streaming = !this.streaming;
             this.SetCurrentScale();

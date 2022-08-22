@@ -1,6 +1,7 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
-import { ISingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
 import { FullSensorInfo } from "../Sensor/SensorDefinitions";
+import { SensorWorker } from "../Sensor/SensorWorker";
+import { ISingleComponentSensor } from "../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
 import { FilterParameters } from "../Storage/ChannelsDataStorage";
 import { CellChannel } from "./Channel/CellChannel";
 import { PlotChannel } from "./Channel/PlotChannel";
@@ -8,7 +9,6 @@ import { CreateCellSpeedStyle, CreatePowerCellStyle, CreatetemperatureCellStyle,
 import { CreatePowerStyle, CreateSpeedStyle, CreatetemperatureStyle, CreateTorqueStyle } from "./ChannelStyle/ChannelStyleFactory";
 import { AbsoluteDataSource } from "./SensorDataSource/AbsoluteDataSource";
 import { AbsolutePeakAnalyzer, PeakEventArgs } from "./SensorDataSource/AbsolutePeakAnalyzer";
-import { ScaledDataSource } from "./SensorDataSource/ScaledDataSource";
 import { AverageDataSource } from "./SensorDataSource/AverageDataProvider";
 import { BufferSensorDataSource } from "./SensorDataSource/BufferDataSource";
 import { CutOffDataSource } from "./SensorDataSource/CutOffDataSource";
@@ -19,8 +19,8 @@ import { InvertorDataSource } from "./SensorDataSource/InvertorDataSource";
 import { DataSourseType, ISensorDataProvider } from "./SensorDataSource/ISensorDataProvider";
 import { OffsetDataSource } from "./SensorDataSource/OffseDataSource";
 import { PowerDataSource } from "./SensorDataSource/PowerDataSource";
+import { ScaledDataSource } from "./SensorDataSource/ScaledDataSource";
 import { SensorDataProvider } from "./SensorDataSource/SensorDataProvider";
-import { SensorWorker } from "../Sensor/SensorWorker";
 
 const CellFps = 6;
 export interface ChannelsGroup {

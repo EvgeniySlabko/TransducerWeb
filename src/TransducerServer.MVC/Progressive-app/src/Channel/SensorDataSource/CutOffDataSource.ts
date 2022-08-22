@@ -1,6 +1,6 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
 import { sleep } from "../../Common/Common";
-import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
+import { ISingleComponentSensorBase } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensorBase";
 import { SensorData, SensorMessage, SensorMessageEventArgs } from "../../Sensor/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
@@ -12,9 +12,9 @@ import { ISensorDataProvider } from "./ISensorDataProvider";
 export class CutOffDataSource implements ISensorDataProvider {
     private readonly at: number = 1; //погрешность
 
-    private _onData = new EventDispatcher<ISingleComponentSensor, SensorData>();
-    private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
-    private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
+    private _onData = new EventDispatcher<ISingleComponentSensorBase, SensorData>();
+    private _onMessage = new EventDispatcher<ISingleComponentSensorBase, SensorMessageEventArgs>();
+    private _onClose = new EventDispatcher<ISingleComponentSensorBase, string>();
 
     private isStreaming: boolean = false;
     constructor(sensor: ISensorDataProvider) {
@@ -38,20 +38,20 @@ export class CutOffDataSource implements ISensorDataProvider {
 
         sensor.onData.sub((sensor, data) => {
             if (!this.isStreaming) {
-                //console.log("cutoff");
+                // console.debug("cutoff");
                 return;
             }
             this._onData.dispatch(sensor, data);
         });
     }
 
-    get onData(): IEvent<ISingleComponentSensor, SensorData> {
+    get onData(): IEvent<ISingleComponentSensorBase, SensorData> {
         return this._onData.asEvent();
     }
-    get onClose(): IEvent<ISingleComponentSensor, string> {
+    get onClose(): IEvent<ISingleComponentSensorBase, string> {
         return this._onClose.asEvent();
     }
-    get onMessage(): IEvent<ISingleComponentSensor, SensorMessageEventArgs> {
+    get onMessage(): IEvent<ISingleComponentSensorBase, SensorMessageEventArgs> {
         return this._onMessage.asEvent();
     }
 }

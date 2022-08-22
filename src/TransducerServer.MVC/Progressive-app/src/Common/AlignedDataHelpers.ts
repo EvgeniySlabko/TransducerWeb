@@ -79,11 +79,11 @@ export function NearestPoint(arr: SeriesValue[], index: number, maxCount: number
     do {
         if (arr[left] !== undefined) return arr[left];
 
-        if (left != 0) left -= 1;
+        if (left !== 0) left -= 1;
 
         if (arr[right] !== undefined) return arr[right];
 
-        if (right != arr.length - 1) right += 1;
+        if (right !== arr.length - 1) right += 1;
 
         curIter += 1;
     } while (curIter <= maxCount);

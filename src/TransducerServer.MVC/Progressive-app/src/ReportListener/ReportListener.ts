@@ -18,7 +18,7 @@ export class ReportListener {
     }
 
     public SetChannels(channels: PlotChannel[]) {
-        if (channels.length == 0) throw "There are no channels for listening";
+        if (channels.length === 0) throw "There are no channels for listening";
 
         channels.forEach((channel) => {
             this.channelMap.set(channel, new Array<SensorData>());
@@ -58,10 +58,10 @@ export class ReportListener {
         if (!this.isInit) throw "There are no channels for listening";
         if (this.isListening) throw "Stop listening for getting snapshot";
 
-        var trackData = new Array<TrackData>();
+        let trackData = new Array<TrackData>();
 
         this.channelMap.forEach((sensorData, plotChannel) => {
-            var dataArr: SensorData = {
+            let dataArr: SensorData = {
                 data: [],
                 time: [],
             };
@@ -86,7 +86,7 @@ export class ReportListener {
         if (this.isListening) {
             if (this.channelMap.has(channel)) {
                 let dataBuffer = this.channelMap.get(channel);
-                var copy = {
+                let copy = {
                     data: args.data.data.slice(),
                     time: args.data.time.slice(),
                 } as SensorData;

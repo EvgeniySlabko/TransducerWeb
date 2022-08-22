@@ -1,10 +1,10 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
 import { SinGenerator } from "./Generators/SinGennerator";
 import { SmoothGenerator } from "./Generators/SmoothGenerator";
-import { ISingleComponentSensor } from "../ISingleComponentSensor";
+import { ISingleComponentSensorBase } from "../ISingleComponentSensorBase";
 import { SensorData, HoldingRegisters, SensorMessage, SensorMessageEventArgs, SensorSK, InputComplex } from "../../SensorDefinitions";
 
-export class Facker implements ISingleComponentSensor {
+export class Facker implements ISingleComponentSensorBase {
     private generator: SmoothGenerator;
     private sinGenerator: SinGenerator;
     private intervals = [];
@@ -43,11 +43,11 @@ export class Facker implements ISingleComponentSensor {
             resolve();
         });
     }
-    private _onTorqueData = new EventDispatcher<ISingleComponentSensor, SensorData>();
-    private _onSpeedData = new EventDispatcher<ISingleComponentSensor, SensorData>();
-    private _onTmpData = new EventDispatcher<ISingleComponentSensor, SensorData>();
-    private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
-    private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
+    private _onTorqueData = new EventDispatcher<ISingleComponentSensorBase, SensorData>();
+    private _onSpeedData = new EventDispatcher<ISingleComponentSensorBase, SensorData>();
+    private _onTmpData = new EventDispatcher<ISingleComponentSensorBase, SensorData>();
+    private _onClose = new EventDispatcher<ISingleComponentSensorBase, string>();
+    private _onMessage = new EventDispatcher<ISingleComponentSensorBase, SensorMessageEventArgs>();
 
     private isStreaming: boolean = false;
     private mainInterval: NodeJS.Timer | undefined;
@@ -56,19 +56,19 @@ export class Facker implements ISingleComponentSensor {
 
     private timeBase: number = Date.now();
 
-    get onData(): IEvent<ISingleComponentSensor, SensorData> {
+    get onData(): IEvent<ISingleComponentSensorBase, SensorData> {
         return this._onTorqueData.asEvent();
     }
-    get onTmp(): IEvent<ISingleComponentSensor, SensorData> {
+    get onTmp(): IEvent<ISingleComponentSensorBase, SensorData> {
         return this._onTmpData.asEvent();
     }
-    get onSpeed(): IEvent<ISingleComponentSensor, SensorData> {
+    get onSpeed(): IEvent<ISingleComponentSensorBase, SensorData> {
         return this._onSpeedData.asEvent();
     }
-    get onMessage(): IEvent<ISingleComponentSensor, SensorMessageEventArgs> {
+    get onMessage(): IEvent<ISingleComponentSensorBase, SensorMessageEventArgs> {
         return this._onMessage.asEvent();
     }
-    get onClose(): IEvent<ISingleComponentSensor, string> {
+    get onClose(): IEvent<ISingleComponentSensorBase, string> {
         return this._onClose.asEvent();
     }
 
@@ -79,9 +79,9 @@ export class Facker implements ISingleComponentSensor {
     }
     GetHoldingRegisters(): Promise<HoldingRegisters> {
         return new Promise<HoldingRegisters>(async (resolve, reject) => {
-            var bytes = new Uint8Array([40, 0, 1, 0, 100, 0, 248, 0, 0, 0]);
-            var view = new DataView(bytes.buffer);
-            var registers: number[] = [];
+            let bytes = new Uint8Array([40, 0, 1, 0, 100, 0, 248, 0, 0, 0]);
+            let view = new DataView(bytes.buffer);
+            let registers: number[] = [];
             for (let i = 0; i < bytes.length / 2; i++) {
                 registers.push(view.getUint16(i * 2, true));
             }
@@ -90,10 +90,10 @@ export class Facker implements ISingleComponentSensor {
         });
     }
     GetSkInfo(): Promise<SensorSK> {
-        var data = new Uint8Array([0, 70, 1, 53, 128, 1, 0, 100, 1, 2, 21, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48]);
+        let data = new Uint8Array([0, 70, 1, 53, 128, 1, 0, 100, 1, 2, 21, 49, 50, 51, 52, 53, 54, 55, 56, 57, 48]);
         return new Promise<SensorSK>(async (resolve, reject) => {
-            var idView = new DataView(data.buffer);
-            var sk = new SensorSK();
+            let idView = new DataView(data.buffer);
+            let sk = new SensorSK();
             Object.assign(sk.ID, data.slice(0, 3));
             sk.Temperature = idView.getUint8(3);
             sk.Korrect = idView.getUint8(4);
@@ -114,14 +114,14 @@ export class Facker implements ISingleComponentSensor {
             };
 
             this.mainInterval = setInterval(() => {
-                var values = new Array(1);
-                var times = new Array(1);
+                let values = new Array(1);
+                let times = new Array(1);
                 for (let i = 0; i < 100; i++) {
                     values[i] = this.sinGenerator.GenerateNext(1)[0] * 60;
                     times[i] = currentTime();
                 }
 
-                var torqArgs: SensorData = {
+                let torqArgs: SensorData = {
                     data: values,
                     time: times,
                 };
@@ -130,7 +130,7 @@ export class Facker implements ISingleComponentSensor {
             }, 20);
 
             this.tmpInterval = setInterval(() => {
-                var tmpArgs: SensorData = {
+                let tmpArgs: SensorData = {
                     data: [Math.random() * 60],
                     time: [currentTime()],
                 };
@@ -139,7 +139,7 @@ export class Facker implements ISingleComponentSensor {
             }, 1000);
 
             this.speedInterval = setInterval(() => {
-                var speedArgs: SensorData = {
+                let speedArgs: SensorData = {
                     data: [this.generator.GenerateNext(1)[0] * 30000],
                     time: [currentTime()],
                 };

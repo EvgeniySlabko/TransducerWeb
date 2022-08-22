@@ -25,11 +25,11 @@ export class MyUPlotViewer extends MyUPlotBase {
     }
 
     public FromSnapshot(snapshot: Snapshot) {
-        var trackData = snapshot.GetTrackData();
+        let trackData = snapshot.GetTrackData();
 
         this.buffer = new LogLevelBuffer(() => [this.params.range[0], this.params.range[1]]);
         this.buffer.FromSnapshot(snapshot);
-        var styles = trackData.map((t) => t.style);
+        let styles = trackData.map((t) => t.style);
         this.params.t0 = Math.min(...trackData.map((trackData) => trackData.data).map((data) => (data.time.length > 0 ? data.time[0] : 0)));
         this.params.th = Math.max(...trackData.map((trackData) => trackData.data).map((data) => (data.time.length > 0 ? data.time[data.time.length - 1] : 100)));
         this.BuildNewPlot(styles);
@@ -51,7 +51,7 @@ export class MyUPlotViewer extends MyUPlotBase {
     };
 
     protected DbClick(e: any) {
-        if (e.button == 0) {
+        if (e.button === 0) {
             e.preventDefault();
             this.SetScale(this.params.t0, this.params.th);
         }

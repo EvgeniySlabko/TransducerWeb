@@ -3,9 +3,9 @@ import { RecordManager } from "./ReportListener/RecordManager";
 import { SensorController } from "./Sensor/SensorsManager/SensorsManager";
 
 // Хронить сернсоры. Дает себытия подключения отключения
-export var sensorService: SensorController = new SensorController();
+export let sensorService: SensorController = new SensorController();
 
 // manager for main plot
-export var plotsManager: PlotsManager;
+export let plotsManager: PlotsManager;
 
-export var recordController: RecordManager = new RecordManager();
+export let recordController: RecordManager = new RecordManager();

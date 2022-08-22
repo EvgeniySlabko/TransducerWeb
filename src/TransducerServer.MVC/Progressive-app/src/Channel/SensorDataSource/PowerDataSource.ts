@@ -1,13 +1,13 @@
 import { EventDispatcher } from "strongly-typed-events";
 import { CalculatePower } from "../../Common/Common";
-import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
+import { ISingleComponentSensorBase } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensorBase";
 import { SensorData, SensorMessageEventArgs } from "../../Sensor/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
 export class PowerDataSource implements ISensorDataProvider {
-    private _onData = new EventDispatcher<ISingleComponentSensor, SensorData>();
-    private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
-    private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
+    private _onData = new EventDispatcher<ISingleComponentSensorBase, SensorData>();
+    private _onMessage = new EventDispatcher<ISingleComponentSensorBase, SensorMessageEventArgs>();
+    private _onClose = new EventDispatcher<ISingleComponentSensorBase, string>();
 
     private lastMainValue: number | undefined = undefined;
     private lastMainTime: number | undefined = undefined;
@@ -22,7 +22,7 @@ export class PowerDataSource implements ISensorDataProvider {
         });
 
         speedDataSourse.onData.sub((sensor, args) => {
-            if (this.lastMainValue != undefined && this.lastMainTime != undefined) {
+            if (this.lastMainValue !== undefined && this.lastMainTime !== undefined) {
                 let power = CalculatePower(args.data[0], this.lastMainValue);
                 this._onData.dispatch(sensor, {
                     data: [power],
@@ -32,13 +32,13 @@ export class PowerDataSource implements ISensorDataProvider {
         });
     }
 
-    get onData(): EventDispatcher<ISingleComponentSensor, SensorData> {
+    get onData(): EventDispatcher<ISingleComponentSensorBase, SensorData> {
         return this._onData;
     }
-    get onClose(): EventDispatcher<ISingleComponentSensor, string> {
+    get onClose(): EventDispatcher<ISingleComponentSensorBase, string> {
         return this._onClose;
     }
-    get onMessage(): EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs> {
+    get onMessage(): EventDispatcher<ISingleComponentSensorBase, SensorMessageEventArgs> {
         return this._onMessage;
     }
 }

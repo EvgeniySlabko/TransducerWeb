@@ -1,6 +1,5 @@
-import { ISensorCommandFacory } from "./ISensorCommandFactory";
 import { DefaultCommand, ISensorCommand, MultipleCommand, SingleCommand } from "./DefaultSensorCommands";
-import { DefaultModBusCommand, MultipleModBusCommand, SingleModBusCommand } from "./ModBusSensorCommands";
+import { ISensorCommandFacory } from "./ISensorCommandFactory";
 
 export function CreateDefaultCommandFactory() {
     return new DefaultCommandFactory();

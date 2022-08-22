@@ -6,7 +6,7 @@ const CrcTable = [
 
 export function CRC16MODBUS(bytes: Uint8Array): [number, number] {
     let crc = 0xffff;
-    for (var i = 0; i < bytes.length; i++) {
+    for (let i = 0; i < bytes.length; i++) {
         crc = (crc >> 8) ^ CrcTable[(crc ^ bytes[i]) & 0xff];
     }
 
@@ -14,4 +14,4 @@ export function CRC16MODBUS(bytes: Uint8Array): [number, number] {
     return [crcBytes[0], crcBytes[1]];
 }
 
-var bytes = [0xff, 0x01, 0x02, 0x03];
+let bytes = [0xff, 0x01, 0x02, 0x03];

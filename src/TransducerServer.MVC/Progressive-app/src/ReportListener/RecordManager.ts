@@ -38,8 +38,13 @@ export class RecordManager {
     }
 
     public async StartListening() {
-        this.currentMinAvg = await GetMinAvgFactor(this.recordingGroups.map((g) => g.sensorWorker));
-        this.listener.StartListening();
+        try{
+            this.currentMinAvg = await GetMinAvgFactor(this.recordingGroups.map((g) => g.sensorWorker));
+            this.listener.StartListening();
+        }
+        catch(ex){
+            console.warn("Error while getting min avg ratio.", ex)
+        }
     }
 
     public StopListening(): Snapshot {

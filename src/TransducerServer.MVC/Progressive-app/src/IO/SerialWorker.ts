@@ -35,19 +35,19 @@ export class SerialWorker {
             stopBits: stopBits,
         });
 
-        if (this.port.readable != null && this.port.writable != null) {
+        if (this.port.readable !== null && this.port.writable !== null) {
             this.reader = this.port.readable.getReader();
             this.writer = this.port.writable.getWriter();
 
             await this.writer.ready;
         } else {
             await this.port.close();
-            throw "Port unreadable or unwritable.";
+            throw Error("Port unreadable or unwritable.");
         }
     }
 
     public get IsConnected(): boolean {
-        return this.port.readable != null && this.port.writable != null;
+        return this.port.readable !== null && this.port.writable !== null;
     }
 
     public get onDisconnect() {
@@ -60,9 +60,10 @@ export class SerialWorker {
 
     public async GetChunk(): Promise<Uint8Array> {
         let result = await this.reader!.read();
-        if (!result.done) return result.value;
+        if (!result.done) 
+            return result.value;
 
-        throw "No data";
+        throw Error("No data");
     }
 
     public async write(bytes: Uint8Array): Promise<void> {
@@ -74,12 +75,14 @@ export class SerialWorker {
         this.reader?.releaseLock();
         this.writer?.releaseLock();
 
-        if (!this.writer?.closed) this.writer!.close();
+        //if (!(await this.writer?.closed)) 
+        //await this.writer!.close();
         try {
             await this.port.close();
             this.disconnect();
         } catch (ex) {
             console.warn("SerialPort error while closing port.");
+            throw ex;
         }
     }
 }

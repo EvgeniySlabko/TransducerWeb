@@ -1,15 +1,15 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
-import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
+import { ISingleComponentSensorBase } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensorBase";
 import { SensorData, SensorMessage, SensorMessageEventArgs, SetAvgEventArgs } from "../../Sensor/SensorDefinitions";
 import { FilterParameters, FilterType } from "../../Storage/ChannelsDataStorage";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
-var Fili = require("fili");
+let Fili = require("fili");
 
 export class FilterDataSource implements ISensorDataProvider {
-    private _onData = new EventDispatcher<ISingleComponentSensor, SensorData>();
-    private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
-    private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
+    private _onData = new EventDispatcher<ISingleComponentSensorBase, SensorData>();
+    private _onMessage = new EventDispatcher<ISingleComponentSensorBase, SensorMessageEventArgs>();
+    private _onClose = new EventDispatcher<ISingleComponentSensorBase, string>();
 
     private avgRatio: number = 1;
     private fc: number = 100;
@@ -78,7 +78,7 @@ export class FilterDataSource implements ISensorDataProvider {
 
         // calculate filter coefficients
         let samples = 5000 / this.avgRatio;
-        var iirFilterCoeffs = iirCalculator.lowpass({
+        let iirFilterCoeffs = iirCalculator.lowpass({
             order: this.order, // cascade 3 biquad filters (max: 12)
             characteristic: this.filterType,
             Fs: samples, // sampling frequency
@@ -86,19 +86,19 @@ export class FilterDataSource implements ISensorDataProvider {
             BW: 1, // bandwidth only for bandstop and bandpass filters - optional
             gain: 0, // gain for peak, lowshelf and highshelf
             preGain: false, // adds one constant multiplication for highpass and lowpass
-            // k = (1 + cos(omega)) * 0.5 / k = 1 with preGain == false
+            // k = (1 + cos(omega)) * 0.5 / k = 1 with preGain === false
         });
 
         this.filter = new Fili.IirFilter(iirFilterCoeffs);
     };
 
-    get onData(): IEvent<ISingleComponentSensor, SensorData> {
+    get onData(): IEvent<ISingleComponentSensorBase, SensorData> {
         return this._onData.asEvent();
     }
-    get onClose(): IEvent<ISingleComponentSensor, string> {
+    get onClose(): IEvent<ISingleComponentSensorBase, string> {
         return this._onClose.asEvent();
     }
-    get onMessage(): IEvent<ISingleComponentSensor, SensorMessageEventArgs> {
+    get onMessage(): IEvent<ISingleComponentSensorBase, SensorMessageEventArgs> {
         return this._onMessage.asEvent();
     }
 }

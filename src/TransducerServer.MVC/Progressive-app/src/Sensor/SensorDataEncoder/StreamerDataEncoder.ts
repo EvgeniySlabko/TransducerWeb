@@ -1,6 +1,6 @@
 import { IReaderWriter } from "../../IO/IReaderWriter";
 import { SensorData, StramingPackageType } from "../SensorDefinitions";
-import { ADCFrequency } from "../SingleComponentSensor.ts/ISingleComponentSensor";
+import { ADCFrequency } from "../SingleComponentSensor.ts/ISingleComponentSensorBase";
 import { CalculateTime, ISensorStreamerDataEncoder, SreamigSensorDataHeader } from "./ISensorStreamerDataEncoder";
 import { ModBusSensorDataCommandEncoder } from "./ModBusSensorDataEncoder";
 
@@ -30,7 +30,7 @@ export class SensorStreamerDataEncoder extends ModBusSensorDataCommandEncoder im
     }
 
     async GetTorque(avgRatio: number, currentTime: number): Promise<SensorData> {
-        var datatorque = await this.readerWriter.Read(this.size - 4);
+        let datatorque = await this.readerWriter.Read(this.size - 4);
         //console.log("seize", size);
         //console.log("Process T: ", datatorque);
 
@@ -43,17 +43,17 @@ export class SensorStreamerDataEncoder extends ModBusSensorDataCommandEncoder im
         let verified = this.VerifyCRC16Bytes(allBytes, expectedCrc);
 
         const torqView = new DataView(datatorque.buffer);
-        var bufferCount = torqView.getUint8(0);
-        var dataCount = torqView.getUint8(1);
+        let bufferCount = torqView.getUint8(0);
+        let dataCount = torqView.getUint8(1);
 
-        var torqArgs: SensorData = {
+        let torqArgs: SensorData = {
             data: new Array(dataCount),
             time: new Array(dataCount),
         };
 
         let interval = 1 / (ADCFrequency / avgRatio);
         for (let i = 0; i < dataCount; i++) {
-            var value = torqView.getFloat32(2 + i * 4, true);
+            let value = torqView.getFloat32(2 + i * 4, true);
 
             torqArgs.data[i] = value;
             torqArgs.time[i] = currentTime + i * interval;
@@ -63,7 +63,7 @@ export class SensorStreamerDataEncoder extends ModBusSensorDataCommandEncoder im
     }
 
     async GetSpeed(currentTime: number): Promise<SensorData> {
-        var dataSpeed = await this.readerWriter.Read(this.size - 4);
+        let dataSpeed = await this.readerWriter.Read(this.size - 4);
 
         let crc = this.ReadCRC();
         let allBytes = new Uint8Array(this.headerBytes.length + dataSpeed.length + 1);
@@ -74,8 +74,8 @@ export class SensorStreamerDataEncoder extends ModBusSensorDataCommandEncoder im
         let verified = this.VerifyCRC16Bytes(allBytes, expectedCrc);
         //console.log("Process S: ", dataSpeed);
         const speedView = new DataView(dataSpeed.buffer);
-        var speed = speedView.getFloat32(0, true);
-        var dataArgs: SensorData = {
+        let speed = speedView.getFloat32(0, true);
+        let dataArgs: SensorData = {
             data: [speed],
             time: [currentTime],
         };
@@ -83,7 +83,7 @@ export class SensorStreamerDataEncoder extends ModBusSensorDataCommandEncoder im
         return dataArgs;
     }
     async GetTemperature(currentTime: number): Promise<SensorData> {
-        var dataTemperature = await this.readerWriter.Read(this.size - 4);
+        let dataTemperature = await this.readerWriter.Read(this.size - 4);
 
         let crc = this.ReadCRC();
         let allBytes = new Uint8Array(this.headerBytes.length + dataTemperature.length + 1);
@@ -94,8 +94,8 @@ export class SensorStreamerDataEncoder extends ModBusSensorDataCommandEncoder im
         let verified = this.VerifyCRC16Bytes(allBytes, expectedCrc);
 
         const temperatureView = new DataView(dataTemperature.buffer);
-        var temperature = temperatureView.getFloat32(0, true);
-        var tmpArgs: SensorData = {
+        let temperature = temperatureView.getFloat32(0, true);
+        let tmpArgs: SensorData = {
             data: [temperature],
             time: [currentTime],
         };
@@ -104,7 +104,7 @@ export class SensorStreamerDataEncoder extends ModBusSensorDataCommandEncoder im
     }
 
     async GetMessage(): Promise<number[]> {
-        var dataMsg = await this.readerWriter.Read(this.size - 4);
+        let dataMsg = await this.readerWriter.Read(this.size - 4);
 
         let crc = this.ReadCRC();
         let allBytes = new Uint8Array(this.headerBytes.length + dataMsg.length + 1);
@@ -115,9 +115,9 @@ export class SensorStreamerDataEncoder extends ModBusSensorDataCommandEncoder im
         let verified = this.VerifyCRC16Bytes(allBytes, expectedCrc);
 
         const msgView = new DataView(dataMsg.buffer);
-        var msgCount = msgView.getUint16(0, true);
+        let msgCount = msgView.getUint16(0, true);
         for (let i = 0; i < msgCount; i++) {
-            var msg = msgView.getUint16(2 + i * 2);
+            let msg = msgView.getUint16(2 + i * 2);
             //console.log("Message: ", msg);
         }
 

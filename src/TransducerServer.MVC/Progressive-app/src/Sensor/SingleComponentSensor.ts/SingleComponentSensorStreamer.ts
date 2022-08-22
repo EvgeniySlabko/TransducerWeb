@@ -8,7 +8,6 @@ import { SingleComponentSensorBase } from "./SingleComponentSensorBase";
 export class SingleComponentSensor extends SingleComponentSensorBase {
     private seensorDataCommandReceiver: ISensorStreamerDataEncoder;
 
-    private requiredStopStreaming: boolean = false;
     protected timeBase: number = 0;
     //private serialWorker: IReaderWriter;
     constructor(sensorIOWorker: ISensorIOWorker, commandFactory: ISensorCommandFacory, seensorDataCommandReceiver: ISensorStreamerDataEncoder, sensorCommandWriter: ISensorCommandWriter, id: string) {
@@ -17,14 +16,13 @@ export class SingleComponentSensor extends SingleComponentSensorBase {
     }
 
     public async CloseConnection() {
-        this.requiredStopStreaming = true;
-        super.CloseConnection();
+        await super.CloseConnection();
     }
 
     public async SetT0() {
         let holdingRegisters = await this.GetHoldingRegisters();
         this.timeBase = CalculateTime(holdingRegisters.TimeLow, holdingRegisters.TimeHigh);
-        super.SetT0();
+        await super.SetT0();
     }
 
     protected async ProcessCommand(byte: number): Promise<boolean> {

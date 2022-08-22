@@ -35,7 +35,7 @@ export async function CeateSensorWorker(decoderType: DecoderType): Promise<Senso
         }
 
         case "USB":{
-            let device = await GetUsbDevice()
+            let device = await GetUsbDevice();
             let sensor = await CreateUSBSensor(device);
             return new SensorWorker(sensor, CreateDecoderParameters(decoderType), decoderType);
         }

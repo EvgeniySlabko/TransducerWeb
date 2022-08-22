@@ -13,7 +13,7 @@ declare class ISegmentInfo {
     avgIndex: number;
 }
 
-export const MaxFrameSize = 550000; // Если больше, то лагает
+export const MaxFrameSize = 300000; // Если больше, то лагает
 
 export class PlotBufferManager {
     private readonly maxFrameTimeRange: number; // максимальная величина Range при которой не будет видно переключения перекресных буфферов (в секундах)
@@ -157,7 +157,7 @@ export class PlotBufferManager {
         let framesBufferIndex2 = this.tickToGridIndex(expandToTime) - this.frameSize / 2;
 
         this.HandleFramesBuffer(this.frames, framesBufferIndex1, () => {
-            if (this.frames.length != 0) {
+            if (this.frames.length !== 0) {
                 let lastFrame = this.frames[this.frames.length - 1];
                 return lastFrame[0][lastFrame[0].length - 1] + this.dt;
             }
@@ -166,7 +166,7 @@ export class PlotBufferManager {
         });
 
         this.HandleFramesBuffer(this.frames2, framesBufferIndex2, () => {
-            if (this.frames2.length != 0) {
+            if (this.frames2.length !== 0) {
                 let lastFrame = this.frames2[this.frames2.length - 1];
                 return lastFrame[0][lastFrame[0].length - 1] + this.dt;
             }

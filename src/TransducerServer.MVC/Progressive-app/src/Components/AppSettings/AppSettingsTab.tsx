@@ -40,7 +40,7 @@ export class AppSettingsTab extends React.Component<Props, IState> {
     onPointsPerSecondChanged = (value: number) =>
         this.setState({
             pointsPerSecond: value,
-            werePlotSettingsChanges: value != this.state.pointsPerSecond,
+            werePlotSettingsChanges: value !== this.state.pointsPerSecond,
         });
 
     onClose = () => {

@@ -2,21 +2,21 @@ import { PlotChannelStyle as PlotChannelStyle } from "../ChannelStyle/PlotChanne
 import { ISensorDataProvider } from "../SensorDataSource/ISensorDataProvider";
 import { EventDispatcher } from "strongly-typed-events";
 import { SensorData, SensorMessageEventArgs } from "../../Sensor/SensorDefinitions";
-import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
+import { ISingleComponentSensorBase } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensorBase";
 //import { CreateDefaultStyle } from "./ChannelStyleFactory";
 
 export type PlotChannelDataArgs = {
-    sensor: ISingleComponentSensor;
+    sensor: ISingleComponentSensorBase;
     data: SensorData;
 };
 
 export type PlotChannelMessageArgs = {
-    sensor: ISingleComponentSensor;
+    sensor: ISingleComponentSensorBase;
     sensorMsgArgs: SensorMessageEventArgs;
 };
 
 export type PlotChannelCloseArgs = {
-    sensor: ISingleComponentSensor;
+    sensor: ISingleComponentSensorBase;
     msg: string;
 };
 

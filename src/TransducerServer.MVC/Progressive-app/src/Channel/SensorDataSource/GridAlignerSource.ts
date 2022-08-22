@@ -1,13 +1,13 @@
 import { EventDispatcher, IEvent } from "strongly-typed-events";
 import { Equals } from "../../Common/Common";
-import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
+import { ISingleComponentSensorBase } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensorBase";
 import { SensorData, SensorMessage, SensorMessageEventArgs } from "../../Sensor/SensorDefinitions";
 import { ISensorDataProvider } from "./ISensorDataProvider";
 
 export class GridAlignerSource implements ISensorDataProvider {
-    private _onData = new EventDispatcher<ISingleComponentSensor, SensorData>();
-    private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
-    private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
+    private _onData = new EventDispatcher<ISingleComponentSensorBase, SensorData>();
+    private _onMessage = new EventDispatcher<ISingleComponentSensorBase, SensorMessageEventArgs>();
+    private _onClose = new EventDispatcher<ISingleComponentSensorBase, string>();
 
     private dt: number = 0.02;
 
@@ -21,7 +21,7 @@ export class GridAlignerSource implements ISensorDataProvider {
         });
 
         baseSource.onMessage.sub((sender, args) => {
-            if (args.msgType == SensorMessage.StopStreaming) this.reset();
+            if (args.msgType === SensorMessage.StopStreaming) this.reset();
             this._onMessage.dispatch(sender, args);
         });
 
@@ -34,7 +34,7 @@ export class GridAlignerSource implements ISensorDataProvider {
             for (let i = 0; i < data.time.length; i++) {
                 let gridTime = this.toGridTime(data.time[i]);
                 if (!Equals(gridTime, this.currentGridTime)) {
-                    if (this.currentAvgCount != 0) {
+                    if (this.currentAvgCount !== 0) {
                         let avgValue = this.currentAvgValue / this.currentAvgCount;
                         sensorData.data.push(avgValue), sensorData.time.push(this.currentGridTime);
                     }
@@ -47,7 +47,7 @@ export class GridAlignerSource implements ISensorDataProvider {
                 this.currentAvgCount++;
             }
 
-            if (sensorData.time.length != 0) this._onData.dispatch(sensor, sensorData);
+            if (sensorData.time.length !== 0) this._onData.dispatch(sensor, sensorData);
         });
     }
 
@@ -67,13 +67,13 @@ export class GridAlignerSource implements ISensorDataProvider {
         this.currentAvgCount = 0;
     };
 
-    get onData(): IEvent<ISingleComponentSensor, SensorData> {
+    get onData(): IEvent<ISingleComponentSensorBase, SensorData> {
         return this._onData.asEvent();
     }
-    get onClose(): IEvent<ISingleComponentSensor, string> {
+    get onClose(): IEvent<ISingleComponentSensorBase, string> {
         return this._onClose.asEvent();
     }
-    get onMessage(): IEvent<ISingleComponentSensor, SensorMessageEventArgs> {
+    get onMessage(): IEvent<ISingleComponentSensorBase, SensorMessageEventArgs> {
         return this._onMessage.asEvent();
     }
 }

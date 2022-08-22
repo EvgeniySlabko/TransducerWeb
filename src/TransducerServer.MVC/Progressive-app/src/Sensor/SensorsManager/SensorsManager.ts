@@ -43,7 +43,7 @@ export class SensorController {
 
         let fullSensorInfo = await GetFullSensorInfo(sensorWorker);
 
-        var node: SensorNode = {
+        let node: SensorNode = {
             sensorWorker: sensorWorker,
             fullSensorInfo: fullSensorInfo,
         };
@@ -51,7 +51,7 @@ export class SensorController {
         this.sensors.push(node);
 
         sensorWorker.onClose.sub(() => {
-            var index = this.GetIndex(sensorWorker);
+            let index = this.GetIndex(sensorWorker);
             this.sensors.splice(index, 1);
         });
 
@@ -63,7 +63,7 @@ export class SensorController {
     }
 
     public async RemoveSensor(sensorWorker: SensorWorker) {
-        var index = this.GetIndex(sensorWorker);
+        let index = this.GetIndex(sensorWorker);
         try {
             console.debug("Removing sensor.");
             let node = this.sensors[index];
@@ -71,32 +71,31 @@ export class SensorController {
         } catch (ex) {
             console.warn("Error while removing sensor.", ex);
         } finally {
-            this.sensors.splice(index, 1);
+            //this.sensors.splice(index, 1);
         }
     }
 
     public async SetT0() {
-        if (this.sensors.length == 0) return false;
-        this.sensors.forEach(async (node) => {
-            await node.sensorWorker.SetT0();
-        });
+        if (this.sensors.length === 0) return false;
+        for (let i = 0; i < this.sensors.length; i++) {
+            await this.sensors[i].sensorWorker.SetT0();
+        }
     }
 
     public async StartAll(): Promise<boolean> {
-        if (this.sensors.length == 0) return false;
+        if (this.sensors.length === 0) return false;
 
-        this.sensors.forEach(async (node) => {
-            await node.sensorWorker.StartStreaming();
-        });
+        for (let i = 0; i < this.sensors.length; i++) {
+            await this.sensors[i].sensorWorker.StartStreaming();
+        }
 
         return true;
     }
 
     public async StopAll() {
-        this.sensors.forEach(async (node) => {
-            await node.sensorWorker.StopStreaming();
-            //await node.worker.StopReading();
-        });
+        for (let i = 0; i < this.sensors.length; i++) {
+            await this.sensors[i].sensorWorker.StopStreaming();
+        }
     }
 
     public GetAllSensors(): SensorNode[] {

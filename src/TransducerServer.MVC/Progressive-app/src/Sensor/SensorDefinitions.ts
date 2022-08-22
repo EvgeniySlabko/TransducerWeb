@@ -52,7 +52,7 @@ export enum InputRegistersAddresses {
     Message8 = 14,
     Message9 = 15,
     Message10 = 16,
-    FirmvareVersion = 17,
+    FirmleteVersion = 17,
 }
 
 export enum SensorCoilValue {
@@ -101,7 +101,7 @@ export class HoldingRegisters {
     public flags: Flags;
     private registers: number[];
     constructor(registers: number[]) {
-        if (registers == null || registers.length != 5) throw "Invalid holding registers";
+        if (registers === null || registers.length !== 5) throw "Invalid holding registers";
 
         this.flags = new Flags(registers[0]);
         this.registers = registers;
@@ -136,28 +136,28 @@ export class Flags {
     }
 
     public get StartStop() {
-        return (1 & this.flags) != 0;
+        return (1 & this.flags) !== 0;
     } // 0 (0x01) - Старт/Стоп измерений
     public get StreamingTransfer() {
-        return (2 & this.flags) != 0;
+        return (2 & this.flags) !== 0;
     } // 1 (0x02) - Потоковая передача
     public get ExternalRFT() {
-        return (8 & this.flags) != 0;
+        return (8 & this.flags) !== 0;
     } // 2 (0x04) - Внешний датчик скорости
     public get UsingFloat() {
-        return (16 & this.flags) != 0;
+        return (16 & this.flags) !== 0;
     } // 3 (0x08) - Использование чисел с плавающей точкой
     public get DataConversion() {
-        return (32 & this.flags) != 0;
+        return (32 & this.flags) !== 0;
     } // 4 (0x10) - Пересчитанные к фиксир системе координат или исходные значения
     public get ComputerConnection() {
-        return (64 & this.flags) != 0;
+        return (64 & this.flags) !== 0;
     } // 5 (0x20) - Соединение с компьютером установлено
     public get Pronometer() {
-        return (128 & this.flags) != 0;
+        return (128 & this.flags) !== 0;
     } // 6 (0x40) - Подключен угломер
     public get ControlButton() {
-        return (254 & this.flags) != 0;
+        return (254 & this.flags) !== 0;
     } // 7 (0x80) - Есть кнопка запуска/останова измерений
 }
 

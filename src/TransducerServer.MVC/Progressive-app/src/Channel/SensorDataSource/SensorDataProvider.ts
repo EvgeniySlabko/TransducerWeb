@@ -1,12 +1,13 @@
 import { EventDispatcher } from "strongly-typed-events";
-import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
+import { ISingleComponentSensorBase } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensorBase";
 import { SensorData, SensorMessageEventArgs } from "../../Sensor/SensorDefinitions";
 import { DataSourseType, ISensorDataProvider } from "./ISensorDataProvider";
+import { ISingleComponentSensor } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensor";
 
 export class SensorDataProvider implements ISensorDataProvider {
-    private _onData = new EventDispatcher<ISingleComponentSensor, SensorData>();
-    private _onMessage = new EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs>();
-    private _onClose = new EventDispatcher<ISingleComponentSensor, string>();
+    private _onData = new EventDispatcher<ISingleComponentSensorBase, SensorData>();
+    private _onMessage = new EventDispatcher<ISingleComponentSensorBase, SensorMessageEventArgs>();
+    private _onClose = new EventDispatcher<ISingleComponentSensorBase, string>();
 
     constructor(sensor: ISingleComponentSensor, sensorDataType: DataSourseType) {
         sensor.onClose.sub((sensor, msg) => this._onClose.dispatch(sensor, msg));
@@ -28,16 +29,18 @@ export class SensorDataProvider implements ISensorDataProvider {
                     this._onData.dispatch(sensor, data);
                 });
                 break;
+            default:
+                throw new Error('Invalid Sensor data type.'); 
         }
     }
 
-    get onData(): EventDispatcher<ISingleComponentSensor, SensorData> {
+    get onData(): EventDispatcher<ISingleComponentSensorBase, SensorData> {
         return this._onData;
     }
-    get onClose(): EventDispatcher<ISingleComponentSensor, string> {
+    get onClose(): EventDispatcher<ISingleComponentSensorBase, string> {
         return this._onClose;
     }
-    get onMessage(): EventDispatcher<ISingleComponentSensor, SensorMessageEventArgs> {
+    get onMessage(): EventDispatcher<ISingleComponentSensorBase, SensorMessageEventArgs> {
         return this._onMessage;
     }
 }

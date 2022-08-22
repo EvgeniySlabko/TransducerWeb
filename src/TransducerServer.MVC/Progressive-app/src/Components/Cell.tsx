@@ -58,7 +58,7 @@ export class Cell extends React.Component<Props, IState> {
             overload = true;
         }
 
-        if (this.state.overload != overload) {
+        if (this.state.overload !== overload) {
             this.setState((prev, props) => ({
                 overload: overload,
             }));

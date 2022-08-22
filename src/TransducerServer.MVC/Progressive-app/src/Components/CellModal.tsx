@@ -87,7 +87,7 @@ export class CellModal extends React.Component<Props, IState> {
 
                         <MenuItem label="Знаков после запятой:" children={<InputNumber className="vertical-alignment" size="small" style={{ height: "25px" }} step={1} min={0} max={5} value={this.state.accurency} onChange={this.changeAccurency} />} />
 
-                        <MenuItem label="Пределы измерений:" children={<Checkbox disabled={this.props.group.cellChannel.Style.limits === undefined} defaultChecked={this.state != undefined && this.props.group.plotChannel.Style.drawLimits} onChange={(s) => this.limitHandler(s.target.checked)} />} />
+                        <MenuItem label="Пределы измерений:" children={<Checkbox disabled={this.props.group.cellChannel.Style.limits === undefined} defaultChecked={this.state !== undefined && this.props.group.plotChannel.Style.drawLimits} onChange={(s) => this.limitHandler(s.target.checked)} />} />
                     </div>
                 </Modal>
             </div>

@@ -48,6 +48,7 @@
     },
     "scripts": {
         "build": "npx webpack-cli build",
+        "tslint": "tslint --project tsconfig.json",
         "start": "npx webpack serve",
         "snyk-protect": "snyk protect",
         "prepublish": "npm run snyk-protect",

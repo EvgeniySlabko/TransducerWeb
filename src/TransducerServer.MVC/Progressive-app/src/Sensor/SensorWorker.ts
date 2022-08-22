@@ -47,15 +47,15 @@ export class SensorWorker {
         console.debug(this.name, "Start initializing");
         try {
             await this.sensor.Initialize();
+            await this.sensor.StopStreaming();
             await this.sensor.SetComputerConnection();
             await this.sensor.SetT0();
             await this.sensor.SetAvgRatio(1);
             await this.sensor.SetUsingFloatState(true);
-        } catch {
+        } catch(ex) {
             await this.sensor.CloseConnection();
-            return;
+            throw ex;
         }
-        //await this.startReading();
 
         console.debug(this.name, "Initialization finished.");
         this.isStreaming = false;
@@ -129,9 +129,4 @@ export class SensorWorker {
     public get onClose() {
         return this._onClose.asEvent();
     }
-
-    //startReading = async () => {
-    // await this.sensor.StartMeasuring(false);
-    // await this.sensor.StartMeasuring(true);
-    //}
 }

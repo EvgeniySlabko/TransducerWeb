@@ -104,7 +104,7 @@ export class MyUPlotBase {
         let series: uPlot.Series;
         let index = this.seriesInfos.length + 1;
 
-        let sameTypeChannel = this.seriesInfos.find((s) => s.style.valueType == style.valueType);
+        let sameTypeChannel = this.seriesInfos.find((s) => s.style.valueType === style.valueType);
 
         if (sameTypeChannel) {
             let scaleName = <string>sameTypeChannel.axis.scale;
@@ -128,7 +128,7 @@ export class MyUPlotBase {
 
             range = [style.range[0], style.range[1]];
 
-            axis.side = style.yAxeSide == "left" ? 1 : 3;
+            axis.side = style.yAxeSide === "left" ? 1 : 3;
             axis.stroke = style.axisColor;
             axis.show = true;
             axis.label = style.yTitle;
@@ -151,7 +151,7 @@ export class MyUPlotBase {
                 range: () => range,
                 value: limitValue,
                 enabled: () => {
-                    return (this.legendItems && this.legendItems.at(index) ? this.legendItems[index].isActive() : false) && style.drawLimits != undefined && style.drawLimits;
+                    return (this.legendItems && this.legendItems.at(index) ? this.legendItems[index].isActive() : false) && style.drawLimits !== undefined && style.drawLimits;
                 },
             });
         };
@@ -196,7 +196,7 @@ export class MyUPlotBase {
         let summaryOthersWidth = 0;
         let childrens = this.parent!.children;
         for (let i = 0; i < childrens.length; i++) {
-            if (childrens[i] != this.element) summaryOthersWidth += childrens[i].clientWidth;
+            if (childrens[i] !== this.element) summaryOthersWidth += childrens[i].clientWidth;
         }
         return {
             width: this.parent!.clientWidth - summaryOthersWidth,
@@ -238,7 +238,7 @@ export class MyUPlotBase {
                     });
                     // wheel drag pan
                     over.addEventListener("mousedown", (e: any) => {
-                        if (e.button == 2) {
+                        if (e.button === 2) {
                             e.preventDefault();
 
                             let left0 = e.clientX;
@@ -446,7 +446,7 @@ export class MyUPlotBase {
                     values: (u, vals, space) =>
                         vals.map((v) => {
                             let rounded = v.toFixed(4).replace(/0*$/, "");
-                            if (rounded[rounded.length - 1] == ".") {
+                            if (rounded[rounded.length - 1] === ".") {
                                 rounded = rounded.replace(".", "");
                             }
 
@@ -485,7 +485,7 @@ export class MyUPlotBase {
                 ],
                 setSelect: [
                     (u) => {
-                        if (u.select.width == 0) return;
+                        if (u.select.width === 0) return;
                         this.SelectCommited();
                         let min = u.posToVal(u.select.left, "x");
                         let max = u.posToVal(u.select.left + u.select.width, "x");
@@ -526,8 +526,8 @@ export class MyUPlotBase {
                 this._data = currentBuffer;
             }
 
-            this.plot?.redraw(true, true);
-        }, 30); // отрисовка
+            this.plot?.redraw(true, false);
+        }, 50); // отрисовка
 
         setTimeout(() => this.InitLegend(), 100);
         setTimeout(() => this.InitAxes(), 100);
@@ -575,7 +575,7 @@ export class MyUPlotBase {
         value[0].addEventListener("DOMSubtreeModified", function (e) {
             let val = value[0].innerHTML;
             e.stopPropagation();
-            if (val != "--" && val != prev && val.length != 0 && val[val.length - 1] != "с") {
+            if (val !== "--" && val !== prev && val.length !== 0 && val[val.length - 1] !== "с") {
                 let newVal = val + " с";
                 value[0].innerHTML = newVal;
                 prev = newVal;
@@ -725,7 +725,7 @@ export class MyUPlotBase {
             dragStart = true;
             yCoord = e.clientY;
             xCoord = e.clientX;
-            initRange = i == 0 ? [this.params.range[0], this.params.range[1]] : [this.seriesInfos[i - 1].curRange[0], this.seriesInfos[i - 1].curRange[1]];
+            initRange = i === 0 ? [this.params.range[0], this.params.range[1]] : [this.seriesInfos[i - 1].curRange[0], this.seriesInfos[i - 1].curRange[1]];
             initRangeValue = initRange[1] - initRange[0];
             // console.debug(`yCoord: (${yCoord})`);
             // console.debug(`xCoord: (${xCoord})`);
@@ -737,7 +737,7 @@ export class MyUPlotBase {
 
         document.addEventListener("mousemove", (e: any) => {
             if (dragStart) {
-                if (i == 0) {
+                if (i === 0) {
                     let curX = e.clientX;
                     let divWidth = divAxis.clientWidth;
                     let cursorDx = curX - xCoord;
@@ -760,7 +760,7 @@ export class MyUPlotBase {
             }
         });
 
-        if (i != 0) {
+        if (i !== 0) {
             divAxis.addEventListener("mousewheel", (e: any) => {
                 e.preventDefault();
                 this.AxisZoom(i, e.deltaY);

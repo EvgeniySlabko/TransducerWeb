@@ -79,7 +79,7 @@ export class Navbar extends React.Component<Props, IState> {
         let input = document.createElement("input");
         input.type = "file";
         input.onchange = async () => {
-            if (input.files && input.files?.length != 1) return;
+            if (input.files && input.files?.length !== 1) return;
             let file = input.files?.item(0);
             if (!file) return;
 
@@ -97,7 +97,7 @@ export class Navbar extends React.Component<Props, IState> {
     handleScreen = async () => {
         let screen = await this.props.plotsManager?.MakeScreen();
         if (screen) {
-            var anchor = document.createElement("a");
+            let anchor = document.createElement("a");
             anchor.setAttribute("download", "screen.png");
             anchor.setAttribute("href", screen);
             anchor.click();
@@ -167,6 +167,8 @@ export class Navbar extends React.Component<Props, IState> {
                 <Button title="Открыть отчет. (O)" size="large" id="openfile" shape="default" icon={<FolderOpenOutlined />} onClick={this.onOpenReportClick} />
 
                 <Button title="Настройки." disabled={this.props.streaming || !this.props.allowSettings} size="large" id="openfile" shape="default" icon={<SettingOutlined />} onClick={this.handleSettings} />
+
+
 
                 {!this.props.reportVieving ? <></> : <Button title="Сохранить как CSV файл." size="large" id="openfile" shape="default" icon={<FileSyncOutlined />} onClick={this.props.exportCsv} />}
 

@@ -12,10 +12,10 @@ export class SerialBufferedWorker implements IReaderWriter {
     }
 
     public async Read(count: number): Promise<Uint8Array> {
-        var result = new Uint8Array(count);
-        var currentCount: number = 0;
+        let result = new Uint8Array(count);
+        let currentCount: number = 0;
         while (this.queue.length < count) {
-            var chank = await this.baseWorker.GetChunk();
+            let chank = await this.baseWorker.GetChunk();
             for (let i = 0; i < chank.length; i++) {
                 this.queue.append(chank[i]);
             }

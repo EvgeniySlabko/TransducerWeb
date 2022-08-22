@@ -6,6 +6,7 @@ import { recordController, sensorService } from "./initialStartup";
 
 import { CRC16MODBUS } from "./IO/CRC-16";
 
+
 require("../css/styles.css");
 require("../css/grow.css");
 require("../css/measureCell.css");

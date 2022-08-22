@@ -95,7 +95,7 @@ export class ModBusSensorDataCommandEncoder implements ISensorDataCommandEncoder
     }
 
     public async GetID(): Promise<SensorSK> {
-        var data = await this.readerWriter.Read(60);
+        let data = await this.readerWriter.Read(60);
 
         let allBytes = new Uint8Array(data.length + 4);
         allBytes.set([this.lastCommand], 0);
@@ -103,8 +103,8 @@ export class ModBusSensorDataCommandEncoder implements ISensorDataCommandEncoder
         let expectedCrc = await this.ReadCRC();
         let verified = this.VerifyCRC16Bytes(allBytes, expectedCrc);
 
-        var idView = new DataView(data.buffer);
-        var sk = new SensorSK();
+        let idView = new DataView(data.buffer);
+        let sk = new SensorSK();
         Object.assign(sk.ID, data.slice(0, 3));
         sk.Temperature = idView.getUint8(3);
         sk.Korrect = idView.getUint8(4);

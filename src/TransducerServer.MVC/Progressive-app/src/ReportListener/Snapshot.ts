@@ -53,7 +53,7 @@ export class Snapshot {
     }
 
     public async ToFile(stream: FileSystemFileHandle) {
-        var parts = new Array<string>();
+        let parts = new Array<string>();
         let report: Report = {
             data: {
                 trackData: this.data,
@@ -62,7 +62,7 @@ export class Snapshot {
         };
 
         parts.push(JSON.stringify(report));
-        var blob = new Blob(parts, {
+        let blob = new Blob(parts, {
             type: "text/plain;charset=utf-8",
             endings: "native",
         });
