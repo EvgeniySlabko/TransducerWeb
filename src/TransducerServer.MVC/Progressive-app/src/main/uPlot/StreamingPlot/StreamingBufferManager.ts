@@ -13,7 +13,7 @@ declare class ISegmentInfo {
     avgIndex: number;
 }
 
-export const MaxFrameSize = 300000; // Если больше, то лагает
+export const MaxFrameSize = 200000; // Если больше, то лагает
 
 export class PlotBufferManager {
     private readonly maxFrameTimeRange: number; // максимальная величина Range при которой не будет видно переключения перекресных буфферов (в секундах)

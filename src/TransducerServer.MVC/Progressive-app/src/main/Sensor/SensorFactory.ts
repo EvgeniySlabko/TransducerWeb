@@ -19,7 +19,14 @@ import { UsbWorker } from "../IO/UsbIOWorker";
 export type DecoderType = "USB" | "RS485" | "VCOM" | "Faker";
 
 export const Timeout = 100;
+const worker = new Worker('worker.ts');
 
+worker.onmessage = (event) => {
+    // Ideally, I should be able to reference types from the worker:
+   console.log(event);
+  };
+
+navigator.serviceWorker.register('sw.js');
 export async function CeateSensorWorker(decoderType: DecoderType): Promise<SensorWorker> {
     console.info("Creating sensor worker: ", decoderType);
     switch (decoderType) {
@@ -35,7 +42,11 @@ export async function CeateSensorWorker(decoderType: DecoderType): Promise<Senso
         }
 
         case "USB":{
+            //
+            self.postMessage("123");
+            
             let device = await GetUsbDevice();
+            let interfaces = device.configuration?.interfaces;
             let sensor = await CreateUSBSensor(device);
             return new SensorWorker(sensor, CreateDecoderParameters(decoderType), decoderType);
         }
@@ -125,6 +136,7 @@ async function GetUsbDevice() {
         let device = await  navigator.usb.requestDevice({filters: []});
         return device
     }
+    
     catch (ex){
         console.warn("Error while requesting usb: ", ex);
         throw ex;

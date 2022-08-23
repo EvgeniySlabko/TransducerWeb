@@ -24,7 +24,8 @@ export class UsbWorker implements IReaderWriter {
     public async Write(data: Uint8Array) {
         let result = await this.device.transferOut(usbEndpoint, data);
         if (result.status != "ok") {
-            throw Error("Reading error. Usb status: " + result.status as string);
+            console.warn("Usb wrete result status: ", result.status);
+            throw "Reading error."
         }
     }
 

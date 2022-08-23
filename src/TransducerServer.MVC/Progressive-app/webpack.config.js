@@ -4,7 +4,7 @@ const path = require("path");
 
 module.exports = {
     devtool: "inline-source-map",
-    entry: "./src/main.tsx",
+    entry: "./src/main/main.tsx",
     mode: "development",
     //mode: 'production',
 

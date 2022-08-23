@@ -527,7 +527,7 @@ export class MyUPlotBase {
             }
 
             this.plot?.redraw(true, false);
-        }, 50); // отрисовка
+        }, 30); // отрисовка
 
         setTimeout(() => this.InitLegend(), 100);
         setTimeout(() => this.InitAxes(), 100);

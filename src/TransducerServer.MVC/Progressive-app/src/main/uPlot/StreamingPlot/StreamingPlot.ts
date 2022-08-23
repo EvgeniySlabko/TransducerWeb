@@ -52,7 +52,7 @@ export class MyUPlot extends MyUPlotBase {
 
     private StartStreamingHandler = (channel: PlotChannel) => {
         let index = this.traces.findIndex((t) => t.channel === channel);
-        if (this.bufferManager!.GetLastSegmentTime(index) !== 0) this.traces[index].requireGap = true;
+        if (this.bufferManager!.GetLastSegmentTime(index) != 0) this.traces[index].requireGap = true;
     };
 
     private HandleData = (channel: PlotChannel, args: PlotChannelDataArgs) => {
@@ -137,7 +137,7 @@ export class MyUPlot extends MyUPlotBase {
 
     protected SeriesDraw(i: number) {
         let channel = this.traces.at(i - 1);
-        if (channel !== undefined) {
+        if (channel != undefined) {
             let existsChannel = channel;
             this.plot!.series[i].stroke = () => existsChannel.channel.Style.color;
             this.plot!.series[i].width = existsChannel.channel.Style.width;
