@@ -8,9 +8,6 @@ export class DefaultSensorDataCommandEncoder implements ISensorDataCommandEncode
     constructor(readerWriter: IReaderWriter) {
         this.readerWriter = readerWriter;
     }
-    public async Close(): Promise<void> {
-        await this.readerWriter.Close();
-    }
 
     public async GetHoldingRegistersAnswer(): Promise<number[]> {
         let bytes = (await this.readerWriter.Read(1))[0];

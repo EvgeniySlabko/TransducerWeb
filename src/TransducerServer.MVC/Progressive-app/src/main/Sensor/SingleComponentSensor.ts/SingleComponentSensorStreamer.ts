@@ -1,4 +1,4 @@
-import { ISensorIOWorker } from "../../SensorIOWorker/ISensorIOWorker";
+import { ISensorConnector } from "../../SensorIOWorker/ISensorConnector";
 import { ISensorCommandFacory } from "../SensorCommand/ISensorCommandFactory";
 import { ISensorCommandWriter } from "../SensorCommandWriter/SensorCommandWriter";
 import { CalculateTime, ISensorStreamerDataEncoder } from "../SensorDataEncoder/ISensorStreamerDataEncoder";
@@ -10,7 +10,7 @@ export class SingleComponentSensor extends SingleComponentSensorBase {
 
     protected timeBase: number = 0;
     //private serialWorker: IReaderWriter;
-    constructor(sensorIOWorker: ISensorIOWorker, commandFactory: ISensorCommandFacory, seensorDataCommandReceiver: ISensorStreamerDataEncoder, sensorCommandWriter: ISensorCommandWriter, id: string) {
+    constructor(sensorIOWorker: ISensorConnector, commandFactory: ISensorCommandFacory, seensorDataCommandReceiver: ISensorStreamerDataEncoder, sensorCommandWriter: ISensorCommandWriter, id: string) {
         super(sensorIOWorker, commandFactory, seensorDataCommandReceiver, sensorCommandWriter, id + " base");
         this.seensorDataCommandReceiver = seensorDataCommandReceiver;
     }

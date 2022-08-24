@@ -1,6 +1,6 @@
 import { EventDispatcher } from "strongly-typed-events";
 import { sleep } from "../../Common/Common";
-import { ISensorIOWorker } from "../../SensorIOWorker/ISensorIOWorker";
+import { ISensorConnector } from "../../SensorIOWorker/ISensorConnector";
 import { ISensorCommand } from "../SensorCommand/DefaultSensorCommands";
 import { ISensorCommandFacory } from "../SensorCommand/ISensorCommandFactory";
 import { ISensorCommandWriter } from "../SensorCommandWriter/SensorCommandWriter";
@@ -12,7 +12,7 @@ export class SingleComponentSensorBase implements ISingleComponentSensorBase {
     public readonly id: string;
     protected readonly baseFrequency: number = 5000;
     protected readonly decoderClock: number = 62500;
-    protected readonly timeout: number = 200; // Максимальное время ожидание ответа на командуж
+    protected readonly timeout: number = 2000000; // Максимальное время ожидание ответа на командуж
 
     protected avgRatio?: number;
     protected speedPeriod?: number;
@@ -28,9 +28,9 @@ export class SingleComponentSensorBase implements ISingleComponentSensorBase {
     protected commandHandlers: Map<number, any> = new Map();
     protected commandFactory: ISensorCommandFacory;
     protected sensorCommandWriter: ISensorCommandWriter;
-    protected sensorIOWorker: ISensorIOWorker;
+    protected sensorIOWorker: ISensorConnector;
 
-    constructor(sensorIOWorker: ISensorIOWorker, commandFactory: ISensorCommandFacory, seensorDataCommandReceiver: ISensorDataCommandEncoder, sensorCommandWriter: ISensorCommandWriter, id: string) {
+    constructor(sensorIOWorker: ISensorConnector, commandFactory: ISensorCommandFacory, seensorDataCommandReceiver: ISensorDataCommandEncoder, sensorCommandWriter: ISensorCommandWriter, id: string) {
         this.id = id;
         this.sensorIOWorker = sensorIOWorker;
         this.sensorDataCommandReceiver = seensorDataCommandReceiver;

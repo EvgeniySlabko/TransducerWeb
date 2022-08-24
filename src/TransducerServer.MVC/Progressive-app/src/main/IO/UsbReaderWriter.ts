@@ -1,7 +1,7 @@
 import { IReaderWriter } from "./IReaderWriter";
 
 const usbEndpoint = 1;
-export class UsbWorker implements IReaderWriter {
+export class UsbReaderWriter implements IReaderWriter {
     private readonly device: USBDevice;
 
     constructor(device: USBDevice) {
@@ -27,9 +27,5 @@ export class UsbWorker implements IReaderWriter {
             console.warn("Usb wrete result status: ", result.status);
             throw "Reading error."
         }
-    }
-
-    public async Close(): Promise<void> {
-        await this.device.close();
     }
 }

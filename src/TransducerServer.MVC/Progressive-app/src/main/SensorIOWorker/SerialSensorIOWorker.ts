@@ -1,9 +1,9 @@
 import { ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
 import { SerialWorker } from "../IO/SerialWorker";
-import { ISensorIOWorker } from "./ISensorIOWorker";
+import { ISensorConnector } from "./ISensorConnector";
 
-export class SerialSensorIOWorker implements ISensorIOWorker {
-    protected _disconnect = new SimpleEventDispatcher<SerialSensorIOWorker>();
+export class SerialSensorConnector implements ISensorConnector {
+    protected _disconnect = new SimpleEventDispatcher<SerialSensorConnector>();
     private serialWorker: SerialWorker;
     constructor(serialWorker: SerialWorker) {
         this.serialWorker = serialWorker;
@@ -15,5 +15,5 @@ export class SerialSensorIOWorker implements ISensorIOWorker {
         await this.serialWorker.Close();
     }
 
-    public OnDisconnect: ISimpleEvent<SerialSensorIOWorker>;
+    public OnDisconnect: ISimpleEvent<SerialSensorConnector>;
 }

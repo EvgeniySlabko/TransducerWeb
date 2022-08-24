@@ -13,11 +13,6 @@ export class ModBusSensorDataCommandEncoder implements ISensorDataCommandEncoder
         this.readerWriter = readerWriter;
     }
 
-    // TODO Remove from here
-    public async Close(): Promise<void> {
-        await this.readerWriter.Close();
-    }
-
     public async GetHoldingRegistersAnswer(): Promise<number[]> {
         let bytes = (await this.readerWriter.Read(1))[0];
         let rowDataBytes = await this.readerWriter.Read(bytes);

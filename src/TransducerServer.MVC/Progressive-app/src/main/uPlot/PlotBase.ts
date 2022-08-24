@@ -141,6 +141,7 @@ export class MyUPlotBase {
         series.width = style.width;
         series.label = style.legendTitle;
         series.points!.stroke = style.color;
+        series.points!.size = 5;
         this.options.series.push(series);
 
         let addLimit = (limitValue: number) => {

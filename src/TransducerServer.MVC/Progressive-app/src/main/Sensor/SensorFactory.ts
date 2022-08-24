@@ -1,6 +1,13 @@
 import { SerialBufferedWorker } from "../IO/SerialBufferWorker";
 import { SerialWorker } from "../IO/SerialWorker";
-import { SerialSensorIOWorker } from "../SensorIOWorker/SerialSensorIOWorker";
+import { UsbReaderWriter } from "../IO/UsbReaderWriter";
+import { ReaderWriterWorkerWrapper } from "../IO/WorkerIOWrapper";
+import { SensorConnectorWorkerWrapper } from "../SensorIOWorker/SensorConnectorWorkerWrapper";
+import { SerialSensorConnector } from "../SensorIOWorker/SerialSensorIOWorker";
+import { UsbSensorIOWorker } from "../SensorIOWorker/UsbSensorConnector";
+import { BaudRate, StopBit } from "../Storage/ConnectionParams/ConnectionCommon";
+import { GetRS485Params, GetVCOMParams } from "../Storage/ConnectionParams/ConnectionStorage";
+import { OpenWorkerArgs, WorkerCommandType, WorkerMessage } from "../worker/WorkerTypes";
 import { CreateDecoderParameters } from "./DecoderParameters/DecoderParametersFactory";
 import { CreateDefaultCommandFactory } from "./SensorCommand/DefaultCommandFactory";
 import { CreateModBusCommandFactory } from "./SensorCommand/ModBusCommandFactory";
@@ -8,51 +15,35 @@ import { CreateDefaultSensorCommandWriter } from "./SensorCommandWriter/SensorCo
 import { CreateModBusSensorDataCommandEncoder } from "./SensorDataEncoder/ModBusSensorDataEncoder";
 import { CreateStreamingSensorDataCommandEncoder } from "./SensorDataEncoder/SensorStreamerDataEncoder";
 import { SensorWorker } from "./SensorWorker";
-import { Facker } from "./SingleComponentSensor.ts/Faker/FackerSensor";
 import { SingleComponentSensorExchanger } from "./SingleComponentSensor.ts/Exchanger/SingleComponentSensorExchanger";
+import { Facker } from "./SingleComponentSensor.ts/Faker/FackerSensor";
 import { SingleComponentSensor } from "./SingleComponentSensor.ts/SingleComponentSensorStreamer";
-import { BaudRate, Parity, StopBit } from "../Storage/ConnectionParams/ConnectionCommon";
-import { GetRS485Params, GetVCOMParams } from "../Storage/ConnectionParams/ConnectionStorage";
-import { UsbSensorIOWorker } from "../SensorIOWorker/UsbSensorIOWorker";
-import { UsbWorker } from "../IO/UsbIOWorker";
 
 export type DecoderType = "USB" | "RS485" | "VCOM" | "Faker";
 
 export const Timeout = 100;
-const worker = new Worker('worker.ts');
 
-worker.onmessage = (event) => {
-    // Ideally, I should be able to reference types from the worker:
-   console.log(event);
-  };
-
-navigator.serviceWorker.register('sw.js');
 export async function CeateSensorWorker(decoderType: DecoderType): Promise<SensorWorker> {
     console.info("Creating sensor worker: ", decoderType);
     switch (decoderType) {
         case "RS485": {
             let port = await GetPort();
-            let sensor = await CreateRS485Sensor(port);
-            return new SensorWorker(sensor, CreateDecoderParameters(decoderType), decoderType);
+            let worker = await CreateRS485SensorWorker(port);
+            return worker;
         }
         case "VCOM": {
             let port = await GetPort();
-            let sensor = await CreateVCOMSensor(port);
-            return new SensorWorker(sensor, CreateDecoderParameters(decoderType), decoderType);
+            let worker = await CreateVCOMSensorWorker(port);
+            return worker;
         }
 
         case "USB":{
-            //
-            self.postMessage("123");
-            
-            let device = await GetUsbDevice();
-            let interfaces = device.configuration?.interfaces;
-            let sensor = await CreateUSBSensor(device);
-            return new SensorWorker(sensor, CreateDecoderParameters(decoderType), decoderType);
+            let usbWorker = await CreateUsbWorker();
+            return usbWorker;
         }
 
         case "Faker": {
-            return new SensorWorker(GreateFacker(), CreateDecoderParameters(decoderType), decoderType);
+            return new SensorWorker(CreateFacker(), CreateDecoderParameters(decoderType), decoderType);
         }
         default:
             throw "Invalid decoder type";
@@ -66,7 +57,7 @@ async function CreateUSBSensor(device: USBDevice){
     await device.selectConfiguration(1);
     await device.claimInterface(0);
     let sensorIOWorker = new UsbSensorIOWorker(device);
-    let readerWriter = new UsbWorker(device);
+    let readerWriter = new UsbReaderWriter(device);
 
     let commandFactory = CreateDefaultCommandFactory();
     let seensorDataCommandReceiver = CreateStreamingSensorDataCommandEncoder(readerWriter);
@@ -75,35 +66,38 @@ async function CreateUSBSensor(device: USBDevice){
     return new SingleComponentSensor(sensorIOWorker, commandFactory, seensorDataCommandReceiver, sensorCommandWriter, "Single component USB");
 }
 
-async function CreateVCOMSensor(serialPort: SerialPort): Promise<SingleComponentSensor> {
+async function CreateVCOMSensorWorker(serialPort: SerialPort): Promise<SensorWorker> {
     let parameters = GetVCOMParams();
     let serialWorker = new SerialWorker(serialPort);
     await serialWorker.OpenPort(parameters.baudRate, parameters.parity, parameters.stopBits);
     let bufferedWorker = new SerialBufferedWorker(serialWorker);
-    let sensorIOWorker = new SerialSensorIOWorker(bufferedWorker.baseWorker);
+    let sensorIOWorker = new SerialSensorConnector(bufferedWorker.baseWorker);
 
     let commandFactory = CreateDefaultCommandFactory();
     let seensorDataCommandReceiver = CreateStreamingSensorDataCommandEncoder(bufferedWorker);
     let sensorCommandWriter = CreateDefaultSensorCommandWriter(bufferedWorker);
     
-    return new SingleComponentSensor(sensorIOWorker, commandFactory, seensorDataCommandReceiver, sensorCommandWriter, "Single component VCOM");
+    let sensor = new SingleComponentSensor(sensorIOWorker, commandFactory, seensorDataCommandReceiver, sensorCommandWriter, "Single component VCOM");
+    return new SensorWorker(sensor, CreateDecoderParameters("VCOM"), "VCOM");
 }
 
-function GreateFacker(): Facker {
+function CreateFacker(): Facker {
     return new Facker();
 }
 
-async function CreateRS485Sensor(serialPort: SerialPort): Promise<SingleComponentSensorExchanger> {
+async function CreateRS485SensorWorker(serialPort: SerialPort): Promise<SensorWorker> {
     let parameters = GetRS485Params();
     let serialWorker = new SerialWorker(serialPort);
     await OpenPort(serialWorker, parameters.baudRate, parameters.parity, parameters.stopBits);
     let bufferedWorker = new SerialBufferedWorker(serialWorker);
-    let sensorIOWorker = new SerialSensorIOWorker(bufferedWorker.baseWorker);
+    let sensorIOWorker = new SerialSensorConnector(bufferedWorker.baseWorker);
     let commandFactory = CreateModBusCommandFactory(parameters.address);
     let seensorDataCommandReceiver = CreateModBusSensorDataCommandEncoder(bufferedWorker);
     let sensorCommandWriter = CreateDefaultSensorCommandWriter(bufferedWorker);
+    let sensor = new SingleComponentSensorExchanger(sensorIOWorker, commandFactory, seensorDataCommandReceiver, 
+                                                    sensorCommandWriter, "Single component RS485");
 
-    return new SingleComponentSensorExchanger(sensorIOWorker, commandFactory, seensorDataCommandReceiver, sensorCommandWriter, "Single component RS485");
+    return new SensorWorker(sensor, CreateDecoderParameters("RS485"), "RS485");
 }
 
 async function OpenPort(serialWorker: SerialWorker, baudRate: BaudRate, parity: ParityType, stopBits: StopBit) : Promise<void>
@@ -129,8 +123,7 @@ async function GetPort() : Promise<SerialPort> {
     }
 }
 
-async function GetUsbDevice() {
-    let device: USBDevice;
+async function GetUsbDevice() : Promise<USBDevice> {
     try{
         console.info("Requesting usb.");
         let device = await  navigator.usb.requestDevice({filters: []});
@@ -141,5 +134,54 @@ async function GetUsbDevice() {
         console.warn("Error while requesting usb: ", ex);
         throw ex;
     }
+}
+
+async function CreateUsbWorker() : Promise<SensorWorker> 
+{
+    let device = await GetUsbDevice();
+    let worker = new Worker(new URL("../worker/Exchanger", import.meta.url));
+
+    await OpenWorker(worker, device);
+    let readerWriter = new ReaderWriterWorkerWrapper(worker);
+    let connector = new SensorConnectorWorkerWrapper(worker);
+
+    let commandFactory = CreateDefaultCommandFactory();
+    let seensorDataCommandReceiver = CreateStreamingSensorDataCommandEncoder(readerWriter);
+    let sensorCommandWriter = CreateDefaultSensorCommandWriter(readerWriter);
+
+    let sensor = new SingleComponentSensor(connector, commandFactory, seensorDataCommandReceiver, sensorCommandWriter, "Single component USB");
+    return new SensorWorker(sensor, CreateDecoderParameters("USB"), "USB");
+}
+
+async function OpenWorker(worker: Worker, device: USBDevice) : Promise<void>{
+    return new Promise(async (resolve, reject) => {
+        let messageHandler = (args: any) =>{
+            let message = args.data as WorkerMessage;
+            switch(message.command){
+                case WorkerCommandType.Open:{
+                    worker.removeEventListener("message", messageHandler);
+                    resolve();
+                    break;
+                }
+
+                case WorkerCommandType.Error:{
+                    worker.removeEventListener("message", messageHandler);
+                    let error = message.args as Error;
+                    reject(error);
+                    break;
+                }
+            }
+        }
+        worker.addEventListener("message", messageHandler)
+        
+        worker.postMessage(
+            {
+                command: WorkerCommandType.Open,
+                args: {
+                    deviceClass: device.deviceClass,
+                    productId: device.productId,
+                } as OpenWorkerArgs
+            } as WorkerMessage)
+    }); 
 }
 

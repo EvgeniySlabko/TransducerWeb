@@ -38,6 +38,8 @@
         "react-dom": "^18.1.0",
         "react-plotly.js": "^2.5.1",
         "resolve-url-loader": "^5.0.0",
+        "ring-buffer-ts": "^1.0.3",
+        "ringbufferjs": "^2.0.0",
         "serialize-ts": "^2.6.0",
         "serialport": "^10.3.0",
         "snyk": "^1.316.1",

@@ -1,10 +1,9 @@
-import { ISensorIOWorker } from "../../../SensorIOWorker/ISensorIOWorker";
+import { ISensorConnector } from "../../../SensorIOWorker/ISensorConnector";
 import { ISensorCommandFacory } from "../../SensorCommand/ISensorCommandFactory";
 import { ISensorCommandWriter } from "../../SensorCommandWriter/SensorCommandWriter";
 import { ISensorDataCommandEncoder } from "../../SensorDataEncoder/ISensorDataEncoder";
 import { SensorMessage } from "../../SensorDefinitions";
 import { SingleComponentSensorBase } from "../SingleComponentSensorBase";
-import { ExchangerArgs, ExchangerMessage, StartReadingParams } from "./ExchangerArgs";
 
 export class SingleComponentSensorExchanger extends SingleComponentSensorBase {
     private stopStreamingRequired: boolean = false;
@@ -19,13 +18,9 @@ export class SingleComponentSensorExchanger extends SingleComponentSensorBase {
     private lastTemperatureMeasuringTime = -1;
     private timeAwaitig = 100;
     private interval?: NodeJS.Timer;
-    private exchangeWorker;
 
-    constructor(sensorIOWorker: ISensorIOWorker, commandFactory: ISensorCommandFacory, sensorDataCommandReceiver: ISensorDataCommandEncoder, sensorCommandWriter: ISensorCommandWriter, id: string) {
+    constructor(sensorIOWorker: ISensorConnector, commandFactory: ISensorCommandFacory, sensorDataCommandReceiver: ISensorDataCommandEncoder, sensorCommandWriter: ISensorCommandWriter, id: string) {
         super(sensorIOWorker, commandFactory, sensorDataCommandReceiver, sensorCommandWriter, id + " base");
-
-        this.exchangeWorker = new Worker(new URL("./Exchanger", import.meta.url));
-        //this.exchangeWorker =  new Worker(new URL('../worker.js', import.meta.url));
     }
 
     public StartStreaming = async () => {

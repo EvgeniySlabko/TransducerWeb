@@ -1,7 +1,7 @@
 import { ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
-import { ISensorIOWorker } from "./ISensorIOWorker";
+import { ISensorConnector } from "./ISensorConnector";
 
-export class UsbSensorIOWorker implements ISensorIOWorker {
+export class UsbSensorIOWorker implements ISensorConnector {
     protected _disconnect = new SimpleEventDispatcher<UsbSensorIOWorker>();
     private readonly device: USBDevice;
     constructor(device: USBDevice) {

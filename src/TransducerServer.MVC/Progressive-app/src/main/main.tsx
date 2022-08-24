@@ -8,5 +8,4 @@ require("../../css/styles.css");
 require("../../css/grow.css");
 require("../../css/measureCell.css");
 require("../../css/uPlot.min.css");
-self.postMessage("123");
 ReactDOM.render(<App sensorService={sensorService} recordController={recordController} />, document.getElementById("root"));
