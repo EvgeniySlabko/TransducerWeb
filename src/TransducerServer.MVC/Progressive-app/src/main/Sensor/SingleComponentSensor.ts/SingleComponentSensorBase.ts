@@ -37,7 +37,11 @@ export class SingleComponentSensorBase implements ISingleComponentSensorBase {
         this.commandFactory = commandFactory;
         this.sensorCommandWriter = sensorCommandWriter;
 
-        sensorIOWorker.OnDisconnect.sub(() => this._onClose.dispatch(this, "ConnectionClosed"));
+        sensorIOWorker.OnDisconnect.sub(() => 
+        {
+            console.debug(this.id, "Close event ocured.");
+            this._onClose.dispatch(this, "ConnectionClosed");
+        });
     }
 
     //Events

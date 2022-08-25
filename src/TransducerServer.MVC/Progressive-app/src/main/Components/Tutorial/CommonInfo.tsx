@@ -27,6 +27,7 @@ export class CommonInfo extends React.Component<Props> {
             <ol>
                 <li>VCOM (протокол TILKOM);</li>
                 <li>RS485;</li>
+                <li>T42 USB;</li>
             </ol>
 
             <p>

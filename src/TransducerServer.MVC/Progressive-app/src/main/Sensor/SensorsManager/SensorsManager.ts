@@ -23,16 +23,13 @@ export class SensorController {
     private sensors: SensorNode[] = new Array();
     private _dispatcher = new EventDispatcher<SensorControllerArgs>();
 
-    private GetIndex(sensor: SensorWorker) {
-        let index = -1;
-        for (let i = 0; i < this.sensors.length; i++) {
-            if (this.sensors[i].sensorWorker === sensor) index = i;
-        }
-
+    private GetIndex(sensorWorker: SensorWorker) {
+        let index = this.sensors.findIndex(currentWorker => currentWorker.sensorWorker === sensorWorker);
         return index;
     }
 
     public async AddSensor(sensorWorker: SensorWorker) {
+        console.debug("Adding new sensor to manager.");
         let index = this.GetIndex(sensorWorker);
         if (index !== -1) {
             throw "Such sensor is already exists";
@@ -52,6 +49,7 @@ export class SensorController {
 
         sensorWorker.onClose.sub(() => {
             let index = this.GetIndex(sensorWorker);
+            console.debug("Sensor Removed from manager. SensorId: ", this.sensors[index].fullSensorInfo.SensorId);
             this.sensors.splice(index, 1);
         });
 
@@ -64,8 +62,9 @@ export class SensorController {
 
     public async RemoveSensor(sensorWorker: SensorWorker) {
         let index = this.GetIndex(sensorWorker);
+        console.debug("Removing sensor from manager. SensorId: ", this.sensors[index].fullSensorInfo.SensorId);
         try {
-            console.debug("Removing sensor.");
+            console.debug("Removing sensor from manager.");
             let node = this.sensors[index];
             await node.sensorWorker.Close();
         } catch (ex) {
@@ -76,6 +75,7 @@ export class SensorController {
     }
 
     public async SetT0() {
+        console.debug("Set T0 for all sensors");
         if (this.sensors.length === 0) return false;
         for (let i = 0; i < this.sensors.length; i++) {
             await this.sensors[i].sensorWorker.SetT0();
@@ -83,6 +83,7 @@ export class SensorController {
     }
 
     public async StartAll(): Promise<boolean> {
+        console.debug("Start all sensors");
         if (this.sensors.length === 0) return false;
 
         for (let i = 0; i < this.sensors.length; i++) {
@@ -93,6 +94,7 @@ export class SensorController {
     }
 
     public async StopAll() {
+        console.debug("Stop all sensors");
         for (let i = 0; i < this.sensors.length; i++) {
             await this.sensors[i].sensorWorker.StopStreaming();
         }

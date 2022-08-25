@@ -68,6 +68,7 @@ export class App extends React.Component<Props, IState> {
 
     sensorCloseHandler = async (sensorWorker: SensorWorker, args: string) => {
         let index = this.state.groups.findIndex((g) => g.node.worker === sensorWorker);
+        console.debug("Removing sensor with id: ", this.state.groups[index].node.fullSensorInfo.SensorId);
         this.state.groups.splice(index, 1);
 
         if (!this.state.streaming && this.state.firstStart) {
@@ -84,10 +85,12 @@ export class App extends React.Component<Props, IState> {
     };
 
     sensorManualCloseHandler = async (sensorWorker: SensorWorker) => {
+        console.debug("Manual closing sensor.");
         this.props.sensorService.RemoveSensor(sensorWorker);
     };
 
     newSensorHandler = async (args: SensorControllerArgs) => {
+        console.debug("Adding new sensor.");
         if (this.state.plotsManager) {
             let allChannelsInfo = CreateAllChannels(args.worker, args.fullSensorInfo);
             ChangeGroupColor(allChannelsInfo.channelGroups, this.state.groups.length);
@@ -192,6 +195,7 @@ export class App extends React.Component<Props, IState> {
 
     starthandler = async (): Promise<void> => {
         await this.props.recordController.StartListening();
+        //this.state.plotsManager?.RebuildIfNessesary();
         if (this.state.firstStart) {
             this.setState((prev, props) => ({
                 firstStart: false,

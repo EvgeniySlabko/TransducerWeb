@@ -5,7 +5,7 @@ import { MaxFrameSize, PlotBufferManager } from "../StreamingPlot/StreamingBuffe
 export class LogLevelBugger {
     private rangeGetter: () => [number, number];
 
-    private readonly levels = [0.0002, 0.0004, 0.0008, 0.0016, 0.0032, 0.0062, 0.02]; //dt
+    private readonly levels = [0.0002, 0.0004, 0.0008, 0.0016, 0.0032, 0.02]; //dt
     private buffers: PlotBufferManager[] = [];
     private currentDt: number = 0.02;
     constructor(rangeGetter: () => [number, number]) {
