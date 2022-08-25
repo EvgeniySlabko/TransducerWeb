@@ -1,4 +1,4 @@
-import { IReaderWriter } from "../../IO/IReaderWriter";
+import { IReaderWriter } from "../../IO/ReaderWriter/IReaderWriter";
 import { ISensorCommand } from "../SensorCommand/DefaultSensorCommands";
 
 export declare class ISensorCommandWriter {

@@ -1,10 +1,10 @@
-import { SerialBufferedWorker } from "../IO/SerialBufferWorker";
-import { SerialWorker } from "../IO/SerialWorker";
-import { UsbReaderWriter } from "../IO/UsbReaderWriter";
-import { ReaderWriterWorkerWrapper } from "../IO/WorkerIOWrapper";
-import { SensorConnectorWorkerWrapper } from "../SensorIOWorker/SensorConnectorWorkerWrapper";
-import { SerialSensorConnector } from "../SensorIOWorker/SerialSensorIOWorker";
-import { UsbSensorIOWorker } from "../SensorIOWorker/UsbSensorConnector";
+import { SensorConnectorWorkerWrapper } from "../IO/Connector/SensorConnectorWorkerWrapper";
+import { SerialSensorConnector } from "../IO/Connector/SerialSensorIOWorker";
+import { UsbSensorIOWorker } from "../IO/Connector/UsbSensorConnector";
+import { SerialBufferedWorker } from "../IO/ReaderWriter/SerialBufferWorker";
+import { SerialWorker } from "../IO/ReaderWriter/SerialWorker";
+import { UsbReaderWriter } from "../IO/ReaderWriter/UsbReaderWriter";
+import { ReaderWriterWorkerWrapper } from "../IO/ReaderWriter/WorkerIOWrapper";
 import { BaudRate, StopBit } from "../Storage/ConnectionParams/ConnectionCommon";
 import { GetRS485Params, GetVCOMParams } from "../Storage/ConnectionParams/ConnectionStorage";
 import { OpenWorkerArgs, WorkerCommandType, WorkerMessage } from "../worker/WorkerTypes";
@@ -153,6 +153,7 @@ async function CreateUsbWorker() : Promise<SensorWorker>
     return new SensorWorker(sensor, CreateDecoderParameters("USB"), "USB");
 }
 
+
 async function OpenWorker(worker: Worker, device: USBDevice) : Promise<void>{
     return new Promise(async (resolve, reject) => {
         let messageHandler = (args: any) =>{
@@ -174,12 +175,14 @@ async function OpenWorker(worker: Worker, device: USBDevice) : Promise<void>{
         }
         worker.addEventListener("message", messageHandler)
         
+        let index = (await navigator.usb.getDevices()).findIndex(d => d === device);
         worker.postMessage(
             {
                 command: WorkerCommandType.Open,
                 args: {
                     deviceClass: device.deviceClass,
                     productId: device.productId,
+                    deviceIndex: index
                 } as OpenWorkerArgs
             } as WorkerMessage)
     }); 

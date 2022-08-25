@@ -1,27 +1,29 @@
-import { RingBuffer } from 'ring-buffer-ts';
+import { ISimpleEvent, SimpleEventDispatcher } from 'strongly-typed-events';
 import { sleep } from '../Common/Common';
 export class UsbRowReader{
     private readonly device: USBDevice;
-    private ringBuffer = new RingBuffer<Uint8Array>(20000);
+    private buffer: Uint8Array[] = [];
+    private _error = new SimpleEventDispatcher<Error>();
 
     constructor(device: USBDevice) {
         this.device = device;
-        this.Reading().then();
+        this.Reading().catch(e =>{
+            console.log(3);
+        });
     }
 
     public async Read(): Promise<Uint8Array[]> {
         while(true)
         {
-            console.log(this.ringBuffer.getBufferLength());
-            let bufferLength = this.ringBuffer.getBufferLength();
+            //console.log(this.ringBuffer.getBufferLength());
+            let bufferLength = this.buffer.length;
             if (bufferLength > 0){
-                 let data = this.ringBuffer.toArray();
-                 let s = this.ringBuffer.getBufferLength();
-                 this.ringBuffer.clear();
+                let data = this.buffer;
+                this.buffer =[];
                  return data;
             }
 
-            await sleep(100);
+            await sleep(10);
         }
     }
 
@@ -34,17 +36,29 @@ export class UsbRowReader{
     }
     
     private async Reading(){
-        let result : USBInTransferResult = await this.device.transferIn(1, 1000);
+        let result : USBInTransferResult;
+        try{
+            result = await this.device.transferIn(1, 1);
             if (result.status === "ok"){
-                let buffersize = result.data!.byteLength;
                 if (result.data?.byteLength != 0){
-                    this.ringBuffer.add(new Uint8Array(result.data?.buffer!));
+                    this.buffer.push(new Uint8Array(result.data?.buffer!));
                 }
-
+            }
             sleep(100);
             await this.Reading();
-        }else{
+        }
+        catch(e: any)
+        {
+            if (e instanceof DOMException && e.code !== 20)
+            {
+                this._error.dispatch(e)
+            }
+
             return;
         }
+    }
+
+    public get Error() : ISimpleEvent<Error>{
+        return this._error.asEvent();
     }
 }

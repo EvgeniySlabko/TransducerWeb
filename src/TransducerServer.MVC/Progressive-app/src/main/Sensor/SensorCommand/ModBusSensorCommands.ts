@@ -1,4 +1,4 @@
-import { CRC16MODBUS } from "../../IO/CRC-16";
+import { CRC16MODBUS } from "../../Common/CRC-16";
 import { SensorCommand } from "../SensorDefinitions";
 import { ISensorCommand } from "./DefaultSensorCommands";
 

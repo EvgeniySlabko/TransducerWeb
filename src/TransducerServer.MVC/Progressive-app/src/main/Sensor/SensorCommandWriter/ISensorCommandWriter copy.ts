@@ -1,5 +1,5 @@
-import { CRC16MODBUS } from "../../IO/CRC-16";
-import { IReaderWriter } from "../../IO/IReaderWriter";
+import { CRC16MODBUS } from "../../Common/CRC-16";
+import { IReaderWriter } from "../../IO/ReaderWriter/IReaderWriter";
 import { ISensorCommand } from "../SensorCommand/DefaultSensorCommands";
 
 export declare class ISensorCommandWriter {

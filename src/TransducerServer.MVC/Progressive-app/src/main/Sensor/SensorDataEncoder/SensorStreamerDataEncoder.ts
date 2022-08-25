@@ -1,4 +1,4 @@
-import { IReaderWriter } from "../../IO/IReaderWriter";
+import { IReaderWriter } from "../../IO/ReaderWriter/IReaderWriter";
 import { ADCFrequency } from "../SingleComponentSensor.ts/ISingleComponentSensorBase";
 import { SensorData } from "../SensorDefinitions";
 import { DefaultSensorDataCommandEncoder } from "./DefaultSensorDataCommandEncoder";

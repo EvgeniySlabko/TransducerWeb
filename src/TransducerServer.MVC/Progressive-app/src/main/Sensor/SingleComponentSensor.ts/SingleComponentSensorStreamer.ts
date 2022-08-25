@@ -1,4 +1,4 @@
-import { ISensorConnector } from "../../SensorIOWorker/ISensorConnector";
+import { ISensorConnector } from "../../IO/Connector/ISensorConnector";
 import { ISensorCommandFacory } from "../SensorCommand/ISensorCommandFactory";
 import { ISensorCommandWriter } from "../SensorCommandWriter/SensorCommandWriter";
 import { CalculateTime, ISensorStreamerDataEncoder } from "../SensorDataEncoder/ISensorStreamerDataEncoder";

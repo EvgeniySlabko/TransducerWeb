@@ -1,5 +1,5 @@
 import { ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
-import { ErrorWorkerArgs, WorkerCommandType, WorkerMessage } from "../worker/WorkerTypes";
+import { ErrorWorkerArgs, WorkerCommandType, WorkerMessage } from "../../worker/WorkerTypes";
 import { ISensorConnector } from "./ISensorConnector";
 
 export class SensorConnectorWorkerWrapper implements ISensorConnector {
@@ -42,16 +42,21 @@ export class SensorConnectorWorkerWrapper implements ISensorConnector {
         });
     }
 
-    private messageHandler(args: any){
-        let workerMesage = args as WorkerMessage;
+    private messageHandler = (args: any) => {
+        let workerMesage = args.data as WorkerMessage;
 
         switch(workerMesage.command){
             case WorkerCommandType.Close:{
                 this._workerDisconnect.dispatch();
+                this.worker.terminate();
             }
 
             case WorkerCommandType.Error:{
+                let error = workerMesage.args as ErrorWorkerArgs;
+                //error.error;
                 this._onErrorMessage.dispatch(workerMesage.args as ErrorWorkerArgs);
+                this._disconnect.dispatch(this);
+                this.worker.terminate();
             }
         }
     }

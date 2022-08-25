@@ -1,5 +1,5 @@
 import { ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
-import { SerialWorker } from "../IO/SerialWorker";
+import { SerialWorker } from "../ReaderWriter/SerialWorker";
 import { ISensorConnector } from "./ISensorConnector";
 
 export class SerialSensorConnector implements ISensorConnector {

@@ -1,5 +1,4 @@
-import { UsbReaderWriter } from "../IO/UsbReaderWriter";
-import { UsbSensorIOWorker } from "../SensorIOWorker/UsbSensorConnector";
+import { UsbSensorIOWorker } from "../IO/Connector/UsbSensorConnector";
 import { UsbRowReader as UsbRowReaderWriter } from "./UsbRowReader";
 import { DataWorkerArgs, ErrorWorkerArgs, OpenWorkerArgs, ReadWorkerArgs, WorkerCommandType, WorkerMessage, WriteWorkerArgs } from "./WorkerTypes";
 
@@ -37,7 +36,8 @@ addEventListener('message', (message: any) => {
 
 async function HandleOpen(args: OpenWorkerArgs){
     let devices =  await navigator.usb.getDevices();
-    let device = devices[0];
+    let device = devices[args.deviceIndex];
+    if (!device) return;
     console.debug(device.deviceProtocol);
     console.debug(device.configurations);
     await device.open()
@@ -45,6 +45,7 @@ async function HandleOpen(args: OpenWorkerArgs){
     await device.claimInterface(0);   
     usbReaderWriter = new UsbRowReaderWriter(device);
     usbSensorIOWorker = new UsbSensorIOWorker(device);
+    usbReaderWriter.Error.sub(e => HandleError(e, WorkerCommandType.Error))
     usbSensorIOWorker.OnDisconnect.sub((args) =>{
         postMessage({
             command: WorkerCommandType.Close,

@@ -1,6 +1,6 @@
 import { EventDispatcher } from "strongly-typed-events";
 import { sleep } from "../../Common/Common";
-import { ISensorConnector } from "../../SensorIOWorker/ISensorConnector";
+import { ISensorConnector } from "../../IO/Connector/ISensorConnector";
 import { ISensorCommand } from "../SensorCommand/DefaultSensorCommands";
 import { ISensorCommandFacory } from "../SensorCommand/ISensorCommandFactory";
 import { ISensorCommandWriter } from "../SensorCommandWriter/SensorCommandWriter";

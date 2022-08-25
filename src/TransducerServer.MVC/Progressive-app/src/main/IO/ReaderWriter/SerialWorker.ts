@@ -1,5 +1,5 @@
 import { SimpleEventDispatcher } from "strongly-typed-events";
-import { BaudRate, StopBit } from "../Storage/ConnectionParams/ConnectionCommon";
+import { BaudRate, StopBit } from "../../Storage/ConnectionParams/ConnectionCommon";
 
 export class SerialWorker {
     private readonly port: SerialPort;

@@ -1,5 +1,5 @@
 import { AsShortArray } from "../../Common/Common";
-import { IReaderWriter } from "../../IO/IReaderWriter";
+import { IReaderWriter } from "../../IO/ReaderWriter/IReaderWriter";
 import { SensorCommand, SensorSK } from "../SensorDefinitions";
 import { ISensorDataCommandEncoder } from "./ISensorDataEncoder";
 
