@@ -3,7 +3,7 @@ import { ISimpleEvent, SimpleEventDispatcher } from 'strongly-typed-events';
 import { sleep } from '../Common/Common';
 export class UsbRowReader{
     private readonly device: USBDevice;
-    private buffer = new RingBuffer<Uint8Array>(20000);
+    private ringBuffer = new RingBuffer<Uint8Array>(20000);
     private _error = new SimpleEventDispatcher<Error>();
 
     constructor(device: USBDevice) {
@@ -16,12 +16,12 @@ export class UsbRowReader{
     public async Read(): Promise<Uint8Array[]> {
         while(true)
         {
-            let bufferLength = this.buffer.getBufferLength();
+            //console.log(this.ringBuffer.getBufferLength());
+            let bufferLength = this.ringBuffer.getSize();
             if (bufferLength > 0){
-                console.log(bufferLength);
-                let data = this.buffer.toArray();
-                this.buffer.clear();
-                return data;
+                let data = this.ringBuffer.toArray();
+                this.ringBuffer.clear();
+                 return data;
             }
 
             await sleep(10);
@@ -39,13 +39,13 @@ export class UsbRowReader{
     private async Reading(){
         let result : USBInTransferResult;
         try{
-            result = await this.device.transferIn(1, 10000);
+            result = await this.device.transferIn(1, 1);
             if (result.status === "ok"){
                 if (result.data?.byteLength != 0){
-                    this.buffer.add(new Uint8Array(result.data?.buffer!));
+                    this.ringBuffer.add(new Uint8Array(result.data?.buffer!));
                 }
             }
-            sleep(10);
+            sleep(100);
             await this.Reading();
         }
         catch(e: any)
