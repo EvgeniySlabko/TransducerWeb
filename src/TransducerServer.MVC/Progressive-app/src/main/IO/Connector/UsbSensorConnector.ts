@@ -11,9 +11,9 @@ export class UsbSensorIOWorker implements ISensorConnector {
             //To do other comairs.
             
             if (event.device === device)
-                {
-                    this._disconnect.dispatch(this);
-                }
+            {
+                this._disconnect.dispatch(this);
+            }
           });
     }
 

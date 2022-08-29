@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import { App } from "./Components/App";
 import { recordController, sensorService } from "./initialStartup";
 
+require("../../manifest.json");
 require("../../css/styles.css");
 require("../../css/grow.css");
 require("../../css/measureCell.css");

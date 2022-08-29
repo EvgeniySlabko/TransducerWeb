@@ -15,7 +15,7 @@ export class CommonInfo extends React.Component<Props> {
     render() {
         return (
             <>
-            <h3 style={{textAlign: "center"}}>TransducerWEB</h3>
+            <h3 style={{textAlign: "center"}}>TransducerWEB(1.0)</h3>
             <p>
                 TransducerWEB - аналог программы Transducer работающий в браузере <a target="_blank" href="https://www.google.com/intl/ru/chrome/">Chrome</a>.
                 Приложение можно запустить как с <a target="_blank" href="https://tilkom.com/">нашего сайта</a>, так и скачать локальную версию.
