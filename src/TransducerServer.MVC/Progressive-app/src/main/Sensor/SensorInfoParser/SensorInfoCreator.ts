@@ -1,10 +1,9 @@
-import * as SDefs from "../SensorDefinitions";
-import { HoldingRegisters } from "../SensorDefinitions";
+import { FullSensorInfo, HoldingRegisters, SensorSK } from "../SensorDefinitions";
 import { SensorWorker } from "../SensorWorker";
-import * as Defs from "./SensorsDefinitons";
+import { MasEdinicPopravok, MasEdIzm, MasEdRazm, MasNazvD, Mas_Mnog, Mas_NazvIzmVel, Mas_NomZn, Mas_TipMom, Mas_TipPressure, Mas_TipTenzo } from "./SensorsDefinitons";
 
 let count = 0;
-export async function GetFullSensorInfo(sensor: SensorWorker): Promise<SDefs.FullSensorInfo> {
+export async function GetFullSensorInfo(sensor: SensorWorker): Promise<FullSensorInfo> {
     if (sensor === null) throw "Sensor is null.";
     let sk = await sensor.GetSkInfo();
     let holdingRegisters = await sensor.GetHoldingRegisters();
@@ -13,24 +12,21 @@ export async function GetFullSensorInfo(sensor: SensorWorker): Promise<SDefs.Ful
 }
 
 //Формирует полную информацию о датчике
-export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingRegisters: HoldingRegisters): Promise<SDefs.FullSensorInfo> {
-    let fullInfo = new SDefs.FullSensorInfo();
-    fullInfo.id = count++;
+export async function CreateFullSensorInfo(serviceInfo: SensorSK, holdingRegisters: HoldingRegisters): Promise<FullSensorInfo> {
+    //let fullInfo = new FullSensorInfo();
     let Index_Opis = serviceInfo.ID[0] >> 4; // Цифра 1 - старшая цифра
     let Tip_Datch = serviceInfo.ID[0] & 0x0f; // Цифра 2
     let Razmernost = serviceInfo.ID[1] >> 4; // Цифра 3
-    fullInfo.Razmernost = Razmernost;
     let IndMnog = serviceInfo.ID[1] & 0x0f; // Цифра 4
     if (IndMnog > 9) IndMnog = 0;
-    fullInfo.Mnogitel = Defs.Mas_Mnog[IndMnog];
 
-    fullInfo.isRotative = 0; //По умолчанию датчик не вращающийся
+    let isRotative = 0; //По умолчанию датчик не вращающийся
     let formatDigit = (n: number): string => {
         let hex = n.toString(16);
         if (hex.length < 2) hex = "0" + hex;
         return hex.toUpperCase();
     };
-    fullInfo.SensorId = formatDigit(serviceInfo.ID[0]) + formatDigit(serviceInfo.ID[1]) + formatDigit(serviceInfo.ID[2]);
+    let sensorId = formatDigit(serviceInfo.ID[0]) + formatDigit(serviceInfo.ID[1]) + formatDigit(serviceInfo.ID[2]);
     let typeString: string = "";
 
     let rotativeFromDecoderType = false;
@@ -40,10 +36,10 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
             //................. Если датчик крутящего момента
             //................. Он может быть статический (МА20) или крутящийся (М40...)
 
-            typeString = Defs.Mas_TipMom[Tip_Datch];
+            typeString = Mas_TipMom[Tip_Datch];
             //................. Если в конфигурации декодера есть угломер и кнопка управления
             if (holdingRegisters.flags.Pronometer && holdingRegisters.flags.ControlButton) {
-                fullInfo.isRotative = 1; // Любой датчик крутящего момента с угломером и кнопкой в декодере
+                isRotative = 1; // Любой датчик крутящего момента с угломером и кнопкой в декодере
                 rotativeFromDecoderType = true;
             }
 
@@ -52,7 +48,7 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
                     case 0:
                         //............. Если Назначение датчика 0 и тип датчика 0 => MA20A
                         //............. Датчик МА20 с угломером и кнопкой управления
-                        fullInfo.isRotative = 1;
+                        isRotative = 1;
                         break;
                     case 2:
                     case 4:
@@ -61,7 +57,7 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
                     case 9:
                     case 10:
                         //............. Если тип датчика 2, 4, 5, 6, 9, 10 = 2 - вращающийся
-                        fullInfo.isRotative = 2;
+                        isRotative = 2;
                         break;
                 }
             }
@@ -69,12 +65,12 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
         }
 
         case 3: {
-            typeString = Defs.Mas_TipPressure[Tip_Datch];
+            typeString = Mas_TipPressure[Tip_Datch];
             break;
         }
         case 7: {
             // Тензоусилитель
-            typeString = Defs.Mas_TipTenzo[Tip_Datch];
+            typeString = Mas_TipTenzo[Tip_Datch];
             break;
         }
         default: {
@@ -97,7 +93,7 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
         }
     }
 
-    let nominalString = Defs.Mas_NomZn[IndMnog][Razmernost];
+    let nominalString = Mas_NomZn[IndMnog][Razmernost];
 
     /*
   if ((Index_Opis === 2) && (Razmernost === 7)){
@@ -107,20 +103,22 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
   }
   */
 
-    fullInfo.SensorType = typeString + nominalString;
+    let sensorType = typeString + nominalString;
     //................... названия датчика и основной измеряемой величины
-    fullInfo.Name = Defs.MasNazvD[Index_Opis][0] + Defs.MasNazvD[Index_Opis][1];
-    fullInfo.Unitname = Defs.MasNazvD[Index_Opis][1];
+    let name = MasNazvD[Index_Opis][0] + MasNazvD[Index_Opis][1];
+    let unitname = MasNazvD[Index_Opis][1];
     //  strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
     //................... Формирование названия изм величины
-    let unitNameStr = Defs.Mas_NazvIzmVel[Index_Opis];
-    fullInfo.ValueName = unitNameStr;
+    let unitNameStr = Mas_NazvIzmVel[Index_Opis];
+    let valueName = unitNameStr;
 
     //................... Формирование названия единицы измерения
     //................... Определяем размерность измеряемого момента либо силы
     let stroks: string = "";
-    let EdIzm = Defs.MasEdIzm[Index_Opis];
+    let EdIzm = MasEdIzm[Index_Opis];
     let powerIndexName: number = 0;
+    let mnogitel = Mas_Mnog[IndMnog];
+
     switch (Razmernost) {
         case 0:
             switch (Index_Opis) {
@@ -224,24 +222,25 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
             break;
     }
 
+    let valueRatio: number;
     switch (stroks) {
         case "m":
-            fullInfo.valueRatio = 0.001;
+            valueRatio = 0.001;
             break;
         case "k":
-            fullInfo.valueRatio = 1000;
+            valueRatio = 1000;
             break;
         case "M":
-            fullInfo.valueRatio = 1000000;
+            valueRatio = 1000000;
             break;
         case "mk":
-            fullInfo.valueRatio = 0.000001;
+            valueRatio = 0.000001;
             break;
         default:
-            fullInfo.valueRatio = 1;
+            valueRatio = 1;
     }
-    fullInfo.UnitValueName = stroks + EdIzm;
-    fullInfo.MaxSpeed = serviceInfo.MaxSpeed * 100;
+    let unitValueName = stroks + EdIzm;
+    let maxSpeed = serviceInfo.MaxSpeed * 100;
     let index: number = 0;
     //................... Вычисление индекса для установки форматов
     switch (Razmernost) {
@@ -271,14 +270,14 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
             break;
     }
 
-    fullInfo.Popravka = Defs.MasEdinicPopravok[index];
+    let popravka = MasEdinicPopravok[index];
     //................... Максимально допустимое значение основной измеряемой величины
-    let MasEdRazm = Defs.MasEdRazm[index];
-    fullInfo.Accuracy = MasEdRazm.toString().length - 1;
-    fullInfo.MaxDopustBase = 1000 * fullInfo.Mnogitel * MasEdRazm;
+    let MasEdRazmValue = MasEdRazm[index];
+    let accuracy = MasEdRazm.toString().length - 1;
+    let maxDopustBase = 1000 * mnogitel * MasEdRazmValue;
     //................. Максимально допустимое значение основной измеряемой величины
-    fullInfo.MaxValue = fullInfo.MaxDopustBase;
-    fullInfo.MinValue = -fullInfo.MaxDopustBase;
+    let MaxValue = maxDopustBase;
+    let MinValue = -maxDopustBase;
     //................... Вычисление степени 10 для округления при отображении
     //let PowerOfTen = CalculatePowerOfTen(fullInfo.MinValue, fullInfo.MaxValue);                //To DO
 
@@ -287,7 +286,10 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
     //................... Сделать видимыми панели скорости и мощности
     //PFBaseChannel->SetSpeedVisible(PDecoderParametrs->IsRotative);
 
-    switch (fullInfo.isRotative) {
+    let speedUnitsName: string = "";
+    let powerName: string = "";
+    let powerUnitsName: string = "";
+    switch (isRotative) {
         case 0:
             break;
         case 1:
@@ -316,7 +318,7 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
             //AS = Ures_Speed;
             //strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
             //strcpy(PSensorDescriptor->NaimValue, AS.c_str());
-            fullInfo.speedUnitsName = "rpm";
+            speedUnitsName = "rpm";
 
             //PSensorDescriptor = &PDecoderParametrs->SensorDescriptors[7];
             //PSensorDescriptor->ThereIs = true;
@@ -324,14 +326,35 @@ export async function CreateFullSensorInfo(serviceInfo: SDefs.SensorSK, holdingR
             //PSensorDescriptor->MaxValue = TempFloat;
             //PSensorDescriptor->MinValue = -TempFloat;
             //................. Формирование названия мощности
-            fullInfo.powerName = "Мощность";
+            powerName= "Мощность";
             //strcpy(PSensorDescriptor->NaimDatchika, AS.c_str());
             //strcpy(PSensorDescriptor->NaimValue, AS.c_str());
             //PDecoderParametrs->IndexRazmPowerIsx = IndexRazmPowerIsx;
-            fullInfo.powerUnitsName = "W"; // единица измерения мощности
+            powerUnitsName = "W"; // единица измерения мощности
             //strcpy(PSensorDescriptor->NaimEdIzm, AS.c_str());
             break;
     }
 
-    return fullInfo;
+    return {
+        id: count++,
+        Razmernost: Razmernost,
+        Mnogitel: mnogitel,
+        isRotative: isRotative,
+        SensorId: sensorId,
+        SensorType: sensorType,
+        Name: name,
+        Unitname: unitname,
+        ValueName: valueName,
+        valueRatio: valueRatio,
+        UnitValueName: unitValueName,
+        MaxSpeed: maxSpeed,
+        Popravka: popravka,
+        Accuracy: accuracy,
+        MaxDopustBase: maxDopustBase,
+        MaxValue: MaxValue,
+        MinValue: MinValue,
+        powerName: powerName,
+        powerUnitsName: powerUnitsName,
+        speedUnitsName: speedUnitsName,
+    }
 }

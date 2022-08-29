@@ -16,7 +16,6 @@ addEventListener('message', (message: any) => {
             break;
             
         case WorkerCommandType.Read:
-            let readArgs = command.args as ReadWorkerArgs
             HandleRead().catch(ex => HandleError(ex as Error, WorkerCommandType.Read)).then();
             break;
         

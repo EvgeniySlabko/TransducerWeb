@@ -8,10 +8,12 @@ import { ISensorDataCommandEncoder } from "../SensorDataEncoder/ISensorDataEncod
 import { FlagRegistersAddresses, HoldingRegisters, InputComplex, InputRegistersAddresses, SensorCoilValue, SensorCommand, SensorData, SensorMessage, SensorMessageEventArgs, SensorSK, SetAvgEventArgs, StorageRegistersAddresses } from "../SensorDefinitions";
 import { ISingleComponentSensorBase } from "./ISingleComponentSensorBase";
 
+export const ADCFrequency = 5000;   //Частота Ацп
+export const DecoderClockFrequency: number = 62500;    //Частота часов декодера
+export const Timeout = 200;   // Максимальное время ожидание ответа на командуж
+
 export class SingleComponentSensorBase implements ISingleComponentSensorBase {
     public readonly id: string;
-    protected readonly baseFrequency: number = 5000;
-    protected readonly decoderClock: number = 62500;
     protected readonly timeout: number = 2000000; // Максимальное время ожидание ответа на командуж
 
     protected avgRatio?: number;
@@ -185,8 +187,7 @@ export class SingleComponentSensorBase implements ISingleComponentSensorBase {
             await this.sensorIOWorker.Close();
         } catch (ex) {
             console.warn("Error while closing: ", ex);
-        } finally {
-            //this._onClose.dispatch(this, "Connection closed");
+            throw ex;
         }
     }
 

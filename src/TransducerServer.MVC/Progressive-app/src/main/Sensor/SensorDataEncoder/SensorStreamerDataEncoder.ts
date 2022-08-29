@@ -1,6 +1,6 @@
 import { IReaderWriter } from "../../IO/ReaderWriter/IReaderWriter";
-import { ADCFrequency } from "../SingleComponentSensor.ts/ISingleComponentSensorBase";
 import { SensorData } from "../SensorDefinitions";
+import { ADCFrequency } from "../SingleComponentSensor.ts/SingleComponentSensorBase";
 import { DefaultSensorDataCommandEncoder } from "./DefaultSensorDataCommandEncoder";
 import { CalculateTime, ISensorStreamerDataEncoder, SreamigSensorDataHeader } from "./ISensorStreamerDataEncoder";
 

@@ -1,6 +1,7 @@
 import { PlotChannelStyle } from "../Channel/ChannelStyle/PlotChannelStyle";
 import { AlignedData } from "../Common/AlignedDataHelpers";
 import { SensorData } from "../Sensor/SensorDefinitions";
+import { ADCFrequency } from "../Sensor/SingleComponentSensor.ts/SingleComponentSensorBase";
 import { SeriesValue } from "../uPlot/PlotCommon";
 
 export declare class TrackData {
@@ -30,7 +31,7 @@ export class Snapshot {
     }
 
     public get dt(): number {
-        return 1 / (5000 / this.avgRatio);
+        return 1 / (ADCFrequency / this.avgRatio);
     }
 
     public GetTrackData = () => this.data;

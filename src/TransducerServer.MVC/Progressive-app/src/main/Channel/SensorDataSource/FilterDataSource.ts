@@ -3,6 +3,7 @@ import { ISingleComponentSensorBase } from "../../Sensor/SingleComponentSensor.t
 import { SensorData, SensorMessage, SensorMessageEventArgs, SetAvgEventArgs } from "../../Sensor/SensorDefinitions";
 import { FilterParameters, FilterType } from "../../Storage/ChannelsDataStorage";
 import { ISensorDataProvider } from "./ISensorDataProvider";
+import { ADCFrequency } from "../../Sensor/SingleComponentSensor.ts/SingleComponentSensorBase";
 
 let Fili = require("fili");
 
@@ -77,7 +78,7 @@ export class FilterDataSource implements ISensorDataProvider {
         let iirCalculator = new Fili.CalcCascades();
 
         // calculate filter coefficients
-        let samples = 5000 / this.avgRatio;
+        let samples = ADCFrequency / this.avgRatio;
         let iirFilterCoeffs = iirCalculator.lowpass({
             order: this.order, // cascade 3 biquad filters (max: 12)
             characteristic: this.filterType,

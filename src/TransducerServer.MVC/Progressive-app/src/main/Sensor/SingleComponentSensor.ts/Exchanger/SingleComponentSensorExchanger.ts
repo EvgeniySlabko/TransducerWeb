@@ -3,7 +3,7 @@ import { ISensorCommandFacory } from "../../SensorCommand/ISensorCommandFactory"
 import { ISensorCommandWriter } from "../../SensorCommandWriter/SensorCommandWriter";
 import { ISensorDataCommandEncoder } from "../../SensorDataEncoder/ISensorDataEncoder";
 import { SensorMessage } from "../../SensorDefinitions";
-import { SingleComponentSensorBase } from "../SingleComponentSensorBase";
+import { DecoderClockFrequency, SingleComponentSensorBase } from "../SingleComponentSensorBase";
 
 export class SingleComponentSensorExchanger extends SingleComponentSensorBase {
     private stopStreamingRequired: boolean = false;
@@ -24,7 +24,7 @@ export class SingleComponentSensorExchanger extends SingleComponentSensorBase {
     }
 
     public StartStreaming = async () => {
-        this.intervalReadingMain = 1000 / (this.baseFrequency / this.avgRatio!);
+        this.intervalReadingMain = 1000 / (DecoderClockFrequency / this.avgRatio!);
         this.intervalReadingSpeed = this.speedPeriod! < 50 ? 50 : this.speedPeriod!;
         this.stopStreamingRequired = false;
 

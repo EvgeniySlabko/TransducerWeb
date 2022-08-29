@@ -8,7 +8,12 @@ export enum SensorCommand {
     REPORT_SLAVE_ID = 17, // чтение служебной информации об устройстве.
 }
 
-//Адреса флагов
+export enum SensorDateType {
+    float = 1,
+    integer = 0,
+}
+
+// Адреса флагов
 export enum FlagRegistersAddresses {
     START_MEASURING = 0,
     START_STREAMING = 1,
@@ -58,15 +63,6 @@ export enum InputRegistersAddresses {
 export enum SensorCoilValue {
     COIL_ON_VALUE = 0x00ff,
     COIL_OFF_VALUE = 0x0000,
-}
-
-export class RequiredClose extends Error {
-    constructor(msg: string) {
-        super(msg);
-
-        // Set the prototype explicitly.
-        Object.setPrototypeOf(this, RequiredClose.prototype);
-    }
 }
 
 export enum StramingPackageType {
@@ -171,25 +167,25 @@ export class SensorSK {
     public SKInfo: Uint8Array = new Uint8Array(49);
 }
 
-export class FullSensorInfo {
-    public valueRatio: number = 1;
-    public id: number = 0;
-    public SensorId: string = "";
-    public Razmernost: number = 0;
-    public Mnogitel: number = 0;
-    public SensorType: string = "";
-    public Name: string = "";
-    public Unitname: string = "";
-    public ValueName: string = "";
-    public Popravka: number = 0;
-    public UnitValueName: string = "";
-    public MaxSpeed: number = 0;
-    public Accuracy: number = 0;
-    public MaxDopustBase: number = 0;
-    public MaxValue: number = 0;
-    public MinValue: number = 0;
-    public isRotative: number = 0;
-    public speedUnitsName: string = "";
-    public powerName: string = "";
-    public powerUnitsName: string = "";
+export declare class FullSensorInfo {
+    public valueRatio: number;
+    public id: number;
+    public SensorId: string;
+    public Razmernost: number;
+    public Mnogitel: number;
+    public SensorType: string;
+    public Name: string;
+    public Unitname: string;
+    public ValueName: string;
+    public Popravka: number;
+    public UnitValueName: string;
+    public MaxSpeed: number;
+    public Accuracy: number;
+    public MaxDopustBase: number;
+    public MaxValue: number;
+    public MinValue: number;
+    public isRotative: number;
+    public speedUnitsName: string;
+    public powerName: string;
+    public powerUnitsName: string;
 }

@@ -1,12 +1,7 @@
 import { IEvent } from "strongly-typed-events";
 import { HoldingRegisters, InputComplex, SensorSK } from "../SensorDefinitions";
 
-export enum SensorDateType {
-    float = 1,
-    integer = 0,
-}
 
-export const ADCFrequency = 5000;
 
 export interface ISingleComponentSensorBase {
 
