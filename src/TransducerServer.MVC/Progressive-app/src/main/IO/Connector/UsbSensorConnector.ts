@@ -9,8 +9,8 @@ export class UsbSensorIOWorker implements ISensorConnector {
         this.OnDisconnect = this._disconnect.asEvent();
         navigator.usb.addEventListener('disconnect', (event: USBConnectionEvent) => {
             //To do other comairs.
-            if (event.device.deviceClass === this.device.deviceClass &&
-                event.device.productId === this.device.productId)
+            
+            if (event.device === device)
                 {
                     this._disconnect.dispatch(this);
                 }

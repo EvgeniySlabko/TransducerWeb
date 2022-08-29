@@ -57,9 +57,9 @@ export class SensorConnectorWorkerWrapper implements ISensorConnector {
             case WorkerCommandType.Error:{
                 let error = workerMesage.args as ErrorWorkerArgs;
                 //error.error;
-                this._onErrorMessage.dispatch(error, error);
                 this._disconnect.dispatch(this);
                 this.worker.terminate();
+                this.worker.removeEventListener('message', this.messageHandler);
                 break;
             }
         }

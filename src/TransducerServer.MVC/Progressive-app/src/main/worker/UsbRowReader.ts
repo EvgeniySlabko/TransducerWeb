@@ -8,9 +8,7 @@ export class UsbRowReader{
 
     constructor(device: USBDevice) {
         this.device = device;
-        this.Reading().catch(e =>{
-            console.log(3);
-        });
+        this.Reading().then();
     }
 
     public async Read(): Promise<Uint8Array[]> {

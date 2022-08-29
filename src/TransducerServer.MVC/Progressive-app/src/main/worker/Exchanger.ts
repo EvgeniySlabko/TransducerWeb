@@ -34,27 +34,41 @@ addEventListener('message', (message: any) => {
 });
 
 async function HandleOpen(args: OpenWorkerArgs){
+
     let devices =  await navigator.usb.getDevices();
     let device = devices[args.deviceIndex];
-    if (!device) return;
-    console.debug(device.deviceProtocol);
-    console.debug(device.configurations);
-    await device.open()
-    await device.selectConfiguration(1);
-    await device.claimInterface(0);   
-    usbReaderWriter = new UsbRowReaderWriter(device);
-    usbSensorIOWorker = new UsbSensorIOWorker(device);
-    usbReaderWriter.Error.sub(e => HandleError(e, WorkerCommandType.Error))
-    usbSensorIOWorker.OnDisconnect.sub((args) =>{
-        postMessage({
-            command: WorkerCommandType.Close,
-        } as WorkerMessage)
-    });
+    if (!device) throw new Error("Device did not find.");
 
-    postMessage({
-        command: WorkerCommandType.Open,
-    } as WorkerMessage);
+    try
+    {
+        console.debug(device!.deviceProtocol);
+        console.debug(device!.configurations);
+        await device!.open()
+        await device!.selectConfiguration(1);
+        await device!.claimInterface(0);   
+        usbReaderWriter = new UsbRowReaderWriter(device!);
+        usbSensorIOWorker = new UsbSensorIOWorker(device!);
+        usbReaderWriter.Error.sub(e => HandleError(e, WorkerCommandType.Error))
+        usbSensorIOWorker.OnDisconnect.sub((args) =>{
+            postMessage({
+                command: WorkerCommandType.Close,
+            } as WorkerMessage)
+        });
+    
+        postMessage({
+            command: WorkerCommandType.Open,
+        } as WorkerMessage);
+    }
+    catch(ex)
+    {
+        console.debug("Error while creating device.");
+        if (device && device.opened)
+            device?.close();
+        
+        throw ex;
+    }
 }
+
 
 async function HandleRead(){
     let result = await usbReaderWriter.Read();

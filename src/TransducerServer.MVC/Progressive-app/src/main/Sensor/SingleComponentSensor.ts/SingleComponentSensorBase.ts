@@ -14,7 +14,6 @@ export const Timeout = 200;   // Максимальное время ожида�
 
 export class SingleComponentSensorBase implements ISingleComponentSensorBase {
     public readonly id: string;
-    protected readonly timeout: number = 2000000; // Максимальное время ожидание ответа на командуж
 
     protected avgRatio?: number;
     protected speedPeriod?: number;
@@ -253,7 +252,7 @@ export class SingleComponentSensorBase implements ISingleComponentSensorBase {
             let interval = setTimeout(() => {
                 console.warn("Timeout Error. There is no data from sensor! Command: " + SensorCommand[command.Command]);
                 reject(Error("Timeout Error"));
-            }, this.timeout);
+            }, Timeout);
 
             try {
                 // console.debug("Sending command: " + SensorCommand[command.Command]);

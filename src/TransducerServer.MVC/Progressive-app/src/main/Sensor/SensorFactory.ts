@@ -141,7 +141,16 @@ async function CreateUsbWorker() : Promise<SensorWorker>
     let device = await GetUsbDevice();
     let worker = new Worker(new URL("../worker/Exchanger", import.meta.url));
 
-    await OpenWorker(worker, device);
+    try
+    {
+        await OpenWorker(worker, device);
+    }
+    catch(ex)
+    {
+        console.log("Error while opening port: ", ex);
+        worker.terminate();
+    }
+
     let readerWriter = new ReaderWriterWorkerWrapper(worker);
     let connector = new SensorConnectorWorkerWrapper(worker);
 

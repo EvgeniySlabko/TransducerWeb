@@ -75,11 +75,12 @@ export class App extends React.Component<Props, IState> {
             this.state.plotsManager?.Rebuild();
         }
 
-        if (this.state.groups.length === 0) {
-            this.setState({
-                streaming: false,
-            });
-        }
+        //await this.props.sensorService.StopAll();
+        //if (this.state.groups.length === 0) {
+        //    this.setState({
+        //        streaming: false,
+        //    });
+        //}
 
         this.forceUpdate();
     };

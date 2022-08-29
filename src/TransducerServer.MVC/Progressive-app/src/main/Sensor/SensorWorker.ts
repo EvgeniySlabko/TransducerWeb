@@ -53,6 +53,7 @@ export class SensorWorker {
             await this.sensor.SetAvgRatio(1);
             await this.sensor.SetUsingFloatState(true);
         } catch(ex) {
+            console.warn(this.name, "Error while initializing.", ex);
             await this.sensor.CloseConnection();
             throw ex;
         }
