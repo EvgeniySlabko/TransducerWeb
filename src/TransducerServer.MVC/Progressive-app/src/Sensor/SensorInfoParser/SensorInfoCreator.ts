@@ -273,7 +273,7 @@ export async function CreateFullSensorInfo(serviceInfo: SensorSK, holdingRegiste
     let popravka = MasEdinicPopravok[index];
     //................... Максимально допустимое значение основной измеряемой величины
     let MasEdRazmValue = MasEdRazm[index];
-    let accuracy = MasEdRazm.toString().length - 1;
+    let accuracy = MasEdRazmValue.toString().length - 1;
     let maxDopustBase = 1000 * mnogitel * MasEdRazmValue;
     //................. Максимально допустимое значение основной измеряемой величины
     let MaxValue = maxDopustBase;
