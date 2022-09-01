@@ -1,4 +1,5 @@
 import html2canvas from "html2canvas";
+import { EventDispatcher } from "strongly-typed-events";
 import uPlot, { Axis, Scale, Series } from "uplot";
 import { PlotChannelStyle } from "../Channel/ChannelStyle/PlotChannelStyle";
 import { NearestPoint } from "../Common/AlignedDataHelpers";
@@ -52,11 +53,15 @@ export class MyUPlotBase {
     protected limits: LimitLine[] = [];
     protected seriesInfos: SeriesInfo[] = [];
 
+    private ready = new EventDispatcher<MyUPlotBase, uPlot>();
     private _data: uPlot.AlignedData = [[], []];
     protected interval?: NodeJS.Timer;
 
     protected GetData(): uPlot.AlignedData {
         return this._data;
+    }
+    public get onReady () {
+        return this.ready.asEvent();
     }
 
     protected params = {
@@ -94,6 +99,10 @@ export class MyUPlotBase {
         let curIndex = Math.round(time / (1 / this.params.pointsPerSecond));
         return curIndex - firsIndex;
     };
+
+    public get Plot(){
+        return this.plot;
+    }
 
     public ClearLabels = () => this.labels.splice(0, this.labels.length);
 
@@ -201,7 +210,7 @@ export class MyUPlotBase {
         }
         return {
             width: this.parent!.clientWidth - summaryOthersWidth,
-            height: this.element.clientHeight - 100,
+            height: this.element.clientHeight - 120,
         };
     }
 
@@ -298,6 +307,8 @@ export class MyUPlotBase {
 
                         this.SetScale(nxMin, nxMax);
                     });
+
+                    this.ready.dispatch(this, u);
                 },
             },
         };
@@ -540,7 +551,7 @@ export class MyUPlotBase {
 
             this.options = this.getOptions();
             if (this.interval) clearInterval(this.interval);
-            this.element.innerHTML = "";
+            //this.element.innerHTML = "";
         }
     }
 

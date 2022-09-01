@@ -20,10 +20,10 @@ export class PlotControlPanel extends React.Component<Props, IState> {
     }
 
     render() {
-        const size = "20px";
+        const size = "40px";
         return (
             <div className="cell-control-panel-row">
-                <div style={{ marginLeft: "10px" }}>
+                <div style={{ marginLeft: "0px" }}>
                     <Button style={{ height: size, width: size }} className="horizontal-padding" onClick={this.props.plotsManager?.PressLeft} icon={<StepBackwardOutlined />} />
                     <Button style={{ height: size, width: size }} onClick={() => this.props.plotsManager?.MoveX(-this.step)} className="horizontal-padding" icon={<CaretLeftOutlined />} />
                     <Button style={{ height: size, width: size }} onClick={() => this.props.plotsManager?.MoveX(this.step)} className="horizontal-padding" icon={<CaretRightOutlined />} />

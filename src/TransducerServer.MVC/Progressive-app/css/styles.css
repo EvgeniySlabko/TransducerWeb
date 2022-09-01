@@ -208,13 +208,25 @@ li {
 }
 
 .cell-control-panel-row {
+
+    height: 0px;
     display: flex;
-    flex-flow: row;
-    height: 40px;
-    position: absolute;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    top: 30px;
     z-index: 10;
-    top: 64px;
-    left: 381px;
+}
+
+.center-parent {
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#controls-button-container button.disabled {
+    color: #AAAAAA;
 }
 
 :root {

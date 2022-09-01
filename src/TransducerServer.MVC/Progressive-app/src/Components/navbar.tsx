@@ -155,7 +155,7 @@ export class Navbar extends React.Component<Props, IState> {
 
     render() {
         return (
-            <div className="nav-tab-container">
+            <div id ="controls-button-container" className="nav-tab-container">
                 <Button title="Начать измерение. (Space)" size="large" id="Start" shape="default" disabled={this.disableStartClick()} icon={this.props.reportVieving ? <ArrowLeftOutlined /> : this.props.streaming ? <PauseOutlined /> : <CaretRightOutlined />} onClick={this.onStartClick} />
 
                 <Button title="Очистить результаты / Окончить эксперимент. (C)" disabled={this.disableClearClick()} size="large" id="clear" shape="default" icon={<BorderOutlined />} onClick={this.onClearClick} />
@@ -175,7 +175,7 @@ export class Navbar extends React.Component<Props, IState> {
  
                 <Button size="large" title="О программе" icon={<QuestionOutlined />} onClick={() => this.setState({tutorialVisible: true})} />
 
-                <PlotControlPanel plotsManager={this.props.plotsManager} reportVieving={this.props.reportVieving} />
+                
                 <AppSettingsTab visible={this.state.settings} onClose={this.handleSettingsClose} />
 
                 <AddSensor enabled={!this.disableAddClick()} sensorService={this.props.sensorService} />

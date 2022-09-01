@@ -15,6 +15,7 @@ import { ApplayLocalStorageSettingsForGroups, ApplySensorParameters as ApplaySen
 import { PlotsManager } from "../uPlot/PlotManager";
 import { GroupsContainer } from "./GroupsContainer";
 import { Navbar } from "./navbar";
+import { PlotContainer } from "./PlotContainer";
 
 export interface Props {
     sensorService: SensorController;
@@ -58,11 +59,11 @@ export class App extends React.Component<Props, IState> {
         this.props.sensorService.onDispatch.addListener("Add", this.newSensorHandler);
     }
 
-    componentDidMount = () => {
-        let plotsManager = new PlotsManager(document.getElementById("gd"));
-        SetupPlotManager(plotsManager);
+    ploatReady = (plotManager: PlotsManager) => {
+        SetupPlotManager(plotManager);
+        plotManager.AddChannels([]);
         this.setState((prev, props) => ({
-            plotsManager: plotsManager,
+            plotsManager: plotManager,
         }));
     };
 
@@ -271,10 +272,15 @@ export class App extends React.Component<Props, IState> {
                         <></>
                     ) : (
                         <div className="left-container">
-                            <GroupsContainer allowSettings={!this.state.streaming && this.state.firstStart} plotsManager={this.state.plotsManager} groups={this.state.groups} sensorRemove={this.sensorManualCloseHandler} />
+                            <GroupsContainer allowSettings={!this.state.streaming && this.state.firstStart} 
+                                             plotsManager={this.state.plotsManager}
+                                             groups={this.state.groups}
+                                             sensorRemove={this.sensorManualCloseHandler} />
                         </div>
                     )}
-                    <div id="gd" className="plot" />
+
+
+                    <PlotContainer reportVieving={this.state.viewingReport} plotsManager={this.state.plotsManager} plotReady={this.ploatReady}></PlotContainer>
                 </div>
             </div>,
         ];

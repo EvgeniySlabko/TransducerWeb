@@ -1,3 +1,4 @@
+import { EventDispatcher, SimpleEventDispatcher } from "strongly-typed-events";
 import { PlotChannel } from "../Channel/Channel/PlotChannel";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { MyUPlot as StreamingPlot } from "./StreamingPlot/StreamingPlot";
@@ -25,6 +26,12 @@ export class PlotsManager {
     private plotChannels: PlotChannel[] = [];
     private currentPlotType: PlotType = PlotType.StremimgPlot;
     private plot: StreamingPlot | ViewerPlot;
+
+    private ready = new SimpleEventDispatcher<PlotsManager>();
+
+    public get onReady(){
+        return this.ready.asEvent();    
+    }
 
     private parameters: PlotsManagerParameters = {
         maxStreamingPlotScreenSize: 100,
@@ -123,11 +130,16 @@ export class PlotsManager {
         if (index !== -1) this.plotChannels.splice(index, 1);
     };
 
-    private GetStreamingPlot = (): StreamingPlot =>
-        new StreamingPlot(this.htmlElement, {
+    private GetStreamingPlot = () : StreamingPlot =>
+    {
+        let streamingPlot = new StreamingPlot(this.htmlElement, {
             maxScreenSize: this.parameters.maxStreamingPlotScreenSize,
             pointsPerSecond: this.parameters.pointsPerSecond,
         });
+        
+        streamingPlot.onReady.sub((args) => this.ready.dispatch(this))
+        return streamingPlot
+    }
 
     private GetViewer = (): ViewerPlot => new ViewerPlot(this.htmlElement);
 
