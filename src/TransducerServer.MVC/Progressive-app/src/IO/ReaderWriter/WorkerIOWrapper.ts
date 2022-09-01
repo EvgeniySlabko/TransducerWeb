@@ -1,5 +1,5 @@
 import { SimpleEventDispatcher } from "strongly-typed-events";
-import { DataWorkerArgs, ErrorWorkerArgs, ReadWorkerArgs, WorkerCommandType, WorkerMessage, WriteWorkerArgs } from "../../worker/WorkerTypes";
+import { DataWorkerArgs, ErrorWorkerArgs, ReadWorkerArgs, WorkerCommandType, WorkerMessage, WriteWorkerArgs } from "../../UsbWorker/UsbWorkerDefinitions";
 import { IReaderWriter } from "./IReaderWriter";
 
 export class ReaderWriterWorkerWrapper implements IReaderWriter {

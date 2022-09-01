@@ -1,5 +1,5 @@
 import { EventDispatcher, ISimpleEvent, SimpleEventDispatcher } from "strongly-typed-events";
-import { ErrorWorkerArgs, WorkerCommandType, WorkerMessage } from "../../worker/WorkerTypes";
+import { ErrorWorkerArgs, WorkerCommandType, WorkerMessage } from "../../UsbWorker/UsbWorkerDefinitions";
 import { ISensorConnector } from "./ISensorConnector";
 
 export class SensorConnectorWorkerWrapper implements ISensorConnector {

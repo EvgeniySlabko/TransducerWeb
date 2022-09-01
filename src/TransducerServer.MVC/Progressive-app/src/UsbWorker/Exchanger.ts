@@ -1,6 +1,6 @@
 import { UsbSensorIOWorker } from "../IO/Connector/UsbSensorConnector";
 import { UsbRowReader as UsbRowReaderWriter } from "./UsbRowReader";
-import { DataWorkerArgs, ErrorWorkerArgs, OpenWorkerArgs, ReadWorkerArgs, WorkerCommandType, WorkerMessage, WriteWorkerArgs } from "./WorkerTypes";
+import { DataWorkerArgs, ErrorWorkerArgs, OpenWorkerArgs, ReadWorkerArgs, WorkerCommandType, WorkerMessage, WriteWorkerArgs } from "./UsbWorkerDefinitions";
 
 
 let usbReaderWriter: UsbRowReaderWriter;

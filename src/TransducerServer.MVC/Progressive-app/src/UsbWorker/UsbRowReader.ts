@@ -3,25 +3,23 @@ import { ISimpleEvent, SimpleEventDispatcher } from 'strongly-typed-events';
 import { sleep } from '../Common/Common';
 export class UsbRowReader{
     private readonly device: USBDevice;
-    private ringBuffer = new RingBuffer<Uint8Array>(20000);
+    private buffer = new RingBuffer<Uint8Array>(20000);
     private _error = new SimpleEventDispatcher<Error>();
 
     constructor(device: USBDevice) {
         this.device = device;
-        this.Reading().catch(e =>{
-            console.log(3);
-        });
+        this.Reading().then();
     }
 
     public async Read(): Promise<Uint8Array[]> {
         while(true)
         {
-            //console.log(this.ringBuffer.getBufferLength());
-            let bufferLength = this.ringBuffer.getSize();
+            let bufferLength = this.buffer.getBufferLength();
             if (bufferLength > 0){
-                let data = this.ringBuffer.toArray();
-                this.ringBuffer.clear();
-                 return data;
+                console.log(bufferLength);
+                let data = this.buffer.toArray();
+                this.buffer.clear();
+                return data;
             }
 
             await sleep(10);
@@ -39,13 +37,13 @@ export class UsbRowReader{
     private async Reading(){
         let result : USBInTransferResult;
         try{
-            result = await this.device.transferIn(1, 1);
+            result = await this.device.transferIn(1, 10000);
             if (result.status === "ok"){
                 if (result.data?.byteLength != 0){
-                    this.ringBuffer.add(new Uint8Array(result.data?.buffer!));
+                    this.buffer.add(new Uint8Array(result.data?.buffer!));
                 }
             }
-            sleep(100);
+            sleep(10);
             await this.Reading();
         }
         catch(e: any)

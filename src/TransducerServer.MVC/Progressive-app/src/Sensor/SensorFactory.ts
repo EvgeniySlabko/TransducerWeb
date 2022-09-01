@@ -7,7 +7,7 @@ import { UsbReaderWriter } from "../IO/ReaderWriter/UsbReaderWriter";
 import { ReaderWriterWorkerWrapper } from "../IO/ReaderWriter/WorkerIOWrapper";
 import { BaudRate, StopBit } from "../Storage/ConnectionParams/ConnectionCommon";
 import { GetRS485Params, GetVCOMParams } from "../Storage/ConnectionParams/ConnectionStorage";
-import { OpenWorkerArgs, WorkerCommandType, WorkerMessage } from "../worker/WorkerTypes";
+import { OpenWorkerArgs, WorkerCommandType, WorkerMessage } from "../UsbWorker/UsbWorkerDefinitions";
 import { CreateDecoderParameters } from "./DecoderParameters/DecoderParametersFactory";
 import { CreateDefaultCommandFactory } from "./SensorCommand/DefaultCommandFactory";
 import { CreateModBusCommandFactory } from "./SensorCommand/ModBusCommandFactory";
@@ -139,7 +139,7 @@ async function GetUsbDevice() : Promise<USBDevice> {
 async function CreateUsbWorker() : Promise<SensorWorker> 
 {
     let device = await GetUsbDevice();
-    let worker = new Worker(new URL("../worker/Exchanger", import.meta.url));
+    let worker = new Worker(new URL("../UsbWorker/Exchanger", import.meta.url));
 
     try
     {
