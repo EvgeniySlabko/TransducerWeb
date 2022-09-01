@@ -1,5 +1,6 @@
 import { RecordManager } from "./ReportListener/RecordManager";
 import { SensorController } from "./Sensor/SensorsManager/SensorsManager";
+import { RegistreServiceWorker } from "./ServiceWorker";
 import { PlotsManager } from "./uPlot/PlotManager";
 
 
@@ -10,3 +11,5 @@ export let sensorService: SensorController = new SensorController();
 export let plotsManager: PlotsManager;
 
 export let recordController: RecordManager = new RecordManager();
+
+RegistreServiceWorker();

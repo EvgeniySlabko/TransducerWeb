@@ -2,18 +2,12 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const webpack = require("webpack");
 const path = require("path");
 const fs = require('fs');
-const WorkboxPlugin = require('workbox-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+
 module.exports = {
     entry: "./src/main.tsx",
     mode: "development",
     //mode: 'production',
-    devServer: {
-        static: path.resolve(__dirname, 'dist', 'static'),
-        compress: true,
-        //https: true,
-        port: 9000,
-    },
   
     optimization: {
         //minimize: true,
@@ -21,6 +15,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, "dist"),
         filename: "bundle.js",
+        clean: true,
     },
     module: {
         rules: [
@@ -42,7 +37,6 @@ module.exports = {
     plugins: [
         new HtmlWebpackPlugin({
             favicon: "static/favicon-32x32.png",
-            
             template: "./index.html",
         }),
         new webpack.ProvidePlugin({
@@ -53,17 +47,8 @@ module.exports = {
         }),
         new CopyWebpackPlugin({
             patterns: [
-              { from: "static", to: "./static" },
+              { from: "static", to: "./" },
             ],
-          }),
-        new WorkboxPlugin.GenerateSW({
-            // these options encourage the ServiceWorkers to get in there fast
-            // and not allow any straggling "old" SWs to hang around
-            exclude: [/node_modules/, /src/],
-            maximumFileSizeToCacheInBytes: 99999999999,
-            clientsClaim: true,
-            skipWaiting: true,
-            swDest: './service-worker.js'
           }),
     ],
 
