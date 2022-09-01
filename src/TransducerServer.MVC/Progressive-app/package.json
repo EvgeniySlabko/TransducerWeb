@@ -30,6 +30,7 @@
         "build": "npx webpack-cli build --config webpack.prod.js",
         "tslint": "tslint --project tsconfig.json",
         "start": "webpack serve --open --config webpack.dev.js",
+        "startProd": "webpack serve --open --config webpack.prod.js",
         "deps": "list",
         "snyk-protect": "snyk protect",
         "prepublish": "npm run snyk-protect",
