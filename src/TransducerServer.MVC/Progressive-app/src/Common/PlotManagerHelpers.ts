@@ -10,5 +10,5 @@ export function SetupPlotManager(manager: PlotsManager) {
         pointsPerSecond: pointsPerSecond,
     });
 
-    //manager.RebuildIfNessesary();
+    manager.Rebuild();
 }
