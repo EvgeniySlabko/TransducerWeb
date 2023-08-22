@@ -50,9 +50,9 @@ export class Facker implements ISingleComponentSensorBase {
     private _onMessage = new EventDispatcher<ISingleComponentSensorBase, SensorMessageEventArgs>();
 
     private isStreaming: boolean = false;
-    private mainInterval: NodeJS.Timer | undefined;
-    private tmpInterval: NodeJS.Timer | undefined;
-    private speedInterval: NodeJS.Timer | undefined;
+    private mainInterval: NodeJS.Timeout | undefined;
+    private tmpInterval: NodeJS.Timeout | undefined;
+    private speedInterval: NodeJS.Timeout | undefined;
 
     private timeBase: number = Date.now();
 

@@ -1,10 +1,10 @@
 import { Collapse, Select } from "antd";
 import React, { Component, ReactComponentElement } from "react";
-import { DecoderType } from "../../Sensor/SensorFactory";
 import { BaudRate, Parity, StopBit } from "../../Storage/ConnectionParams/ConnectionCommon";
 import { MenuItem } from "../MenuItem";
 import { RS485Settings } from "./RS485Settings";
 import { VCOMSettings } from "./VCOMSettings";
+import { DecoderType } from "../../store/uiSlice";
 const { Panel } = Collapse;
 const { Option } = Select;
 

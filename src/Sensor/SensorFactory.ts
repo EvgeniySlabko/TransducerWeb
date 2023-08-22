@@ -8,6 +8,7 @@ import { ReaderWriterWorkerWrapper } from "../IO/ReaderWriter/WorkerIOWrapper";
 import { BaudRate, StopBit } from "../Storage/ConnectionParams/ConnectionCommon";
 import { GetRS485Params, GetVCOMParams } from "../Storage/ConnectionParams/ConnectionStorage";
 import { OpenWorkerArgs, WorkerCommandType, WorkerMessage } from "../UsbWorker/UsbWorkerDefinitions";
+import { DecoderType } from "../store/uiSlice";
 import { CreateDecoderParameters } from "./DecoderParameters/DecoderParametersFactory";
 import { CreateDefaultCommandFactory } from "./SensorCommand/DefaultCommandFactory";
 import { CreateModBusCommandFactory } from "./SensorCommand/ModBusCommandFactory";
@@ -18,8 +19,6 @@ import { SensorWorker } from "./SensorWorker";
 import { SingleComponentSensorExchanger } from "./SingleComponentSensor.ts/Exchanger/SingleComponentSensorExchanger";
 import { Facker } from "./SingleComponentSensor.ts/Faker/FackerSensor";
 import { SingleComponentSensor } from "./SingleComponentSensor.ts/SingleComponentSensorStreamer";
-
-export type DecoderType = "USB" | "RS485" | "VCOM" | "Faker";
 
 export const Timeout = 100;
 

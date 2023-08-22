@@ -48,7 +48,6 @@ export class CellModal extends React.Component<Props, IState> {
     limitHandler = (state: boolean) => {
         this.setState((prev, props) => ({ limits: state }));
     };
-
     changeAccurency = (accurency: number) => {
         this.setState((prev, props) => ({ accurency: accurency }));
     };
@@ -85,7 +84,7 @@ export class CellModal extends React.Component<Props, IState> {
 
                         <MenuItem label="Цвет графика:" children={<HexColorPicker color={this.props.group.cellChannel.Style.color} onChange={this.colorChangeHandler} />} />
 
-                        <MenuItem label="Знаков после запятой:" children={<InputNumber className="vertical-alignment" size="small" style={{ height: "25px" }} step={1} min={0} max={5} value={this.state.accurency} onChange={this.changeAccurency} />} />
+                        <MenuItem label="Знаков после запятой:" children={<InputNumber className="vertical-alignment" size="small" style={{ height: "25px" }} step={1} min={0} max={5} value={this.state.accurency} onChange={n => this.changeAccurency(n ? n : 0)} />} />
 
                         <MenuItem label="Пределы измерений:" children={<Checkbox disabled={this.props.group.cellChannel.Style.limits === undefined} defaultChecked={this.state !== undefined && this.props.group.plotChannel.Style.drawLimits} onChange={(s) => this.limitHandler(s.target.checked)} />} />
                     </div>

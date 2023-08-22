@@ -41,9 +41,9 @@ export class FilterSettings extends React.Component<Props> {
                             label="Тип фильтра:"
                         />
 
-                        <MenuItem children={<InputNumber size="middle" step={1} min={1} max={12} defaultValue={this.props.order} onChange={this.props.onFilterOrderChanged} />} label="Порядок фильтра:" />
+                        <MenuItem children={<InputNumber size="middle" step={1} min={1} max={12} defaultValue={this.props.order} onChange={n => this.props.onFilterOrderChanged(n ? n : 0)} />} label="Порядок фильтра:" />
 
-                        <MenuItem children={<InputNumber size="middle" step={0.1} min={0.1} max={20000} title="Частота среза" defaultValue={this.props.fc} onChange={(val) => this.props.onFilterFcChanged(val)} />} label="Частота среза(Гц):" />
+                        <MenuItem children={<InputNumber size="middle" step={0.1} min={0.1} max={20000} title="Частота среза" defaultValue={this.props.fc} onChange={(n) => this.props.onFilterFcChanged(n ? n : 0)} />} label="Частота среза(Гц):" />
                     </>
                 )}
             </>

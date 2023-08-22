@@ -55,7 +55,7 @@ export class MyUPlotBase {
 
     private ready = new EventDispatcher<MyUPlotBase, uPlot>();
     private _data: uPlot.AlignedData = [[], []];
-    protected interval?: NodeJS.Timer;
+    protected interval?: NodeJS.Timeout;
 
     protected GetData(): uPlot.AlignedData {
         return this._data;
@@ -618,7 +618,9 @@ export class MyUPlotBase {
         if (left && this.legendItems && xVal < this.params.th && xVal > this.params.t0) {
             // let curValues = GetApproximateValues(this.data, xVal);
 
+            /*
             for (let i = 0; i < this.GetData().length - 1; i++) {
+                let tmp = this.GetData()[i + 1];
                 let nearestVal = NearestPoint(this.GetData()[i + 1], index, maxCount);
                 let seriesInfo = this.seriesInfos[i];
                 let strValue = "--";
@@ -633,6 +635,8 @@ export class MyUPlotBase {
                     } catch {}
                 }
             }
+            */
+            
         }
     }
 

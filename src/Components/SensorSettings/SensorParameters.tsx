@@ -45,9 +45,9 @@ export class SensorParameters extends React.Component<Props> {
                 </Space>
 
                 <Divider type="horizontal" />
-                <MenuItem label="Период измерения скорости(мс):" children={<InputNumber className="vertical-align" min={1} max={5000} step={1} size="small" style={{ height: "25px" }} defaultValue={this.props.speedPeriod} onChange={this.props.onSpeedPeriodChanged} />} />
+                <MenuItem label="Период измерения скорости(мс):" children={<InputNumber className="vertical-align" min={1} max={5000} step={1} size="small" style={{ height: "25px" }} defaultValue={this.props.speedPeriod} onChange={(n) => this.props.onSpeedPeriodChanged(n ? n : 0)} />} />
 
-                <MenuItem label="Коэффицент усреднения:" children={<InputNumber className="vertical-align" min={this.props.group.node.worker.DecoderParams.minAvgRatio} max={5000} step={1} size="small" style={{ height: "25px" }} defaultValue={this.props.avgRatio} onChange={this.props.onAvgChanged} />} />
+                <MenuItem label="Коэффицент усреднения:" children={<InputNumber className="vertical-align" min={this.props.group.node.worker.DecoderParams.minAvgRatio} max={5000} step={1} size="small" style={{ height: "25px" }} defaultValue={this.props.avgRatio} onChange={(n) => this.props.onAvgChanged(n ? n : 0)} />} />
 
                 <MenuItem label="Внешний датчик скорости:" children={<Checkbox checked={this.props.externalSpeedSensor} onChange={(c) => this.props.onExternalSpeedSensorChanged(c.target.checked)} />} />
 
