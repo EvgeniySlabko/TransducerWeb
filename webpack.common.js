@@ -1,4 +1,5 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const webpack = require("webpack");
 const path = require("path");
 const fs = require('fs');
@@ -18,6 +19,7 @@ module.exports = {
         clean: true,
     },
     module: {
+        strictExportPresence: true,
         rules: [
             {
                 test: /\.(png|jpg|jpeg|gif)$/i,
@@ -29,8 +31,12 @@ module.exports = {
                 exclude: /node_modules/,
             },
             {
-                test: /\.css$/i,
-                use: ["style-loader", "css-loader"],
+              test: /\.s[ac]ss$/i,
+              use: ["style-loader", "css-loader", "sass-loader"],
+            },
+            {
+              test: /\.css$/i,
+              use: ["style-loader", "css-loader"],
             },
         ],
     },

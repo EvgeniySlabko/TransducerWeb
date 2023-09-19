@@ -1,0 +1,37 @@
+@use "sass:map";
+@import "./variables.scss";
+
+.flex {
+    display: flex;
+    flex-direction: row;
+}
+
+.vertical_align {
+    display: inline-block !important;
+    vertical-align: middle !important;
+    height: auto;
+}
+
+.horizontal_padding {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
+}
+
+.horizontal_flex{
+    display: flex;
+}
+
+.vertical_flex {
+    display: flex;
+    flex-direction: column;
+}
+
+.app_label {
+    text-align: center;
+    width: 100%;
+    user-select: none;
+}
+
+.padding_10{
+    padding: 10px;
+}

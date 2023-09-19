@@ -10,7 +10,7 @@ import { ISingleComponentSensorBase } from "./ISingleComponentSensorBase";
 
 export const ADCFrequency = 5000;   //Частота Ацп
 export const DecoderClockFrequency: number = 62500;    //Частота часов декодера
-export const Timeout = 200;   // Максимальное время ожидание ответа на командуж
+export const Timeout = 20000;   // Максимальное время ожидание ответа на командуж
 
 export class SingleComponentSensorBase implements ISingleComponentSensorBase {
     public readonly id: string;

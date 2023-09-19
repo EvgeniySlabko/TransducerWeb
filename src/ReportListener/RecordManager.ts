@@ -34,7 +34,7 @@ export class RecordManager {
 
         let allPlotChannels: PlotChannel[] = [];
         allPlotChannels = allPlotChannels.concat(...groups.map((g) => g.savingChannels));
-        this.listener.SetChannels(allPlotChannels);
+        //this.listener.SetChannels(allPlotChannels); //TODO fix
     }
 
     public async StartListening() {

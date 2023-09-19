@@ -1,10 +1,9 @@
-import { Group } from "../Components/App";
-import { PlotsManager } from "../uPlot/PlotManager";
 
-export function SetupGroup(groups: Group[], plotsManager: PlotsManager) {
-    let managerParameters = plotsManager.ManagerParameters;
-    let plotDt = 1 / managerParameters.pointsPerSecond;
-    groups.forEach((group) => {
-        group.channelsInfo.setGridAlignmentInterval(plotDt);
+import { PipelineController } from "../Channel/AllChannelsFactory";
+
+export function SetupGroup(pipelines: PipelineController[], pointsPerSecond: number) {
+    let plotDt = 1 / pointsPerSecond;
+    pipelines.forEach((pipelines) => {
+        pipelines.setGridAlignmentInterval(plotDt);
     });
 }

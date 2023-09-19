@@ -1,44 +1,25 @@
-import React from "react";
-import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from "../Channel/Channel/CellChannel";
-import { Button, Checkbox, Collapse, InputNumber, Row, Slider } from "antd";
-import { PlotsManager } from "../uPlot/PlotManager";
-import { ChannelsGroup } from "../Channel/AllChannelsFactory";
-import { CellModal } from "./CellModal";
-import { SettingOutlined } from "@ant-design/icons";
+import React, { HTMLAttributes } from "react";
+import styles from "./Components.module.scss";
 
-export interface Props {
+export interface Props extends HTMLAttributes<HTMLDivElement> {
     value?: string;
-    fontStyle: string;
+    fontColor: string;
     fontSize: number;
-    hide: boolean;
 }
 
-export class CellValue extends React.Component<Props> {
-    constructor(prop: Props) {
-        super(prop);
-    }
-
-    render() {
-        return (
-            <div className="measure-box">
-                <div className="horizontal-flex"></div>
+export const CellValue = ({value, fontSize, fontColor, ...rest}: Props) => {
+    return(
+        <div {...rest}>
+            <div className={styles.horizontal_flex}>
                 <div
+                    className={styles.cell_value}
                     style={{
-                        display: "flex",
-                        height: this.props.hide ? "0px" : "auto",
-                    }}
-                >
-                    <div
-                        className="cell-value"
-                        style={{
-                            color: this.props.fontStyle,
-                            fontSize: `${this.props.fontSize.toString()}px`,
-                        }}
-                    >
-                        {this.props.value}
-                    </div>
+                        color: fontColor,
+                        fontSize: `${fontSize.toString()}px`,
+                    }}>
+                    {value}
                 </div>
             </div>
-        );
-    }
+        </div>
+    )
 }

@@ -1,5 +1,21 @@
 import { IncreaseBrightness } from "../Common/ColorHelpers";
-import { Label, LimitLine } from "./PlotBase";
+import { Axis } from "./uplot";
+
+export declare class LimitLine {
+    label: string;
+    axis: uPlot.Axis;
+    range: () => number[];
+    value: number;
+    color: () => string;
+    enabled: () => boolean;
+}
+
+export declare class Label {
+    scale: string;
+    time: number;
+    text: string;
+    value: number;
+}
 
 export function labelsPlugin(labels: Label[]) {
     function drawBg(u: uPlot) {
@@ -42,7 +58,7 @@ export function labelsPlugin(labels: Label[]) {
     };
 }
 
-export function limitsPlugin(limits: LimitLine[]) {
+export const limitsPlugin = (limits: LimitLine[]) =>{
     function drawBg(u: uPlot) {
         //console.log("left: ", left, "top: ", top, "width", width, "height", height);
         limits.forEach((l) => {
@@ -94,3 +110,130 @@ export function limitsPlugin(limits: LimitLine[]) {
         },
     };
 }
+
+/*
+export const wheelZoomPlugin = (opts: CustomOptions) => {
+    let factor = 0.75;
+
+    let xMin: number, xMax: number, yMin: number, yMax: number, xRange: number, yRange: number;
+
+    function clamp(nRange: number, nMin: number, nMax: number, fRange: number, fMin: number, fMax: number) {
+        return [nMin, nMax];
+    }
+
+    const SetScale = (min: number, max: number) => {
+        if (min >= max) throw "min higher then max";
+        let rangeValue = max - min;
+        if (rangeValue > opts.maxScreenSize) {
+            this.params.setScreenSize(this.params.maxScreenSize);
+            return;
+        }
+        this.params.range = [min, max];
+    }
+
+    return {
+        hooks: {
+            ready: (u: any) => {
+                xMin = u.scales.x.min;
+                xMax = u.scales.x.max;
+                yMin = u.scales.y.min;
+                yMax = u.scales.y.max;
+
+                xRange = xMax - xMin;
+                yRange = yMax - yMin;
+
+                let over = u.over;
+                let rect = over.getBoundingClientRect();
+
+                over.addEventListener("dblclick", (e: MouseEvent) => {
+                    e.stopPropagation();
+                });
+
+                over.addEventListener("contextmenu", (e: Event) => {
+                    e.preventDefault();
+                    //return false;
+                });
+                // wheel drag pan
+                over.addEventListener("mousedown", (e: any) => {
+                    if (e.button === 2) {
+                        e.preventDefault();
+
+                        let left0 = e.clientX;
+
+                        let scXMin0 = opts.range[0];
+                        let scXMax1 = opts.range[1];
+
+                        let xUnitsPerPx = u.posToVal(1, "x") - u.posToVal(0, "x");
+
+                        let onmove = (e: any) => {
+                            e.preventDefault();
+
+                            let left1 = e.clientX;
+                            let dx = xUnitsPerPx * (left1 - left0);
+                            this.SetScale(scXMin0 - dx, scXMax1 - dx);
+                        };
+
+                        function onup(e: any) {
+                            document.removeEventListener("mousemove", onmove);
+                            document.removeEventListener("mouseup", onup);
+                        }
+
+                        document.addEventListener("mousemove", onmove);
+                        document.addEventListener("mouseup", onup);
+                    }
+                });
+
+                // wheel scroll zoom
+                over.addEventListener("wheel", (e: any) => {
+                    e.preventDefault();
+
+        
+                    xMin = opts.range[0];
+                    xMax = opts.range[1];
+                    //yMin = u.scales.y1.min;
+                    //yMax = u.scales.y1.max;
+                    xRange = xMax - xMin;
+                    //yRange = yMax - yMin;
+                    if (xRange < 0.001 && e.deltaY < 0) return;
+                    rect = over.getBoundingClientRect();
+
+                    let { left, top } = u.cursor;
+
+                    let leftPct = left / rect.width;
+                    let btmPct = 1 - top / rect.height;
+                    let xVal = u.posToVal(left, "x");
+                    let yVal = u.posToVal(top, "y1");
+                    let oxRange = u.scales.x.max - u.scales.x.min;
+                    let oyRange = u.scales.y.max - u.scales.y.min;
+
+                    let nxRange = e.deltaY < 0 ? oxRange * factor : oxRange / factor;
+                    let nxMin = xVal - nxRange * leftPct;
+                    let nxMax = nxMin + nxRange;
+                    [nxMin, nxMax] = clamp(nxRange, nxMin, nxMax, xRange, xMin, xMax);
+
+                    this.SetScale(nxMin, nxMax);
+                });
+
+                this.ready.dispatch(this, u);
+            },
+        },
+    };
+}
+*/
+
+export const valuesMapper : Axis.Values = (u, vals, space) =>
+
+    vals.map((v) => {
+    let rounded = v.toFixed(4).replace(/0*$/, "");
+    if (rounded[rounded.length - 1] === ".") {
+        rounded = rounded.replace(".", "");
+    }
+
+    return rounded;
+})
+
+
+
+
+
+

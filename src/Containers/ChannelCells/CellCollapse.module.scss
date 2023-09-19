@@ -1,0 +1,20 @@
+@import "../../assets/common.module.scss";
+
+.cell_group_title {
+    font-size: 12px !important;
+    display: table-cell !important;
+    vertical-align: middle !important;
+    margin: 0px;
+    margin-top: 3px;
+    width: 77px;
+    height: 100%;
+    text-align: center;
+}
+
+
+.ant-collapse-item .ant-collapse-header {
+    padding: 0px !important;
+    justify-content: space-around !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+}

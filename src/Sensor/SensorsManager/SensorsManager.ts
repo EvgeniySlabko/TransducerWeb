@@ -2,6 +2,7 @@ import { EventDispatcher } from "@foxandfly/ts-event-dispatcher";
 import { FullSensorInfo } from "../SensorDefinitions";
 import { GetFullSensorInfo } from "../SensorInfoParser/SensorInfoCreator";
 import { SensorWorker } from "../SensorWorker";
+import { SimpleEventDispatcher } from "strongly-typed-events";
 
 export type SensorControllerArgs = {
     sender: SensorController;
@@ -21,11 +22,15 @@ type SensorNode = {
 
 export class SensorController {
     private sensors: SensorNode[] = new Array();
-    private _dispatcher = new EventDispatcher<SensorControllerArgs>();
+    private _dispatcher = new SimpleEventDispatcher<SensorControllerArgs>();
 
     private GetIndex(sensorWorker: SensorWorker) {
         let index = this.sensors.findIndex(currentWorker => currentWorker.sensorWorker === sensorWorker);
         return index;
+    }
+
+    constructor (){
+        console.log(123);
     }
 
     public async AddSensor(sensorWorker: SensorWorker) {
@@ -53,7 +58,7 @@ export class SensorController {
             this.sensors.splice(index, 1);
         });
 
-        await this._dispatcher.dispatch("Add", {
+        this._dispatcher.dispatchAsync({
             sender: this,
             fullSensorInfo: fullSensorInfo,
             worker: sensorWorker,
@@ -105,6 +110,6 @@ export class SensorController {
     }
 
     public get onDispatch() {
-        return this._dispatcher;
+        return this._dispatcher.asEvent();
     }
 }

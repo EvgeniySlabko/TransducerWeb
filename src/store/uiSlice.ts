@@ -1,6 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Snapshot } from '../ReportListener/Snapshot';
-import { SensorNode } from '../Components/App';
 import { AllChannelsInfo } from '../Channel/AllChannelsFactory';
 
 export type DecoderType = "USB" | "RS485" | "VCOM" | "Faker";
@@ -11,10 +10,11 @@ export type UiState = {
     snapshot: Snapshot | undefined,
     viewingReport: boolean,
     settings: boolean,
-    groups: Group[],
     tutorialVisible: boolean,
     selectedDecoderType: DecoderType
-    showSensorsSettings: boolean
+    showSensorsSettings: boolean,
+    showDownloadModal: boolean,
+    pointsPerSecond: number,
 }
 
 const initialState: UiState = {
@@ -23,15 +23,11 @@ const initialState: UiState = {
     snapshot: undefined,
     viewingReport: false,
     settings: false,
-    groups: [],
     tutorialVisible: false,
     selectedDecoderType: "USB",
-    showSensorsSettings: false
-}
-
-export interface Group {
-    node: SensorNode;
-    channelsInfo: AllChannelsInfo;
+    showSensorsSettings: false,
+    showDownloadModal: false,
+    pointsPerSecond: 50,
 }
 
 const uiSlice = createSlice({
@@ -39,7 +35,6 @@ const uiSlice = createSlice({
     initialState,
     reducers:{
         toogleStreaming(state){
-            //{ ...state, streaming: !state.streaming, firstStart: !state.streaming }
             state.streaming = !state.streaming
             state.firstStart = false
         },
@@ -58,7 +53,7 @@ const uiSlice = createSlice({
             state.viewingReport = false 
         },
         pause(state){ 
-            state.viewingReport = false 
+            state.streaming = false 
         },
         toggleSettingsScreenModal(state){ 
             state.settings = !state.settings 
@@ -69,12 +64,15 @@ const uiSlice = createSlice({
         toggleSensorScreenModal(state){ 
             state.showSensorsSettings = !state.showSensorsSettings 
         },
-        addGroup(state, action: PayloadAction<Group>){ 
-            state.groups.push(action.payload)
+        toggleDownloadModal(state){ 
+            state.showDownloadModal = !state.showDownloadModal 
         },
         setDecoderType(state, action: PayloadAction<DecoderType>){ 
             state.selectedDecoderType = action.payload;
             state.showSensorsSettings = false;
+        },
+        setPointsPerSecond(state, action: PayloadAction<number>){ 
+            state.pointsPerSecond = action.payload;
         },
     }
   })
@@ -89,7 +87,9 @@ const uiSlice = createSlice({
     toggleSettingsScreenModal,
     toggleTutorialScreenModal,
     toggleSensorScreenModal,
-    addGroup,
+    setDecoderType,
+    setPointsPerSecond,
+    toggleDownloadModal
   } = uiSlice.actions;
 
   export default uiSlice.reducer;

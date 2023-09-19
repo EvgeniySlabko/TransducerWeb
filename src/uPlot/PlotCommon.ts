@@ -1,4 +1,4 @@
-import { Axis, Scale, Series } from "uplot";
+import { Axis, Scale, Series } from "./uplot";
 
 export type SeriesValue = number | null | undefined;
 export function GetSeries(scale: string): Series {

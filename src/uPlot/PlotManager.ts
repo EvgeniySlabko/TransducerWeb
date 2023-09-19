@@ -1,8 +1,7 @@
+
 import { EventDispatcher, SimpleEventDispatcher } from "strongly-typed-events";
 import { PlotChannel } from "../Channel/Channel/PlotChannel";
 import { Snapshot } from "../ReportListener/Snapshot";
-import { MyUPlot as StreamingPlot } from "./StreamingPlot/StreamingPlot";
-import { MyUPlotViewer as ViewerPlot } from "./Viewer/ViewerPlot";
 
 export declare class ChannelLabel {
     channel: PlotChannel;
@@ -22,11 +21,9 @@ export declare class PlotsManagerParameters {
 }
 
 export class PlotsManager {
-    private readonly htmlElement: HTMLElement;
-    private plotChannels: PlotChannel[] = [];
-    private currentPlotType: PlotType = PlotType.StremimgPlot;
-    private plot: StreamingPlot | ViewerPlot;
-
+    /*
+    private readonly plot: uPlot;
+    
     private ready = new SimpleEventDispatcher<PlotsManager>();
 
     public get onReady(){
@@ -46,35 +43,12 @@ export class PlotsManager {
         return this.parameters;
     }
 
-    constructor(element: any) {
-        this.htmlElement = element;
-        this.plot = this.GetStreamingPlot();
+    constructor(plot: uPlot) {
+        this.plot = plot;
     }
 
     public SetParameters = (parameters: PlotsManagerParameters) => (this.parameters = parameters);
 
-    public async SetChannels(channels: PlotChannel[]) {
-        this.SetEmptyStreamingPlot();
-        let streamingPlot = <StreamingPlot>this.plot;
-        channels.forEach((c) => {
-            this.AddChannel(c);
-        });
-        streamingPlot.SetChannels(channels);
-    }
-
-    public AddChannels(channels: PlotChannel[]) {
-        this.SetEmptyStreamingPlot();
-        channels.forEach((c) => c.onClose.sub(this.PlotChannelCloseHandler));
-        let streamingPlot = this.plot as StreamingPlot;
-        this.plotChannels.push(...channels);
-        streamingPlot.SetChannels(this.plotChannels);
-    }
-
-    private SetEmptyStreamingPlot = () => {
-        this.plot.DestroyPlot();
-        this.plot = this.GetStreamingPlot();
-        this.currentPlotType = PlotType.StremimgPlot;
-    };
 
     public AddLabelForChannel(label: ChannelLabel) {
         if (this.currentPlotType === PlotType.StremimgPlot) {
@@ -82,14 +56,6 @@ export class PlotsManager {
             streamingPlot.AddLabel(label);
             return;
         }
-    }
-
-    private AddChannel(channel: PlotChannel) {
-        this.plotChannels.push(channel);
-        channel.onClose.sub((c, args) => {
-            let index = this.plotChannels.findIndex((c) => c === channel);
-            this.plotChannels.splice(index);
-        });
     }
 
     public UploadSnapshot(snapshot: Snapshot) {
@@ -152,11 +118,5 @@ export class PlotsManager {
     public MoveX = (step: number) => this.plot.MoveX(step);
     public PressLeft = () => this.plot.PressLeft();
     public PressRight = () => this.plot.PressRight();
-
-    public SetStreaming = () => {
-        if (this.currentPlotType === PlotType.StremimgPlot) {
-            let currentPlot = this.plot as StreamingPlot;
-            currentPlot.SetStreaming();
-        }
-    };
+    */
 }

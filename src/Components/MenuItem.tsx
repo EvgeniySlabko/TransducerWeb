@@ -1,29 +1,22 @@
 import { Collapse } from "antd";
-import React from "react";
-const { Panel } = Collapse;
+import React, { HTMLAttributes } from "react";
+import styles from "./Components.module.scss";
 
-export interface Props {
+export interface Props extends HTMLAttributes<HTMLDivElement> {
     children: React.ReactElement;
     label: string;
-    className?: string;
 }
 
-export class MenuItem extends React.Component<Props> {
-    constructor(prop: Props) {
-        super(prop);
-    }
-
-    render() {
-        const children = this.props.children;
-        return (
-            <>
-                <div className={"horizontal-flex"}>
-                    <label className="margin vertical-align">{this.props.label}</label>
-                    <div className="margin horizontal-flex" style={{ marginLeft: "auto", order: 2 }}>
-                        {this.props.children}
-                    </div>
+export const MenuItem = ({children, label}: Props) => {
+    return (
+        <>
+            <div className={styles.flex}>
+                <label className={`${styles.padding_10} ${styles.vertical_align}`}>{label}</label>
+                <div className={`${styles.padding_10} ${styles.horizontal_flex}`} style={{ marginLeft: "auto", order: 2 }}>
+                    {children}
                 </div>
-            </>
-        );
-    }
+            </div>
+        </>
+    );
+    
 }

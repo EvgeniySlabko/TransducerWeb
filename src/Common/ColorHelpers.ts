@@ -1,4 +1,4 @@
-import { ChannelsGroup } from "../Channel/AllChannelsFactory";
+import { StylesGroup } from "../Channel/AllChannelsFactory";
 import { ChannelDataType } from "../Channel/ChannelStyle/ChanneStyleCommon";
 
 let mainColors = ["#00851f", "#9e027c", "#007858", "#008773"];
@@ -7,11 +7,11 @@ let speedColors = ["#0000ff", "#02a0bf", "#32017a", "#3d0087"];
 
 let powerColors = ["#a0a000", "#826400", "#5c7300", "#4a2500"];
 
-export function ChangeGroupColor(groups: ChannelsGroup[], index: number) {
+export function ChangeGroupColor(groups: StylesGroup[], index: number) {
     groups.forEach((group) => {
-        group.cellChannel.Style.color = ChangeChannelColorAccordigIndex(group.cellChannel.Style.color, group.cellChannel.Style.valueType, index);
-        group.plotChannel.Style.color = ChangeChannelColorAccordigIndex(group.plotChannel.Style.color, group.plotChannel.Style.valueType, index);
-        group.savingChannel.Style.color = ChangeChannelColorAccordigIndex(group.savingChannel.Style.color, group.savingChannel.Style.valueType, index);
+        group.cellStyle.color = ChangeChannelColorAccordigIndex(group.cellStyle.color, group.cellStyle.valueType, index);
+        group.plotStyle.color = ChangeChannelColorAccordigIndex(group.plotStyle.color, group.plotStyle.valueType, index);
+        group.savingStyle.color = ChangeChannelColorAccordigIndex(group.savingStyle.color, group.savingStyle.valueType, index);
     });
 }
 

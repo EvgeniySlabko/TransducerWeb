@@ -56,7 +56,7 @@ export function CreateSpeedStyle(sensorInfo: FullSensorInfo): PlotChannelStyle {
     };
 }
 
-export function CreatetemperatureStyle(sensorInfo: FullSensorInfo): PlotChannelStyle {
+export function CreateTemperatureStyle(sensorInfo: FullSensorInfo): PlotChannelStyle {
     return {
         sensorId: sensorInfo.id,
         grid: false,

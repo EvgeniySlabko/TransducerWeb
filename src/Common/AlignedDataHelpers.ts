@@ -1,6 +1,6 @@
-import { TypedArray } from "uplot";
 import { SensorData } from "../Sensor/SensorDefinitions";
 import { SeriesValue } from "../uPlot/PlotCommon";
+import { TypedArray } from "../uPlot/uplot";
 
 export declare class DataAlignParams {
     dt: number; //интервал сетки выравнивания

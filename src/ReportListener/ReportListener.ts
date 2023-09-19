@@ -1,10 +1,18 @@
 import { ChannelCloseArgs } from "../Channel/Channel/CellChannel";
 import { PlotChannelDataArgs, PlotChannel } from "../Channel/Channel/PlotChannel";
+import { PlotChannelStyle } from "../Channel/ChannelStyle/PlotChannelStyle";
 import { SensorData } from "../Sensor/SensorDefinitions";
 import { Snapshot, TrackData } from "./Snapshot";
 
+export interface ChannelContext
+{
+    channel: PlotChannel,
+    style: PlotChannelStyle
+}
 export class ReportListener {
     private channelMap: Map<PlotChannel, Array<SensorData>> = new Map();
+    private channelStylesMap: Map<PlotChannel, PlotChannelStyle> = new Map();
+
     private isListening: boolean = false;
     private isInit: boolean = false;
 
@@ -17,13 +25,12 @@ export class ReportListener {
         return thereIsData;
     }
 
-    public SetChannels(channels: PlotChannel[]) {
-        if (channels.length === 0) throw "There are no channels for listening";
-
+    public SetChannels(channels: ChannelContext[]) {
         channels.forEach((channel) => {
-            this.channelMap.set(channel, new Array<SensorData>());
-            channel.onData.sub(this.DataHandler);
-            channel.onClose.sub(this.CloseHandler);
+            this.channelMap.set(channel.channel, new Array<SensorData>());
+            this.channelStylesMap.set(channel.channel, channel.style);
+            channel.channel.onData.sub(this.DataHandler);
+            channel.channel.onClose.sub(this.CloseHandler);
         });
 
         this.isInit = true;
@@ -73,7 +80,7 @@ export class ReportListener {
 
             trackData.push({
                 data: dataArr,
-                style: plotChannel.Style,
+                style: this.channelStylesMap.get(plotChannel)!,
             });
         });
 

@@ -36,11 +36,11 @@ export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo): CellChannelSty
         valueType: "speed",
         maxValue: sensorInfo.MaxSpeed,
         limits: false,
-        visible: true,
+        visible: false,
     };
 }
 
-export function CreatetemperatureCellStyle(sensorInfo: FullSensorInfo): CellChannelStyle {
+export function CreateTemperatureCellStyle(sensorInfo: FullSensorInfo): CellChannelStyle {
     return {
         id: count++,
         sensorId: sensorInfo.id,
@@ -51,7 +51,7 @@ export function CreatetemperatureCellStyle(sensorInfo: FullSensorInfo): CellChan
         sensorType: sensorInfo.SensorType,
         accuracy: 1,
         valueType: "tmp",
-        visible: true,
+        visible: false,
     };
 }
 

@@ -3,6 +3,7 @@ import { ISingleComponentSensorBase } from "../../Sensor/SingleComponentSensor.t
 import { SensorData, SensorMessageEventArgs } from "../../Sensor/SensorDefinitions";
 import { CellChannelStyle } from "../ChannelStyle/CellChannelStyle";
 import { ISensorDataProvider } from "../SensorDataSource/ISensorDataProvider";
+import { v4 as uuid } from 'uuid';
 
 export type ChannelDataArgs = {
     sensor: ISingleComponentSensorBase;
@@ -20,14 +21,13 @@ export type ChannelCloseArgs = {
 };
 
 export class CellChannel {
-    private style: CellChannelStyle;
+    public id: string = uuid();
 
     private _onData = new EventDispatcher<CellChannel, ChannelDataArgs>();
     private _onMessage = new EventDispatcher<CellChannel, ChannelMessageArgs>();
     private _onClose = new EventDispatcher<CellChannel, ChannelCloseArgs>();
 
-    constructor(dataSourсe: ISensorDataProvider, style: CellChannelStyle) {
-        this.style = style;
+    constructor(dataSourсe: ISensorDataProvider) {
         dataSourсe.onData?.sub((sensor, args) => {
             this._onData.dispatch(this, {
                 data: args,
@@ -48,10 +48,6 @@ export class CellChannel {
                 sensorMsgArgs: args,
             });
         });
-    }
-
-    public get Style() {
-        return this.style;
     }
 
     public get onData() {
