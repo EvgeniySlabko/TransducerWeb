@@ -23,13 +23,14 @@ export type PlotChannelCloseArgs = {
 
 // Содержит информацию для отображения на графике.
 export class PlotChannel {
-    public id: string = uuid();
+    public readonly id: string;
 
     private _onData = new EventDispatcher<PlotChannel, PlotChannelDataArgs>();
     private _onMessage = new EventDispatcher<PlotChannel, PlotChannelMessageArgs>();
     private _onClose = new EventDispatcher<PlotChannel, PlotChannelCloseArgs>();
 
-    public constructor(dataSource: ISensorDataProvider) {
+    public constructor(dataSource: ISensorDataProvider, id: string) {
+        this.id = id;
         dataSource.onData?.sub((sensor, args) => {
             this._onData.dispatch(this, {
                 data: args,

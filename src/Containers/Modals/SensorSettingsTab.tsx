@@ -3,7 +3,7 @@ import { Button, Modal, notification, Tabs } from "antd";
 import React, { HTMLAttributes, useEffect, useState } from "react";
 import { FilterType, GetSensorParameters, SaveChannelGroupParameters, SaveSensorParameters } from "../../Storage/ChannelsDataStorage";
 import { FilterSettings } from "../../Components/FilterSettings";
-import { SensorParameters } from "../../Components/SensorParameters";
+import { ChannelVisible, SensorParameters } from "../../Components/SensorParameters";
 import { Group } from "../../store/groupsSlice";
 import { useSensorContext } from "../../hooks/hook";
 import { StylesGroup } from "../../Channel/AllChannelsFactory";
@@ -14,7 +14,7 @@ const { TabPane } = Tabs;
 export interface Props extends HTMLAttributes<HTMLDivElement>{
     group: Group;
     visible: boolean;
-    setChannelVisibilty: (channelIndex: number, value: boolean) => void;
+    setChannelVisibilty: (channelId: string, value: boolean) => void;
     onClose: () => void;
 }
 
@@ -33,7 +33,7 @@ export const SensorSettingsTab = ({group, visible, setChannelVisibilty, onClose,
     const [order, setOrder] = useState(3);
     const [speedPeriod, setSpeedPeriod] = useState(100);
     const [trackMaximum, setTrackMaximum] = useState(false);
-    const [visibleChannels, setVisibleChannels] = useState<[string, boolean][]>([]);
+    const [visibleChannels, setVisibleChannels] = useState<ChannelVisible[]>([]);
     const [sensorWorker, pipeline, channelsGroup] = useSensorContext(group.id);
 
     useEffect(() => {
@@ -48,7 +48,13 @@ export const SensorSettingsTab = ({group, visible, setChannelVisibilty, onClose,
                 setAvgRatio(holdingRegisters.AverageRatio);
                 setSpeedPeriod(holdingRegisters.SpeedMeasurigPeriod);
                 setTrackMaximum(pipeline.getPeackAnalizerState());
-                setVisibleChannels(group.cellStyles.map(x => [x.valueName, x.visible]));
+                setVisibleChannels(group.cellStyles.map(cs => {
+                    return {
+                            channelId: cs.id,
+                            name: cs.valueName,
+                            visible: cs.visible
+                    }
+                }));
                 setExternalSpeedSensor(sensorparameters.externalSpeedSensor);
                 setOffset(pipeline.getCurrentOffset());
                 setEnabled(filterParameters.enabled);
@@ -107,8 +113,9 @@ export const SensorSettingsTab = ({group, visible, setChannelVisibilty, onClose,
             });
         }
 
-        for (let i = 0; i < visibleChannels.length; i++) 
-            setChannelVisibilty(i, visibleChannels[i][1]);
+        visibleChannels.forEach(vc =>{
+            setChannelVisibilty(vc.channelId, vc.visible);
+        })
     };
 
     const onSaveParamsToStorage = () => {
@@ -130,8 +137,8 @@ export const SensorSettingsTab = ({group, visible, setChannelVisibilty, onClose,
         });
     };
 
-    const onVisibleChannelsChanged = (index: number, value: boolean) => {
-        visibleChannels[index][1] = value;
+    const onVisibleChannelsChanged = (channelId: string, value: boolean) => {
+        visibleChannels.find(vc => vc.channelId == channelId)!.visible = value
         setVisibleChannels(visibleChannels);
     };
 

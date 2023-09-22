@@ -30,7 +30,7 @@ export const YAxesWheelPlugin = () : Plugin =>{
             let axe = u.axes[i] as CustomAxis;
             handleAxis(axisDivs[i], axe, scale, (min, max) => {
                 scale.range = () => [min, max]
-                customUPlot.redrawRequired;
+                customUPlot.redrawRequired = true;
             });
         }
     }
@@ -50,6 +50,7 @@ export const XAxesWheelPlugin = () : Plugin =>{
         let axe = u.axes[0] as CustomAxis;
         handleAxis(div, axe, scale, (min, max) => {
             customUPlot.SetRangeSource(min, max);
+            customUPlot.redrawRequired = true
         });
         
     }

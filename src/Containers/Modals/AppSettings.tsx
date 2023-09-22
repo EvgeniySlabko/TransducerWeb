@@ -1,10 +1,8 @@
 import { Modal, Tabs } from "antd";
 import React, { useState } from "react";
 import { PlotSettings } from "../../Components/PlotSettings";
-import { useAppDispatch, useAppSelector, usePlotManager, useSensorContexts } from "../../hooks/hook";
+import { useAppDispatch, useAppSelector, usePlots, useSensorContexts } from "../../hooks/hook";
 import { reset, setPointsPerSecond, toggleSettingsScreenModal } from "../../store/uiSlice";
-import { SetupPlotManager } from "../../Common/PlotManagerHelpers";
-import { PlotsManager } from "../../uPlot/PlotManager";
 import { Group } from "../../store/groupsSlice";
 const { TabPane } = Tabs;
 
@@ -13,18 +11,14 @@ export const AppSettingsTab = () => {
     const pointsPerSecond = useAppSelector(state => state.ui.pointsPerSecond);
     const [pointsPerSecondState, setPointsPerSecondState] = useState(pointsPerSecond);
     const {settings} = useAppSelector(state => state.ui);
-    const [plotsManager] = usePlotManager();
+    const [plots] = usePlots();
     const groups = useAppSelector(state => state.groups.groups);
     const dispatch = useAppDispatch();
     const [contexts] = useSensorContexts()
 
     const onOk = () => {
-        dispatch(setPointsPerSecond(pointsPerSecondState))
         dispatch(toggleSettingsScreenModal())
-        if (werePlotSettingsChanges === true) {
-            SetupPlotManager(plotsManager as PlotsManager);
-            clear();
-        }
+        dispatch(setPointsPerSecond(pointsPerSecondState))
     };
 
     const onPointsPerSecondChanged = (value: number) =>{

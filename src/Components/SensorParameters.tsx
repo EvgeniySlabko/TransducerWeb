@@ -5,6 +5,11 @@ import { Group } from "../store/groupsSlice";
 import { SensorWorker } from "../Sensor/SensorWorker";
 import styles from "./Components.module.scss";
 
+export type ChannelVisible = {
+    channelId: string;
+    name: string;
+    visible: boolean
+}
 export interface Props {
     group: Group;
     tareAccuracy: number;
@@ -16,14 +21,14 @@ export interface Props {
     offset: number;
     absolute: boolean;
     invertion: boolean;
-    visibleChannels: [string, boolean][];
+    visibleChannels: ChannelVisible[];
     minAvgRatio: number;
 
     onOffsetChanged: (value: number) => void;
     onExternalSpeedSensorChanged: (value: boolean) => void;
     onTrackMaximumChanged: (value: boolean) => void;
     onSpeedPeriodChanged: (value: number) => void;
-    onVisibleChannelsChanged: (index: number, value: boolean) => void;
+    onVisibleChannelsChanged: (channelId: string, value: boolean) => void;
     onAvgChanged: (value: number) => void;
     onInvertionChanged: (value: boolean) => void;
     onAbsoluteChanged: (value: boolean) => void;
@@ -34,9 +39,12 @@ export const SensorParameters = (props: Props) => {
     return (
         <>
             <Space size={"small"}>
-                {props.visibleChannels.map((c, i) => (
-                    <Checkbox key={i} defaultChecked={c[1]} onChange={(e) => props.onVisibleChannelsChanged(i, e.target.checked)}>
-                        {c[0]}{" "}
+                {props.visibleChannels.map((vc, i) => (
+                    <Checkbox 
+                        key={i} 
+                        defaultChecked={vc.visible} 
+                        onChange={(e) => props.onVisibleChannelsChanged(vc.channelId, e.target.checked)}>
+                        {vc.name}{" "}
                     </Checkbox>
                 ))}
             </Space>

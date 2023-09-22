@@ -1,6 +1,7 @@
 import { ChannelDataType } from "./ChanneStyleCommon";
 
 export declare interface PlotChannelStyle {
+    id: string;
     sensorId: number;
     color: string;
     grid: boolean;

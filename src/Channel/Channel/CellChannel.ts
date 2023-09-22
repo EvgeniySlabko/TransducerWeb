@@ -21,13 +21,14 @@ export type ChannelCloseArgs = {
 };
 
 export class CellChannel {
-    public id: string = uuid();
+    public readonly id: string = uuid();
 
     private _onData = new EventDispatcher<CellChannel, ChannelDataArgs>();
     private _onMessage = new EventDispatcher<CellChannel, ChannelMessageArgs>();
     private _onClose = new EventDispatcher<CellChannel, ChannelCloseArgs>();
 
-    constructor(dataSourсe: ISensorDataProvider) {
+    constructor(dataSourсe: ISensorDataProvider, id: string) {
+        this.id = id;
         dataSourсe.onData?.sub((sensor, args) => {
             this._onData.dispatch(this, {
                 data: args,

@@ -1,7 +1,6 @@
 import { CloseOutlined, SettingOutlined } from "@ant-design/icons";
 import { Button, Collapse, notification } from "antd";
 import React, { useState } from "react";
-import { SensorWorker } from "../../Sensor/SensorWorker";
 import { SetOffset } from "../../Storage/ChannelsDataStorage";
 import { Cell } from "./Cell";
 import { SensorSettingsTab } from "../Modals/SensorSettingsTab";
@@ -41,14 +40,13 @@ export const CellsCollapse = ({group, allowSettings} : Props) => {
     const removeSensor = async () => {
         console.debug("Manual closing sensor.");
         await sensorService.RemoveSensor(sensorWorker);
-        dispatch(removeGroup(group.id))
+        dispatch(removeGroup({groupId:  group.id}))
     };
 
-    const setChannelVisibilty = (channelindex: number, value: boolean) => {
+    const setChannelVisibilty = (channelId: string, value: boolean) => {
         dispatch(setChannelVisibility({
-            groupId: channelindex,
-            sensorId: group.id,
-            value: value
+            channelId: channelId,
+            visible: value
         }));
     };
 
@@ -101,10 +99,10 @@ export const CellsCollapse = ({group, allowSettings} : Props) => {
             {
                 group.cellStyles
                     .filter((c) => c.visible)
-                    .map((c, i) => 
+                    .map((cellChannelStyle, i) => 
                         <Cell allowSettings={allowSettings} 
                         sensorWorker = {sensorWorker}   
-                        channelId={i}
+                        channelId={cellChannelStyle.id}
                         channelsGroup={{
                             plotChannel: channelGroups[i].plotChannel,
                             savingChannel: channelGroups[i].savingChannel,

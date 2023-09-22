@@ -1,13 +1,11 @@
 import { Button, notification } from "antd";
 import React, { HTMLAttributes, useEffect, useMemo, useState } from "react";
-import { keyCodes as keyCode } from "../Common/KeyCodes";
-import { SetupPlotManager } from "../Common/PlotManagerHelpers";
+import { keyCodes as keyCode } from "../Common/KeyCodes"; 
 import { CeateSensorWorker } from "../Sensor/SensorFactory";
 import { PlotsManager } from "../uPlot/PlotManager";
-import { useAppDispatch, useAppSelector, usePlotManager, useRecordManager, useSensorContexts, useSensorsService } from "../hooks/hook";
+import { useAppDispatch, useAppSelector, usePlots, useRecordManager, useSensorContexts, useSensorsService } from "../hooks/hook";
 import { Snapshot } from "../ReportListener/Snapshot";
-import { pause, reset, setStreamingView, showReport, toggleSettingsScreenModal, toggleTutorialScreenModal, toogleStreaming } from "../store/uiSlice";
-import { sleep } from "../Common/Common";
+import { pause, reset, showReport, toggleSettingsScreenModal, toggleTutorialScreenModal, toogleStreaming } from "../store/uiSlice";
 import { SetupGroup } from "../Common/GroupHelpers";
 import { CreateCsvFileDialog, FileWorker } from "../Common/FileHelpers";
 import { BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, QuestionOutlined, SaveOutlined, SettingOutlined } from "@ant-design/icons";
@@ -27,8 +25,8 @@ export const NavbarStreaming = ({...rest}: Props) => {
     const {firstStart, settings, streaming, tutorialVisible} = useAppSelector(state => state.ui);
     const groups = useAppSelector(state => state.groups.groups);
 
-    const [plot, setPlot] = usePlotManager();
-    const {pointsPerSecond} = useAppSelector(x => x.plot);
+    const [plots] = usePlots();
+    const pointsPerSecond = useAppSelector(x => x.groups.defaultPointsPerSecond);
 
     const [recordController] = useRecordManager();
     const [fileWorker] = useState<FileWorker>(new FileWorker());
@@ -81,7 +79,7 @@ export const NavbarStreaming = ({...rest}: Props) => {
         if (streaming) 
             await stopHandler();
         
-        plot?.Clear();
+        plots?.forEach(p => p.Clear());
         //plot?.ClearLabels();
         //plot?.RebuildIfNessesary();
         groups.forEach((x: Group) => contexts.get(x.id)?.pipelineController.resetPeackAnalizer());
@@ -173,10 +171,10 @@ export const NavbarStreaming = ({...rest}: Props) => {
 
     const handleSettingsClose = (werePlotSettingsChanges: boolean) => {
         dispatch(toggleSettingsScreenModal());
-        if (werePlotSettingsChanges === true) {
-            SetupPlotManager(plot as PlotsManager);
-            clear();
-        }
+        //if (werePlotSettingsChanges === true) {
+         //   SetupPlotManager(plot as PlotsManager);
+        //    clear();
+        //}
     };
 
     const onStartClick = async () => {

@@ -65,7 +65,6 @@ const App = () => {
                     </div>
                 </Case>
             </Switch>
-
         </>
     )
 }

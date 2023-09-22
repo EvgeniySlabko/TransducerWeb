@@ -12,15 +12,17 @@ import { SensorWorker } from '../Sensor/SensorWorker';
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 
+
+//Sensor manager
 const sensorController = new SensorController();
 export const useSensorsService = () =>{
     return [sensorController]
 }
 
-let mplot: MyUPlotBase | undefined = undefined;
-export const usePlotManager = () : [MyUPlotBase | undefined, (plot: MyUPlotBase) => void] =>{
-    const setPlot = (plot : MyUPlotBase | undefined) => mplot = plot
-    return [mplot, setPlot];
+//Plots
+const plots: Map<number, MyUPlotBase> = new Map();
+export const usePlots = () : [Map<number, MyUPlotBase>] =>{
+    return [plots];
 }
 
 export const useRecordManager = () =>{
@@ -33,12 +35,12 @@ type SensorContext = {
     sensorController: SensorWorker
     channelGroups: ChannelsGroup[]
 }
-const contexts: Map<string, SensorContext> = new Map();
+const sensorContexts: Map<string, SensorContext> = new Map();
 export const useSensorContext = (key: string) : [SensorWorker, PipelineController, ChannelsGroup[]] => {
-    const sensorContext = contexts.get(key)!;
+    const sensorContext = sensorContexts.get(key)!;
     return [sensorContext.sensorController, sensorContext.pipelineController, sensorContext.channelGroups];
 }
 
 export const useSensorContexts = () : [Map<string, SensorContext>] => {
-    return [contexts]
+    return [sensorContexts]
 }

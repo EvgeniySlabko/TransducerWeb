@@ -92,57 +92,69 @@ export function CreateAllChannels(worker: SensorWorker, fullSensorInfo: FullSens
 
     let cellDisplayMainDataSource = CreateDisplayValueDataSource(offsetMainDataSource); // Выдает данные не чаще чем fps.
     //let plotAverager = CreateAverageValueDataSource(filterDataSource, 1);
-
-    let mainPlotChannel = CreateMainDataPlotChannel(alignedMainSource);
-    let mainSavingChannel = CreateMainDataPlotChannel(filterMainDataSource);
-    let mainCellChannel = CreateMainDataCellChannel(cellDisplayMainDataSource);
-
-    const mainPlotChannelStyle = CreateTorqueStyle(fullSensorInfo);
-    const mainCellStyle = CreateTorqueCellStyle(fullSensorInfo);
+    const mainGroupId = uuid(); // plot/cell/saving channels and styles should has same id
+    let mainPlotChannel = CreateMainDataPlotChannel(alignedMainSource, mainGroupId);
+    let mainSavingChannel = CreateMainDataPlotChannel(filterMainDataSource, mainGroupId);
+    let mainCellChannel = CreateMainDataCellChannel(cellDisplayMainDataSource, mainGroupId);
+    
+    const mainPlotChannelStyle = CreateTorqueStyle(fullSensorInfo, mainGroupId);
+    const mainSavingStyle = CreateTorqueStyle(fullSensorInfo, mainGroupId);
+    const mainCellStyle = CreateTorqueCellStyle(fullSensorInfo, mainGroupId);
 
     plotChannels.push(mainPlotChannel);
     savingChannels.push(mainSavingChannel);
     cellChannels.push(mainCellChannel);
 
     //Speed
+    const speedGroupId = uuid(); // plot/cell/saving channels and styles should has same id
     let speedDataSource = CreateSpeedValueDataSource(sensor);
     let cutOffSpeedDataSource = CreateCutOffDataSource(speedDataSource);
     let DisplaySpeedDataSource = CreateDisplayValueDataSource(cutOffSpeedDataSource);
-    let SpeedPlotChannel = CreateSpeedChannel(cutOffSpeedDataSource);
-    let speedCellChannel = CreateSpeedCellChannel(DisplaySpeedDataSource);
+    
+    let speedPlotChannel = CreateSpeedChannel(cutOffSpeedDataSource, speedGroupId);
+    let speedSavaligPlotChannel = CreateSpeedChannel(cutOffSpeedDataSource, speedGroupId);
+    let speedCellChannel = CreateSpeedCellChannel(DisplaySpeedDataSource, speedGroupId);
 
-    const speedPlotChannelStyle = CreateSpeedStyle(fullSensorInfo);
-    const speedCellStyle = CreateCellSpeedStyle(fullSensorInfo);
+    const speedPlotChannelStyle = CreateSpeedStyle(fullSensorInfo, speedGroupId);
+    const speedSavingPlotChannelStyle = CreateSpeedStyle(fullSensorInfo, speedGroupId);
+    const speedCellStyle = CreateCellSpeedStyle(fullSensorInfo, speedGroupId);
 
-    plotChannels.push(SpeedPlotChannel);
-    savingChannels.push(SpeedPlotChannel);
+    plotChannels.push(speedPlotChannel);
+    savingChannels.push(speedSavaligPlotChannel);
     cellChannels.push(speedCellChannel);
 
     //Power
+    const powerGroupId = uuid();
     let powerDataSource = CreatePowerDataSource(mainDataSource, speedDataSource);
     let cutOffPowerDataSource = CreateCutOffDataSource(powerDataSource);
-
     let powerDisplaySource = CreateDisplayValueDataSource(cutOffPowerDataSource);
-    let powerPlotChannel = CreatePowerChannel(cutOffPowerDataSource);
-    let powerCellChannel = CreatePowerCellChannel(powerDisplaySource);
 
-    const powerPlotChannelStyle = CreatePowerStyle(fullSensorInfo);
-    const powerCellStyle = CreatePowerCellStyle(fullSensorInfo);
+    let powerPlotChannel = CreatePowerChannel(cutOffPowerDataSource, powerGroupId);
+    let powerSavingChannel = CreatePowerChannel(cutOffPowerDataSource, powerGroupId);
+    let powerCellChannel = CreatePowerCellChannel(powerDisplaySource, powerGroupId);
+
+    const powerPlotChannelStyle = CreatePowerStyle(fullSensorInfo, powerGroupId);
+    const powerSavigPlotChannelStyle = CreatePowerStyle(fullSensorInfo, powerGroupId);
+    const powerCellStyle = CreatePowerCellStyle(fullSensorInfo, powerGroupId);
 
     plotChannels.push(powerPlotChannel);
-    savingChannels.push(powerPlotChannel);
+    savingChannels.push(powerSavingChannel);
     cellChannels.push(powerCellChannel);
 
     //Tmp
+    const tmpGroupId = uuid();
     let temperatureDataSource = CreateTemperatureValueDataSource(sensor);
-    let temperatureChannel = CreateTemperatureChannel(temperatureDataSource, fullSensorInfo);
-    let temperatureCellChannel = CreateTemperatureCellChannel(temperatureDataSource);
 
-    const tmpPlotChannelStyle = CreateTemperatureStyle(fullSensorInfo);
-    const tmpCellStyle = CreateTemperatureCellStyle(fullSensorInfo);
+    let temperatureChannel = CreateTemperatureChannel(temperatureDataSource, tmpGroupId);
+    let temperatureSavingChannel = CreateTemperatureChannel(temperatureDataSource, tmpGroupId);
+    let temperatureCellChannel = CreateTemperatureCellChannel(temperatureDataSource, tmpGroupId);
+
+    const tmpPlotChannelStyle = CreateTemperatureStyle(fullSensorInfo, tmpGroupId);
+    const tmpSavingPlotChannelStyle = CreateTemperatureStyle(fullSensorInfo, tmpGroupId);
+    const tmpCellStyle = CreateTemperatureCellStyle(fullSensorInfo, tmpGroupId);
 
     plotChannels.push(temperatureChannel);
-    savingChannels.push(temperatureChannel);
+    savingChannels.push(temperatureSavingChannel);
     cellChannels.push(temperatureCellChannel);
 
     let peackDetectorEvent = new EventDispatcher<PlotChannel, PeakEventArgs>();
@@ -182,10 +194,10 @@ export function CreateAllChannels(worker: SensorWorker, fullSensorInfo: FullSens
             tmpPlotChannelStyle
         ],
         savingStyles: [
-            mainPlotChannelStyle,
-            speedPlotChannelStyle,
-            powerPlotChannelStyle,
-            tmpPlotChannelStyle
+            mainSavingStyle,
+            speedSavingPlotChannelStyle,
+            powerSavigPlotChannelStyle,
+            tmpSavingPlotChannelStyle
         ],
         cellStyles: [
             mainCellStyle,
@@ -195,44 +207,44 @@ export function CreateAllChannels(worker: SensorWorker, fullSensorInfo: FullSens
         ]
     };
 
-    function CreateTemperatureChannel(source: SensorDataProvider, fullSensorInfo: FullSensorInfo): PlotChannel {
-        return new PlotChannel(source);
+    function CreateTemperatureChannel(source: SensorDataProvider, id: string): PlotChannel {
+        return new PlotChannel(source, id);
     }
 
     function CreateCutOffDataSource(source: ISensorDataProvider): CutOffDataSource {
         return new CutOffDataSource(source);
     }
 
-    function CreateTemperatureCellChannel(source: SensorDataProvider): CellChannel {
-        return new CellChannel(source);
+    function CreateTemperatureCellChannel(source: SensorDataProvider, id: string): CellChannel {
+        return new CellChannel(source, id);
     }
 
-    function CreateSpeedChannel(source: ISensorDataProvider): PlotChannel {
-        return new PlotChannel(source);
+    function CreateSpeedChannel(source: ISensorDataProvider, id: string): PlotChannel {
+        return new PlotChannel(source, id);
     }
 
-    function CreateSpeedCellChannel(source: ISensorDataProvider): CellChannel {
-        return new CellChannel(source);
+    function CreateSpeedCellChannel(source: ISensorDataProvider, id: string): CellChannel {
+        return new CellChannel(source, id);
     }
 
-    function CreateMainDataPlotChannel(source: ISensorDataProvider): PlotChannel {
-        return new PlotChannel(source);
+    function CreateMainDataPlotChannel(source: ISensorDataProvider, id: string): PlotChannel {
+        return new PlotChannel(source, id);
     }
 
-    function CreateMainDataCellChannel(source: ISensorDataProvider): CellChannel {
-        return new CellChannel(source);
+    function CreateMainDataCellChannel(source: ISensorDataProvider, id: string): CellChannel {
+        return new CellChannel(source, id);
     }
 
-    function CreatePowerChannel(source: ISensorDataProvider): PlotChannel {
-        return new PlotChannel(source);
+    function CreatePowerChannel(source: ISensorDataProvider, id: string): PlotChannel {
+        return new PlotChannel(source, id);
     }
 
     function CreateFilterDataSource(source: ISensorDataProvider): FilterDataSource {
         return new FilterDataSource(source);
     }
 
-    function CreatePowerCellChannel(source: ISensorDataProvider): CellChannel {
-        return new CellChannel(source);
+    function CreatePowerCellChannel(source: ISensorDataProvider, id: string): CellChannel {
+        return new CellChannel(source, id);
     }
 
     function CreateInvertorDataSource(source: ISensorDataProvider): InvertorDataSource {

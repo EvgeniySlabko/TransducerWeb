@@ -9,39 +9,49 @@ import { StreamingTogglePlugin } from "../uPlot/plotPlugins/streamingTogglePlugi
 import { AutoRange } from "../uPlot/plotPlugins/autoRangePlugin";
 import { PlotChannelsPlugin } from "../uPlot/plotPlugins/plotChannelsPlugin";
 import { valuesMapper } from "../uPlot/PlotPlugins";
-import { usePlotManager, useSensorContext } from "../hooks/hook";
-import { rangeIncerteptor, ScaleLimiterPlugin } from "../uPlot/plotPlugins/scaleLimiterPlugin";
+import { rangeIncerteptor } from "../uPlot/plotPlugins/scaleLimiterPlugin";
 import { MaxFrameSize } from "../uPlot/StreamingPlot/StreamingBufferManager";
 import { RedrawPlugin } from "../uPlot/plotPlugins/redrawPlugin";
 import { AxisHoverAnimationPlugin } from "../uPlot/plotPlugins/axisHoverAnimationPlugin";
 import { PlotChannel } from "../Channel/Channel/PlotChannel";
 import { PlotChannelStyle } from "../Channel/ChannelStyle/PlotChannelStyle";
 import classes from "./Components.module.scss"
-import { Axis } from "../uPlot/uplot";
+import uPlot, { Axis } from "../uPlot/uplot";
 import { UplotReact } from "./uplot-react";
 import { SelectionCommitPlugin } from "../uPlot/plotPlugins/selectionCommitPlugin";
+import Collapse, { CollapseProps } from "antd/lib/collapse";
+import styles from "./Components.module.scss";
+import { Checkbox } from "antd";
+
+const { Panel } = Collapse;
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
-    plotChannels: PlotChannel[]
-    plotStyles: PlotChannelStyle[]
+    plotId: number,
+    plotChannels: PlotChannel[],
+    plotStyles: PlotChannelStyle[],
+    onPlotCreated: (key: number, plot: MyUPlotBase) => void,
+    onPlotDestroyed: (key: number, plot: MyUPlotBase) => void
+
+    legend: boolean
+    onLegengChanged: (key: number, plot: boolean) => void
 }
-  
-export const StreamingPlot = ({plotChannels, plotStyles, ...rest} : Props) => {
+export const StreamingPlot = ({legend, plotId: key, plotChannels, plotStyles, onPlotCreated, onPlotDestroyed, onLegengChanged, ...rest} : Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const [plot, setPlot] = usePlotManager();
-    const [identity, setIdentity] = useState();
+    const [uPlot, setUplot] = useState<uPlot>();
+    const [collapseOpen, setCollapseOpen] = useState<boolean>(false);
+    const [myUPlotBase, setMyUPlotBase] = useState<MyUPlotBase | undefined>();
 
     const getCurrentSize = (): [number, number] => {
         const clientWidth = containerRef.current?.clientWidth ?? 0;
         const clientHeight = containerRef.current?.clientHeight ?? 0;
         let newHeight = clientHeight ;
-        newHeight = newHeight < 0 ? 200 : newHeight;
+        newHeight = newHeight < 0 ? 200 : newHeight - (uPlot?.legend.show ? 100 : 0);
         return[clientWidth, newHeight]
     }
-    const resize = (curPlot: MyUPlotBase) => {
+    const resize = (curPlot: uPlot) => {
         let timeoutId: NodeJS.Timeout | undefined; 
         const size = getCurrentSize();
-        const doneResize = () => curPlot?.setSize(size[0], size[1]);
+        const doneResize = () => curPlot?.setSize({width: size[0], height: size[1]});
         clearTimeout(timeoutId);
         timeoutId = setTimeout(doneResize, 20);
     }
@@ -51,20 +61,22 @@ export const StreamingPlot = ({plotChannels, plotStyles, ...rest} : Props) => {
             return;
         }
 
-        const resizeObserver = new ResizeObserver(() => resize(plot!));
+        const resizeObserver = new ResizeObserver(() => resize(uPlot!));
         
         resizeObserver.observe(containerRef.current);
         return function cleanup() {
             resizeObserver.disconnect();
         }
     },
-    [containerRef.current, plot, plotChannels]);
+    [containerRef.current, plotChannels]);
       
     const onCreate = (u: uPlot) =>
     {
         const curPlot = new MyUPlotBase(u as CustomUPlot)
-        setPlot(curPlot);
-        resize(curPlot);
+        setMyUPlotBase(curPlot);
+        onPlotCreated(key, curPlot);
+        setUplot(u);
+        resize(u);
     }
     
     const plotComponent = useMemo(() => {
@@ -172,7 +184,7 @@ export const StreamingPlot = ({plotChannels, plotStyles, ...rest} : Props) => {
         ],
 
         legend:{
-            show: false,
+            show: legend,
         },
         series: [
             {
@@ -182,19 +194,46 @@ export const StreamingPlot = ({plotChannels, plotStyles, ...rest} : Props) => {
         ],
     }
      
+    const onDestroy = () => {
+        onPlotDestroyed(key, myUPlotBase!);
+        setMyUPlotBase(undefined);
+        setUplot(undefined);
+    }
+
      return <UplotReact options={options}
      data={[]}
      onCreate={onCreate}
+     onDelete={onDestroy}
      resetScales={false}/>
     }, [plotStyles.length])
 
-     return (
-         <div ref={containerRef} {...rest} >
-             <div className={classes.absolute}>
-             {
+    const onCollapseChange = (keys: string | string[]) =>{
+        setCollapseOpen((keys as string[]).includes("1"))
+    }
+
+    const onLegendChanged = () =>{
+        onLegengChanged(key, !legend)
+    }
+
+    if (uPlot)
+    {
+        uPlot.legend.show = legend
+        uPlot.redraw(true, true);
+    }
+    return (
+        <div style={{height: "100%", position: "relative"}}>
+            <div id={"streamcontainer"} ref={containerRef} {...rest} >
+                <div className={classes.absolute}>
+                {
                 plotComponent
-             }
-             </div>
-         </div>
-     );
+                }
+                </div>
+            </div>
+            <Collapse bordered={false} className={collapseOpen ? styles.collapse_open : styles.collapse_close} ghost={true} onChange={ onCollapseChange }>
+                <Panel className={ collapseOpen ? styles.collapse_panel_open : styles.collapse_panel_close} header="" key="1">
+                    <Checkbox checked={legend} onChange={onLegendChanged}>Legend</Checkbox>
+                </Panel>
+            </Collapse>
+        </div>
+    );
 };

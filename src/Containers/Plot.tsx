@@ -4,26 +4,29 @@ import { CreateAllChannels } from "../Channel/AllChannelsFactory";
 import { ChangeGroupColor } from "../Common/ColorHelpers";
 import { SensorControllerArgs } from "../Sensor/SensorsManager/SensorsManager";
 import { ApplayLocalStorageSettingsForGroups, ApplySensorParameters as ApplaySensorStorageParameters } from "../Storage/ChannelsDataStorage";
-import { useAppDispatch, useAppSelector, useSensorContext, useSensorContexts, useSensorsService } from "../hooks/hook";
+import { useAppDispatch, useAppSelector, usePlots, useSensorContext, useSensorContexts, useSensorsService } from "../hooks/hook";
 import { reset } from "../store/uiSlice";
-import { Group, addGroup } from "../store/groupsSlice";
-import { StreamingPlot } from "../Components/StreamingPlot";
+import { Group, addGroup, setLegend } from "../store/groupsSlice";
 import { GetGroupedChannels, GetGroupedStyles } from "../utils/channelsUtils";
 import styles from "./Plot.module.scss";
+import { MyUPlotBase } from "../uPlot/PlotBase";
+import { PlotLayoutContext, PlotsLayout } from "../Components/plotLayout";
 
 export interface Props extends HTMLAttributes<HTMLDivElement> {
 
 }
 
 export const Plot = ({...rest}: Props) => {
-    const { groups } = useAppSelector(state => state.groups)
+    const { groups, plotChannels, plotContexts, defaultPointsPerSecond } = useAppSelector(state => state.groups);
+
     const [sensorService, setSensorService] = useSensorsService();
     const dispatch = useAppDispatch();
-
-    const [contexts] = useSensorContexts();
+    const [plots] = usePlots();
+    const [sensorContexts] = useSensorContexts();
 
     const plotStyles = groups.map(x => x.plotStyles).flat();
-    const allPlotChannels = groups.map(x => contexts.get(x.id)!.channelGroups.map(c => c.plotChannel)).flat();
+    
+    //const allPlotChannels = groups.map(x => contexts.get(x.id)!.channelGroups.map(c => c.plotChannel)).flat();
     useEffect(() => {
         sensorService.onDispatch.sub(newSensorHandler);
         return () => sensorService.onDispatch.unsub(newSensorHandler);
@@ -51,7 +54,7 @@ export const Plot = ({...rest}: Props) => {
             //worker: args.worker,
         };
 
-        contexts.set(allChannelsInfo.id, {
+        sensorContexts.set(allChannelsInfo.id, {
             channelGroups: channeldGroups,
             pipelineController: allChannelsInfo.pipelineController,
             sensorController: allChannelsInfo.sensorWorker
@@ -68,30 +71,36 @@ export const Plot = ({...rest}: Props) => {
         });
     }; 
 
+    const onPlotCreated = (key: number, plot: MyUPlotBase) => plots.set(key, plot)
+    const onPlotDestroyed = (key: number, plot: MyUPlotBase) => plots.delete(key)
+    const onLegengChanged = (key: number, legend: boolean) => dispatch(setLegend({plotId: key, value: legend}))
+    
+    const allChannelGroups = Array.from(sensorContexts.values())
+                                  .flatMap(sc => sc.channelGroups);
+    const allPlotStyles = groups.flatMap(g => g.plotStyles);
 
+    const contexts = plotContexts.map<PlotLayoutContext>(plotContext => {
+
+        const plotChannelsIds = plotChannels.filter(p => p.plotId === plotContext.id).map(p => p.channelId);
+
+        return {
+            key: plotContext.id,
+            order: plotContext.order,
+            legend: plotContext.legend,
+            pointsPerSecond: plotContext.pointsPerSecond,
+            layoutPlotChannels: allChannelGroups.map(pc => pc.plotChannel).filter(pc => plotChannelsIds.includes(pc.id)),
+            layoutPlotStyles: allPlotStyles.filter(ps => plotChannelsIds.includes(ps.id))
+        }
+    })
 
     return(
         <div className={styles.col} {...rest}>
-        
-        <StreamingPlot  style={{height: "20%"}} 
-            plotStyles={plotStyles} 
-            plotChannels={allPlotChannels} />
-
-        <StreamingPlot  style={{height: "20%"}} 
-                plotStyles={plotStyles} 
-                plotChannels={allPlotChannels} />
-
-        <StreamingPlot  style={{height: "20%"}} 
-            plotStyles={plotStyles} 
-            plotChannels={allPlotChannels} />
-
-        <StreamingPlot  style={{height: "20%"}} 
-                plotStyles={plotStyles} 
-                plotChannels={allPlotChannels} />
-
-        <StreamingPlot  style={{height: "20%"}} 
-                plotStyles={plotStyles} 
-                plotChannels={allPlotChannels} />
+            <PlotsLayout
+                plotContexts={contexts}
+                onPlotCreated={onPlotCreated} 
+                onPlotDestroyed={onPlotDestroyed}
+                onLegengChanged={onLegengChanged}
+                ></PlotsLayout>
         </div>
     )
 }

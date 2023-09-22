@@ -1,7 +1,7 @@
 import { ChannelDataType } from "./ChanneStyleCommon";
 
 export declare interface CellChannelStyle {
-    id: number; // id fo react
+    id: string;
     sensorId: number;
     visible: boolean;
     color: string;

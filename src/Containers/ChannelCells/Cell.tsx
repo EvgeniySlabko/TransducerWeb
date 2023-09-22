@@ -11,7 +11,7 @@ import { UnpropagatableContainer } from "../../Components/UnpropagatableContaine
 
 export interface Props {
     sensorId: string,
-    channelId: number,
+    channelId: string,
     stylesGroup: StylesGroup;
     channelsGroup: ChannelsGroup;
     sensorWorker: SensorWorker
@@ -90,7 +90,6 @@ export const Cell = ({sensorId, channelId, stylesGroup, channelsGroup} : Props) 
                 />
 
                 <CellModal
-                    sensorId={sensorId}
                     channelId={channelId}
                     stylesGroup={stylesGroup}
                     visible={modalVisible} 

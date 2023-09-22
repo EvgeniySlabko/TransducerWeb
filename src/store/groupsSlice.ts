@@ -4,31 +4,31 @@ import { PlotChannelStyle } from '../Channel/ChannelStyle/PlotChannelStyle';
 import { CellChannelStyle } from '../Channel/ChannelStyle/CellChannelStyle';
 
 export type GroupsState = {
-    groups: Group[];
-    uPlot: PlotContext | null;
-}
-
-export interface PlotContext
-{
-    uPlot: uPlot;
+    groups: Group[];                //all sensor information
+    plotContexts: PlotContext[],    //plot information
+    plotChannels: PlotChannel[],    //plot - channel connection
+    defaultPointsPerSecond: number
 }
 
 const initialState: GroupsState = {
     groups: [],
-    uPlot: null
+    plotChannels: [],
+    plotContexts: [],
+    defaultPointsPerSecond: 5000
 }
 
-export interface Group {
-    id: string;
-    fullSensorInfo: FullSensorInfo;
-    
-    //plotChannels: PlotChannel[],
-    //cellChannels: CellChannel[],
-    //savingChannels: PlotChannel[],
-    
-    plotStyles: PlotChannelStyle[],
-    savingStyles: PlotChannelStyle[],
-    cellStyles: CellChannelStyle[]
+function addNewPlot(state: GroupsState) {
+    const allPlotContextsIds = state.plotContexts.map(x => x.id);
+    const index = findFirstSkippedNumber(allPlotContextsIds);
+    const order = findFirstSkippedNumber(state.plotContexts.map(x => x.order));
+    state.plotContexts.push({
+        id: index,
+        plotName: "Name",
+        pointsPerSecond: state.defaultPointsPerSecond,
+        order: order,
+        legend: true
+    });
+    return state;
 }
 
 const groupsSlice = createSlice({
@@ -37,68 +37,159 @@ const groupsSlice = createSlice({
     reducers:{ 
         addGroup(state, action: PayloadAction<Group>){
             state.groups.push(action.payload);
-        },
-        setChannelGroupsColor(state, action: PayloadAction<GroupPayload<string>>){
-            const group = state.groups.find(x => x.id === action.payload.sensorId);
-            if (group)
+            if(state.plotContexts.length === 0)
+                addNewPlot(state);
+            
+            const plot = state.plotContexts[0];
+            
+            action.payload.plotStyles.forEach((plotStyle) =>
             {
-                group.cellStyles[action.payload.groupId].color = action.payload.value;
-                group.plotStyles[action.payload.groupId].color = action.payload.value
-                group.savingStyles[action.payload.groupId].color = action.payload.value
+                state.plotChannels.push({
+                    channelId: plotStyle.id,
+                    plotId: plot.id
+                })
+            })
+        },
+        setChannelGroupsColor(state, action: PayloadAction<{channelId: string, color: string}>){
+            for (const group of state.groups) {
+                for (let i = 0; i < group.cellStyles.length; i++) {
+                    if(group.cellStyles[i].id === action.payload.channelId)
+                    {
+                        group.cellStyles[i].color = action.payload.color;
+                        group.plotStyles[i].color = action.payload.color;
+                        group.savingStyles[i].color = action.payload.color;
+                        return;
+                    }
+                }
             }
         },
-        setLimits(state, action: PayloadAction<GroupPayload<boolean | undefined>>){
-            const group = state.groups.find(x => x.id === action.payload.sensorId);
-            if (group)
-            {
-                group.plotStyles[action.payload.groupId].drawLimits = action.payload.value
-                group.savingStyles[action.payload.groupId].drawLimits = action.payload.value
+        setLimits(state, action: PayloadAction<{channelId: string, drawLimits: boolean | undefined}>){
+            for (const group of state.groups) {
+                for (let i = 0; i < group.cellStyles.length; i++) {
+                    if(group.cellStyles[i].id === action.payload.channelId)
+                    {
+                        group.plotStyles[i].drawLimits = action.payload.drawLimits;
+                        group.savingStyles[i].drawLimits = action.payload.drawLimits;
+                        return;
+                    }
+                }
             }
         },
-        setAccurency(state, action: PayloadAction<GroupPayload<number>>){
-            const group = state.groups.find(x => x.id === action.payload.sensorId);
-            if (group)
-            {
-                group.cellStyles[action.payload.groupId].accuracy = action.payload.value
+        setAccurency(state, action: PayloadAction<{channelId: string, accuracy: number}>){
+            for (const group of state.groups) {
+                for (let i = 0; i < group.cellStyles.length; i++) {
+                    if(group.cellStyles[i].id === action.payload.channelId)
+                    {
+                        group.cellStyles[i].accuracy = action.payload.accuracy;
+                        return;
+                    }
+                }
             }
         },
-        setFontSize(state, action: PayloadAction<GroupPayload<number>>){
-            const group = state.groups.find(x => x.id === action.payload.sensorId);
-            if (group)
-            {
-                group.cellStyles[action.payload.groupId].fontSize = action.payload.value
+        setFontSize(state, action: PayloadAction<{channelId: string, fontSize: number}>){
+            for (const group of state.groups) {
+                for (let i = 0; i < group.cellStyles.length; i++) {
+                    if(group.cellStyles[i].id === action.payload.channelId)
+                    {
+                        group.cellStyles[i].fontSize = action.payload.fontSize;
+                        return;
+                    }
+                }
             }
         },
-        setChannelVisibility(state, action: PayloadAction<GroupPayload<boolean>>){
-            const group = state.groups.find(x => x.id === action.payload.sensorId);
-            if (group)
-            {
-                group.cellStyles[action.payload.groupId].visible = action.payload.value
+        setChannelVisibility(state, action: PayloadAction<{channelId: string, visible: boolean}>){
+            for (const group of state.groups) {
+                for (let i = 0; i < group.cellStyles.length; i++) {
+                    if(group.cellStyles[i].id === action.payload.channelId)
+                    {
+                        group.cellStyles[i].visible = action.payload.visible;
+                        return;
+                    }
+                }
             }
         },
-        removeGroup(state, action: PayloadAction<string>){
-            state.groups = state.groups.filter(x => x.id !== action.payload);
+        removeGroup(state, action: PayloadAction<{groupId: string}>){
+            const groupToRemove = state.groups.find(x => x.id === action.payload.groupId);
+            if(groupToRemove)
+            {
+                for (let i = 0; i < groupToRemove.cellStyles.length; i++) {
+                    state.plotChannels.filter(p => p.channelId !== groupToRemove.cellStyles[i].id)
+                }
+            }
+        },
+        setPointsPerSecond(state, action: PayloadAction<number>){
+            if (action.payload < 1 || action.payload > 5000)
+                throw "Invalid points per second value";
+            state.plotContexts.forEach(x => x.pointsPerSecond = action.payload);
+            state.defaultPointsPerSecond = action.payload;
+        },
+        setLegend(state, action: PayloadAction<{plotId: number, value: boolean}>){
+            const plotContext = state.plotContexts.find(p => p.id === action.payload.plotId);
+            if (plotContext)
+                plotContext.legend = action.payload.value;
+        },
+        addPlot(state){
+            addNewPlot(state);
+        },
+        remove(state, action: PayloadAction<number>){
+            state.plotContexts = state.plotContexts.filter(c => c.id !== action.payload);
+            state.plotChannels = state.plotChannels.filter(c => c.plotId !== action.payload);
+        },
+        addPlotToChannel(state, action: PayloadAction<{plotId: number, channelId: string}>){
+            state.plotChannels = state.plotChannels.filter(c => c.plotId !== action.payload.plotId);
+            state.plotChannels.push({
+                channelId: action.payload.channelId,
+                plotId: action.payload.plotId
+            });
         },
     }
-  })
+})
 
+export type PlotContext = {
+    id: number,
+    plotName: string
+    pointsPerSecond: number,
+    order: number
+    legend: boolean
+}
 
-  export interface GroupPayload<T>
-  {
-    sensorId: string
-    groupId: number
-    value: T
-  }
+export type PlotChannel = {
+    channelId: string,
+    plotId: number,
+}
 
-  export const 
-  { 
+export interface Group {
+    id: string; //should be unique id of sensor
+    fullSensorInfo: FullSensorInfo;
+    plotStyles: PlotChannelStyle[],
+    savingStyles: PlotChannelStyle[],
+    cellStyles: CellChannelStyle[]
+}
+
+export const { 
     setChannelGroupsColor,
     setLimits,
     setAccurency,
     addGroup,
     setFontSize,
     setChannelVisibility,
-    removeGroup
-  } = groupsSlice.actions;
+    removeGroup,
+    setLegend
+} = groupsSlice.actions;
 
-  export default groupsSlice.reducer;
+const findFirstSkippedNumber = (arr: number[]): number => {
+    arr.sort((a, b) => a - b);
+
+    let smallestMissing = 0;
+
+    for (const num of arr) {
+        if (num > smallestMissing) {
+            return smallestMissing;
+        }
+        smallestMissing = num + 1;
+    }
+
+    return smallestMissing;
+}
+
+export default groupsSlice.reducer;

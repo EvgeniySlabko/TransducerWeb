@@ -3,11 +3,9 @@ import { FullSensorInfo } from "../../Sensor/SensorDefinitions";
 import { CellChannelStyle } from "./CellChannelStyle";
 import { powerBaseColor, speedBaseColor, tmpBaseColor, torqueBaseColor } from "./ChanneStyleCommon";
 
-let count: number = 0;
-
-export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo): CellChannelStyle {
+export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo, id: string): CellChannelStyle {
     return {
-        id: count++,
+        id: id,
         sensorId: sensorInfo.id,
         valueName: sensorInfo.ValueName,
         unitsName: sensorInfo.UnitValueName,
@@ -23,9 +21,9 @@ export function CreateTorqueCellStyle(sensorInfo: FullSensorInfo): CellChannelSt
     };
 }
 
-export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo): CellChannelStyle {
+export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo, id: string): CellChannelStyle {
     return {
-        id: count++,
+        id: id,
         sensorId: sensorInfo.id,
         valueName: "Скорость вр.",
         unitsName: "rpm",
@@ -40,9 +38,9 @@ export function CreateCellSpeedStyle(sensorInfo: FullSensorInfo): CellChannelSty
     };
 }
 
-export function CreateTemperatureCellStyle(sensorInfo: FullSensorInfo): CellChannelStyle {
+export function CreateTemperatureCellStyle(sensorInfo: FullSensorInfo, id: string): CellChannelStyle {
     return {
-        id: count++,
+        id: id,
         sensorId: sensorInfo.id,
         valueName: "Температура",
         unitsName: "C",
@@ -55,9 +53,9 @@ export function CreateTemperatureCellStyle(sensorInfo: FullSensorInfo): CellChan
     };
 }
 
-export function CreatePowerCellStyle(sensorInfo: FullSensorInfo): CellChannelStyle {
+export function CreatePowerCellStyle(sensorInfo: FullSensorInfo, id: string): CellChannelStyle {
     return {
-        id: count++,
+        id: id,
         sensorId: sensorInfo.id,
         valueName: "Мощность",
         unitsName: sensorInfo.powerUnitsName,

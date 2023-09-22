@@ -9,14 +9,13 @@ import { useAppDispatch } from "../../hooks/hook";
 import { UnpropagatableContainer } from "../../Components/UnpropagatableContainer";
 
 export interface Props {
-    sensorId: string
-    channelId: number
+    channelId: string
     stylesGroup: StylesGroup;
     visible: boolean;
     onClose: () => void;
 }
 
-export const CellModal = ({sensorId, channelId, visible, onClose, stylesGroup} : Props) => {
+export const CellModal = ({channelId, visible, onClose, stylesGroup} : Props) => {
     const [accuracy, setAccuracy] = useState(stylesGroup.cellStyle.accuracy);
     const [color, setColor] = useState(stylesGroup.cellStyle.color);
     const [drawLimits, setDrawLimits] = useState(stylesGroup.plotStyle.drawLimits);
@@ -24,30 +23,26 @@ export const CellModal = ({sensorId, channelId, visible, onClose, stylesGroup} :
 
     const onOk = () => {
         dispatch(setChannelGroupsColor({
-            sensorId: sensorId,
-            groupId: channelId,
-            value: color
+            channelId: channelId,
+            color: color
         }));
 
         dispatch(setLimits({
-            sensorId: sensorId,
-            groupId: channelId,
-            value: drawLimits,
+            channelId: channelId,
+            drawLimits: drawLimits,
         }));
 
         dispatch(setAccurency({
-            sensorId: sensorId,
-            groupId: channelId,
-            value: accuracy,
+            channelId: channelId,
+            accuracy: accuracy,
         }));
     }; 
 
     const onFontSizeChanged = (size: number) =>
     {
         dispatch(setFontSize({
-            sensorId: sensorId,
-            groupId: channelId,
-            value: size,
+            channelId: channelId,
+            fontSize: size,
         }));
     }
 

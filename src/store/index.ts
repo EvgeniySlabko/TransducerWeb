@@ -16,22 +16,19 @@ import { createWhitelistFilter } from 'redux-persist-transform-filter';
 import rs485Slice, { Rs485State } from './rs485Slice';
 import vcomSlice, { VCOMState } from './vcomSlice';
 import groupsSlice, { GroupsState } from './groupsSlice';
-import plotSlice, { PlotState } from './plotSlice';
 
 interface AppStore {
   ui: UiState,
   rs485: Rs485State
   vcom: VCOMState,
-  groups: GroupsState,
-  plot: PlotState
+  groups: GroupsState
 }
 
 const rootReducer = combineReducers({
   ui: uiReducer,
   rs485: rs485Slice,
   vcom: vcomSlice,
-  groups: groupsSlice,
-  plot: plotSlice
+  groups: groupsSlice
 })
 
 const persistConfig = {
