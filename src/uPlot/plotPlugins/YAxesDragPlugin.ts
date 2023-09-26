@@ -17,6 +17,8 @@ export const YAxesDragPlugin = () : Plugin => {
 
             axisDivs[i].addEventListener("mousedown", (e: any) => {
                 dragStart = true;
+                u.axes;
+
                 if (customHooks.dragAxis) 
                     customHooks.dragAxis.forEach(e => e!(u))
 

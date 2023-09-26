@@ -40,6 +40,7 @@ export const PlotChannelsPlugin = (plotChannels: PlotChannel[]) : Plugin =>{
         customUPlot.pointsPerSecond = customOptions.pointsPerSecond;
         customUPlot.rangeSouce = customOptions.rangeSouce;
         customUPlot.redrawRequired = true;
+        customUPlot.isLegendEnabled = customOptions.isLegendEnabled
         customUPlot.SetRangeSource = (min: number, max: number) =>
         {
             if (customOptions.rangeIncerteptor)

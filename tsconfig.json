@@ -3,9 +3,6 @@
     "compilerOptions": {
         "jsx": "react",
         "outDir": "../dist",
-        "plugins": [{ "name": "typescript-plugin-css-modules", "options": {
-            
-          } }],
         /* Visit https://aka.ms/tsconfig.json to read more about this file */
         /* Projects */
         // "incremental": true,                              /* Enable incremental compilation */

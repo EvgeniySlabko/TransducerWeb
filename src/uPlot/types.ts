@@ -12,6 +12,7 @@ export interface CustomOptions extends uPlot.Options
     t0: number,
     th: number,
     rangeSouce: [number, number],
+    isLegendEnabled: boolean;
     rangeIncerteptor?: (plot: CustomUPlot, min: number, max: number) => [number, number];
 }
 
@@ -27,6 +28,7 @@ export interface CustomScales {
 export interface CustomAxis extends uPlot.Axis
 {
     rescaleRatio: [number, number];
+    type: string;
 }
 
 export interface CustomSeries extends uPlot.Series
@@ -57,7 +59,8 @@ export interface CustomUPlot extends uPlot
     rangeSouce: [number, number],
     SetRangeSource: (min: number, max: number) => void
 
-    redrawRequired: boolean
+    redrawRequired: boolean;
+    isLegendEnabled: boolean;
 }
 
 interface ExtendedDefs extends uPlot.Hooks.Defs {

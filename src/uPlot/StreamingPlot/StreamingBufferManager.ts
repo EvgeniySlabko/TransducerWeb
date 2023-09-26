@@ -13,18 +13,18 @@ declare class ISegmentInfo {
     avgIndex: number;
 }
 
-export const MaxFrameSize = 200000; // Если больше, то лагает
+export const MaxFrameSize = 400000; // Если больше, то лагает
 
 export class PlotBufferManager {
     private readonly maxFrameTimeRange: number; // максимальная величина Range при которой не будет видно переключения перекресных буфферов (в секундах)
     private readonly frameSize: number;
     private readonly dt: number;
+    private readonly frameTime: number;
 
     private frames: AlignedData[] = [];
     private frames2: AlignedData[] = []; //перекресный буффер по времени
 
     private maxTime: number;
-    private frameTime: number;
 
     private segmentInfo: ISegmentInfo[] = [];
 
@@ -126,7 +126,9 @@ export class PlotBufferManager {
     }
 
     public CleanSegments() {
-        for (let i = 0; i < this.segmentInfo.length; i++) this.CleanSegment(i);
+        this.frames = [];
+        this.frames2 = [];
+        this.HandleFramesBufferExpand(1);
         this.maxTime = 0;
     }
 

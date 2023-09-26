@@ -1,19 +1,19 @@
 import { Button, notification } from "antd";
-import React, { HTMLAttributes, useEffect, useMemo, useState } from "react";
+import React, { HTMLAttributes, useEffect, useState } from "react";
 import { keyCodes as keyCode } from "../Common/KeyCodes"; 
 import { CeateSensorWorker } from "../Sensor/SensorFactory";
-import { PlotsManager } from "../uPlot/PlotManager";
 import { useAppDispatch, useAppSelector, usePlots, useRecordManager, useSensorContexts, useSensorsService } from "../hooks/hook";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { pause, reset, showReport, toggleSettingsScreenModal, toggleTutorialScreenModal, toogleStreaming } from "../store/uiSlice";
 import { SetupGroup } from "../Common/GroupHelpers";
-import { CreateCsvFileDialog, FileWorker } from "../Common/FileHelpers";
+import { FileWorker } from "../Common/FileHelpers";
 import { BorderOutlined, CameraOutlined, CaretRightOutlined, FileSyncOutlined, FolderOpenOutlined, PauseOutlined, QuestionOutlined, SaveOutlined, SettingOutlined } from "@ant-design/icons";
-import { Group } from "../store/groupsSlice";
+import { addPlot, Group } from "../store/groupsSlice";
 import { AddSensor } from "./AddSensor";
 import { AppSettingsTab } from "./Modals/AppSettings";
 import { TutorialTab } from "./Modals/Tutorial";
 import styles from "./Navbar.module.scss";
+import { InvisibleContainer } from "../Components/InvisibleContainer";
 
 export interface Props extends HTMLAttributes<HTMLDivElement> {
 
@@ -22,7 +22,9 @@ export interface Props extends HTMLAttributes<HTMLDivElement> {
 export const NavbarStreaming = ({...rest}: Props) => {
     const dispatch = useAppDispatch();
     const [sensorService] = useSensorsService();
-    const {firstStart, settings, streaming, tutorialVisible} = useAppSelector(state => state.ui);
+    const {firstStart, streaming, tutorialVisible, settings} = useAppSelector(state => state.ui);
+
+    
     const groups = useAppSelector(state => state.groups.groups);
 
     const [plots] = usePlots();
@@ -30,9 +32,6 @@ export const NavbarStreaming = ({...rest}: Props) => {
 
     const [recordController] = useRecordManager();
     const [fileWorker] = useState<FileWorker>(new FileWorker());
-
-    const enable = useMemo(() => groups.length > 0, [groups]);
-    const [disableStart, setDisableStart] = useState(false);
 
     const [contexts] = useSensorContexts();
 
@@ -80,6 +79,8 @@ export const NavbarStreaming = ({...rest}: Props) => {
             await stopHandler();
         
         plots?.forEach(p => p.Clear());
+        plots?.forEach(p => p.SetRange(0, 5));
+
         //plot?.ClearLabels();
         //plot?.RebuildIfNessesary();
         groups.forEach((x: Group) => contexts.get(x.id)?.pipelineController.resetPeackAnalizer());
@@ -177,18 +178,14 @@ export const NavbarStreaming = ({...rest}: Props) => {
         //}
     };
 
-    const onStartClick = async () => {
-        setDisableStart(true);
-        
+    const onStartClick = async () => {        
         streaming
             ? await stopHandler()
             : await starthandler();
     };
 
     const onClearClick = async () => {
-        setDisableStart(true);
         await clear().finally(() => {
-            setDisableStart(false);
         });
     };
 
@@ -215,6 +212,10 @@ export const NavbarStreaming = ({...rest}: Props) => {
         await handleOpenFile();
     };
 
+
+    const addNewPlot = () =>{
+        dispatch(addPlot())
+    }
     return(
         <div {...rest}>
             <Button title="Начать измерение. (Space)"
@@ -267,7 +268,14 @@ export const NavbarStreaming = ({...rest}: Props) => {
                 icon={<QuestionOutlined />}
                 onClick={() => dispatch(toggleTutorialScreenModal())} />
 
-            <AppSettingsTab />
+            <Button size="large"
+                title="Add plot"
+                onClick={addNewPlot} >add plot</Button>
+
+
+            <InvisibleContainer visible={settings}>
+                <AppSettingsTab visible={settings} />
+            </InvisibleContainer>
 
             <AddSensor className={styles.add_sensor} />
 

@@ -2,13 +2,15 @@ import { CloseOutlined, SettingOutlined } from "@ant-design/icons";
 import { Button, Collapse, notification } from "antd";
 import React, { useState } from "react";
 import { SetOffset } from "../../Storage/ChannelsDataStorage";
-import { Cell } from "./Cell";
 import { SensorSettingsTab } from "../Modals/SensorSettingsTab";
 import { Group, removeGroup, setChannelVisibility } from "../../store/groupsSlice";
 import styles from "./CellCollapse.module.scss";
 import "./CellCollapse.scss";
 import { PipelineController } from "../../Channel/AllChannelsFactory";
 import { useAppDispatch, useSensorContext, useSensorsService } from "../../hooks/hook";
+import { CellModal } from "../Modals/CellSettings";
+import { InvisibleContainer } from "../../Components/InvisibleContainer";
+import { Cell } from "../../Components/Cell";
 export type PeackMode = "none" | "absolute" | "relative";
 const { Panel } = Collapse;
 
@@ -27,6 +29,9 @@ export const CellsCollapse = ({group, allowSettings} : Props) => {
     const onCancel = () => setModalVisible(false);
     const [sensorService] = useSensorsService();
     
+    const [channelModalVisible, setChannelModalVisible] = useState(false);
+    const [modalChannelId, setModalChannelId] = useState<string>();
+
     const setZeroClick = () => {
         let currentOffset = pipelineController.setCurrentOffset();
         SetOffset(currentOffset, group.fullSensorInfo.SensorId);
@@ -50,73 +55,87 @@ export const CellsCollapse = ({group, allowSettings} : Props) => {
         }));
     };
 
+
+    const onChannelModalClick = (channelId: string) =>{
+        setChannelModalVisible(true);
+        setModalChannelId(channelId);
+    }
+
     return (
-        <Collapse defaultActiveKey={["0"]}>
-            <Panel
-                key={0}
-                header={
-                    <>
-                        <Button
-                            className={styles.horizontal_padding}
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                onShow();
+        <>
+            <Collapse defaultActiveKey={["0"]}>
+                <Panel
+                    key={0}
+                    header={
+                        <>
+                            <Button
+                                className={styles.horizontal_padding}
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    onShow();
+                                }}
+                                disabled={!allowSettings}
+                                icon={<SettingOutlined />}/>
+
+                            <Button
+                                className={styles.horizontal_padding}
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    setZeroClick();
+                                }}>
+                                {">0<"}
+                            </Button>
+
+                            <Button
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    removeSensor();
+                                }}
+                                className={styles.horizontal_padding}
+                                disabled={!allowSettings}
+                                icon={<CloseOutlined />}/>
+
+                            <div className={styles.vertical_flex}>
+                                <h6 className={styles.cell_group_title}>{group.fullSensorInfo.SensorType}</h6>
+                                <h6 className={styles.cell_group_title}>ID: {group.fullSensorInfo.SensorId}</h6>
+                            </div>
+    
+                            <SensorSettingsTab onClick={(e) => e.stopPropagation()}
+                                                setChannelVisibilty={setChannelVisibilty}
+                                                group={group} 
+                                                onClose={onCancel} 
+                                                visible={modalVisible} />
+                        </>
+                    }
+                >
+                {
+                    group.cellStyles
+                        .filter((c) => c.visible)
+                        .map((cellChannelStyle, i) => 
+                            <Cell allowSettings={allowSettings}
+                            channelsGroup={{
+                                plotChannel: channelGroups[i].plotChannel,
+                                savingChannel: channelGroups[i].savingChannel,
+                                cellChannel: channelGroups[i].cellChannel,
                             }}
-                            disabled={!allowSettings}
-                            icon={<SettingOutlined />}/>
-
-                        <Button
-                            className={styles.horizontal_padding}
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                setZeroClick();
-                            }}>
-                            {">0<"}
-                        </Button>
-
-                        <Button
-                            onClick={(event) => {
-                                event.stopPropagation();
-                                removeSensor();
+                            stylesGroup = {{
+                                cellStyle: group.cellStyles[i],
+                                plotStyle: group.plotStyles[i],
+                                savingStyle: group.savingStyles[i],
                             }}
-                            className={styles.horizontal_padding}
-                            disabled={!allowSettings}
-                            icon={<CloseOutlined />}/>
-
-                        <div className={styles.vertical_flex}>
-                            <h6 className={styles.cell_group_title}>{group.fullSensorInfo.SensorType}</h6>
-                            <h6 className={styles.cell_group_title}>ID: {group.fullSensorInfo.SensorId}</h6>
-                        </div>
-  
-                        <SensorSettingsTab onClick={(e) => e.stopPropagation()}
-                                            setChannelVisibilty={setChannelVisibilty}
-                                            group={group} 
-                                            onClose={onCancel} 
-                                            visible={modalVisible} />
-                    </>
+                            onModalClick={() => onChannelModalClick(cellChannelStyle.id)}
+                            />
+                        )
                 }
-            >
-            {
-                group.cellStyles
-                    .filter((c) => c.visible)
-                    .map((cellChannelStyle, i) => 
-                        <Cell allowSettings={allowSettings} 
-                        sensorWorker = {sensorWorker}   
-                        channelId={cellChannelStyle.id}
-                        channelsGroup={{
-                            plotChannel: channelGroups[i].plotChannel,
-                            savingChannel: channelGroups[i].savingChannel,
-                            cellChannel: channelGroups[i].cellChannel,
-                        }}
-                        sensorId = {group.id}
-                        stylesGroup = {{
-                            cellStyle: group.cellStyles[i],
-                            plotStyle: group.plotStyles[i],
-                            savingStyle: group.savingStyles[i],
-                        }}/>
-                    )
-            }
-            </Panel>
-        </Collapse>
+                </Panel>
+            </Collapse>
+
+            <InvisibleContainer visible={channelModalVisible}>
+                <CellModal
+                    channelId={modalChannelId!}
+                    visible={channelModalVisible} 
+                    onClose={() => setChannelModalVisible(false)} /> 
+            </InvisibleContainer>
+        </>
     );
 }

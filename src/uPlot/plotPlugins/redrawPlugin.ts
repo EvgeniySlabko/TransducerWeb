@@ -8,9 +8,7 @@ export const RedrawPlugin = () : Plugin =>{
         const customHooks = u.hooks as CustomArray;
         interval = setInterval(() => {
             if (customHooks.manualRedraw) 
-                customHooks.manualRedraw.forEach(e => e!(u));
-
-            
+                customHooks.manualRedraw.forEach(e => e!(u));            
         }, 17); // отрисовка
     }
 

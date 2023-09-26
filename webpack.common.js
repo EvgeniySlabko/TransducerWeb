@@ -38,6 +38,21 @@ module.exports = {
               test: /\.css$/i,
               use: ["style-loader", "css-loader"],
             },
+            {
+                test: /\.module.css$/,
+                use: [
+                  MiniCssExtractPlugin.loader,
+                  {
+                    loader: "css-loader",
+                    options: {
+                      esModule: true,
+                      modules: {
+                        namedExport: true,
+                      },
+                    },
+                  },
+                ],
+              },
         ],
     },
     plugins: [
@@ -56,6 +71,7 @@ module.exports = {
               { from: "static", to: "./" },
             ],
           }),
+          new MiniCssExtractPlugin()
     ],
 
     resolve: {

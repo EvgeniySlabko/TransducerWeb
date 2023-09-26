@@ -9,14 +9,14 @@ export const AxisHoverAnimationPlugin = () : Plugin =>{
         let a = u.axes[i];
         initFont = a.font;
         a.font = '20px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"';
-        
+        u.redrawRequired = true;
     }
 
     function handleYAxisHoverExit(event: any, i: number, u: CustomUPlot) {
         // When the mouse leaves the yAxis, remove the class to revert to normal font weight
         let a = u.axes[i];
         a.font = initFont;
-  
+        u.redrawRequired = true;
     }
 
     const readyHandler = (u: uPlot) => {

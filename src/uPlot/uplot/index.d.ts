@@ -1076,6 +1076,9 @@ declare namespace uPlot {
 
 		/** axis border/edge rendering */
 		border?: Axis.Border;
+
+		/** axis div id */
+		id?: string;
 	}
 
 	export namespace Hooks {

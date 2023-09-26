@@ -4,7 +4,7 @@ import { PlotChannelStyle } from '../Channel/ChannelStyle/PlotChannelStyle';
 import { CellChannelStyle } from '../Channel/ChannelStyle/CellChannelStyle';
 
 export type GroupsState = {
-    groups: Group[];                //all sensor information
+    groups: Group[];                //all sensor information and all channels
     plotContexts: PlotContext[],    //plot information
     plotChannels: PlotChannel[],    //plot - channel connection
     defaultPointsPerSecond: number
@@ -13,22 +13,17 @@ export type GroupsState = {
 const initialState: GroupsState = {
     groups: [],
     plotChannels: [],
-    plotContexts: [],
+    plotContexts: [
+        {
+            hideAxes: [],
+            id: 0,
+            order: 0,
+            legend: false,
+            plotName: `Plot-1`,
+            pointsPerSecond: 5000
+        }
+    ],
     defaultPointsPerSecond: 5000
-}
-
-function addNewPlot(state: GroupsState) {
-    const allPlotContextsIds = state.plotContexts.map(x => x.id);
-    const index = findFirstSkippedNumber(allPlotContextsIds);
-    const order = findFirstSkippedNumber(state.plotContexts.map(x => x.order));
-    state.plotContexts.push({
-        id: index,
-        plotName: "Name",
-        pointsPerSecond: state.defaultPointsPerSecond,
-        order: order,
-        legend: true
-    });
-    return state;
 }
 
 const groupsSlice = createSlice({
@@ -73,6 +68,13 @@ const groupsSlice = createSlice({
                         return;
                     }
                 }
+            }
+        },
+        setAxisHide(state, action: PayloadAction<{plotId: number, hidedAxies: string[]}>){
+            const plotContext = state.plotContexts.find(p => p.id === action.payload.plotId);
+            if (plotContext)
+            {
+                plotContext.hideAxes = action.payload.hidedAxies
             }
         },
         setAccurency(state, action: PayloadAction<{channelId: string, accuracy: number}>){
@@ -131,19 +133,55 @@ const groupsSlice = createSlice({
         addPlot(state){
             addNewPlot(state);
         },
-        remove(state, action: PayloadAction<number>){
-            state.plotContexts = state.plotContexts.filter(c => c.id !== action.payload);
-            state.plotChannels = state.plotChannels.filter(c => c.plotId !== action.payload);
+        removePlot(state, action: PayloadAction<number>){
+            removePlotById(state, action.payload);
         },
-        addPlotToChannel(state, action: PayloadAction<{plotId: number, channelId: string}>){
-            state.plotChannels = state.plotChannels.filter(c => c.plotId !== action.payload.plotId);
-            state.plotChannels.push({
+        attachChannelToPlots(state, action: PayloadAction<{plotIds: number[], channelId: string}>){
+            state.plotChannels = state.plotChannels.filter(c => c.channelId !== action.payload.channelId);
+            action.payload.plotIds.forEach(plotId => state.plotChannels.push({
                 channelId: action.payload.channelId,
-                plotId: action.payload.plotId
-            });
+                plotId: plotId
+            }))
+        },
+        setNumberOfPlots(state, action: PayloadAction<number>){
+            if (action.payload > state.plotContexts.length)
+            {
+                const numberOfPlotsToAdd = action.payload - state.plotContexts.length;
+                for(let i = 0; i < numberOfPlotsToAdd; i++){
+                    addNewPlot(state);
+                }
+            }
+            if (action.payload < state.plotContexts.length)
+            {
+                const numberOfPlotsToRemove = state.plotContexts.length - action.payload;
+                const plotsIdsToRemove = state.plotContexts.map(pc => pc.id).sort().slice(-numberOfPlotsToRemove);
+                plotsIdsToRemove.forEach(plotIdToRemove => {
+                    removePlotById(state, plotIdToRemove)
+                });
+            }
         },
     }
 })
+
+function addNewPlot(state: GroupsState) {
+    const allPlotContextsIds = state.plotContexts.map(x => x.id);
+    const index = findFirstSkippedNumber(allPlotContextsIds);
+    const order = findFirstSkippedNumber(state.plotContexts.map(x => x.order));
+    state.plotContexts.push({
+        id: index,
+        plotName: `Plot-${index + 1}`,
+        pointsPerSecond: state.defaultPointsPerSecond,
+        order: order,
+        legend: false,
+        hideAxes: []
+    });
+    return state;
+}
+
+function removePlotById(state: GroupsState, plotId: number) {
+    state.plotContexts = state.plotContexts.filter(c => c.id !== plotId);
+    state.plotChannels = state.plotChannels.filter(c => c.plotId !== plotId);
+}
 
 export type PlotContext = {
     id: number,
@@ -151,6 +189,7 @@ export type PlotContext = {
     pointsPerSecond: number,
     order: number
     legend: boolean
+    hideAxes: string[]
 }
 
 export type PlotChannel = {
@@ -174,7 +213,11 @@ export const {
     setFontSize,
     setChannelVisibility,
     removeGroup,
-    setLegend
+    setLegend,
+    setAxisHide,
+    addPlot,
+    attachChannelToPlots,
+    setNumberOfPlots
 } = groupsSlice.actions;
 
 const findFirstSkippedNumber = (arr: number[]): number => {

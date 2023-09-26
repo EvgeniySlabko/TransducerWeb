@@ -4575,7 +4575,7 @@ function uPlot(opts, data, then) {
 
 	self.redraw = (rebuildPaths, recalcAxes) => {
 		shouldConvergeSize = recalcAxes || false;
-
+		
 		if (rebuildPaths !== false)
 			_setScale(xScaleKey, scaleX.min, scaleX.max);
 		else
@@ -5695,6 +5695,7 @@ function uPlot(opts, data, then) {
 
 	return self;
 }
+
 
 uPlot.assign = assign;
 uPlot.fmtNum = fmtNum;

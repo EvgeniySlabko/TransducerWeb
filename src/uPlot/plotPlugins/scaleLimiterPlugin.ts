@@ -16,7 +16,8 @@ export const setScreenSize = (u: CustomUPlot, size: number) => {
 
 export const rangeIncerteptor = (plot: CustomUPlot, min: number, max: number) : [number, number] =>
 {
-    const size = max - min;
+    const actualMin = min < 0 ? 0 : min;
+    const size = max - actualMin;
     if (size > plot.maxScreenSize)
     {
         let rangeVal = plot.rangeSouce[1] - plot.rangeSouce[0];
@@ -24,7 +25,7 @@ export const rangeIncerteptor = (plot: CustomUPlot, min: number, max: number) : 
         return [mid - plot.maxScreenSize / 2, mid + plot.maxScreenSize / 2];
     }
 
-    return [min, max]
+    return [actualMin, max]
 }
 
 export const ScaleLimiterPlugin = () : Plugin =>{

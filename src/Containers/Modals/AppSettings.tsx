@@ -1,16 +1,24 @@
-import { Modal, Tabs } from "antd";
+import { InputNumber, Modal, Select, Tabs } from "antd";
 import React, { useState } from "react";
-import { PlotSettings } from "../../Components/PlotSettings";
 import { useAppDispatch, useAppSelector, usePlots, useSensorContexts } from "../../hooks/hook";
-import { reset, setPointsPerSecond, toggleSettingsScreenModal } from "../../store/uiSlice";
-import { Group } from "../../store/groupsSlice";
+import { setPointsPerSecond, toggleSettingsScreenModal } from "../../store/uiSlice";
+import { ADCFrequency } from "../../Sensor/SingleComponentSensor.ts/SingleComponentSensorBase";
+import { MenuItem } from "../../Components/MenuItem";
+import { setNumberOfPlots } from "../../store/groupsSlice";
 const { TabPane } = Tabs;
+const { Option } = Select;
 
-export const AppSettingsTab = () => {
-    const [werePlotSettingsChanges, setWerePlotSettingsChanges] = useState(false);
-    const pointsPerSecond = useAppSelector(state => state.ui.pointsPerSecond);
+export interface Props {
+    visible: boolean;
+}
+
+export const AppSettingsTab = ({ visible }: Props) => {
+    const {pointsPerSecond} = useAppSelector(state => state.ui);
+    const plotContexts = useAppSelector(state => state.groups.plotContexts);
+    
     const [pointsPerSecondState, setPointsPerSecondState] = useState(pointsPerSecond);
-    const {settings} = useAppSelector(state => state.ui);
+    const [numberOfPlotsState, setNumberOfPlotsState] = useState(plotContexts.length);
+    
     const [plots] = usePlots();
     const groups = useAppSelector(state => state.groups.groups);
     const dispatch = useAppDispatch();
@@ -19,21 +27,16 @@ export const AppSettingsTab = () => {
     const onOk = () => {
         dispatch(toggleSettingsScreenModal())
         dispatch(setPointsPerSecond(pointsPerSecondState))
+        dispatch(setNumberOfPlots(numberOfPlotsState))
     };
 
     const onPointsPerSecondChanged = (value: number) =>{
         setPointsPerSecondState(value);
-        setWerePlotSettingsChanges(value !== pointsPerSecondState);
     }
 
-    const clear = async () => {
-        //plotsManager?.Clear();
-        //plotsManager?.ClearLabels();
-        //plotsManager?.RebuildIfNessesary();
-        groups.forEach((group: Group) => contexts.get(group.id)?.pipelineController.resetPeackAnalizer());
-
-        dispatch(reset());
-    };
+    const onNumberOfPlotsChanged = (value: number) =>{
+        setNumberOfPlotsState(value);
+    }
 
     return (
         <Modal
@@ -45,13 +48,30 @@ export const AppSettingsTab = () => {
             okText={"Принять"}
             cancelText={"Отмена"}
             centered={false}
-            open={settings}
+            open={visible}
         >
             {
                 <Tabs defaultActiveKey="1">
                     <TabPane tabKey="1" tab="График" key="1">
-                        <PlotSettings pointsPerSecond={pointsPerSecondState} 
-                                      pointsPerSecondChanged={onPointsPerSecondChanged} />
+                        <MenuItem label="Максимальное число точек в секунду на графике:">
+                            <InputNumber
+                                min={50} 
+                                max={ADCFrequency} 
+                                step={1} 
+                                size="small" 
+                                defaultValue={pointsPerSecond} 
+                                onChange={num => onPointsPerSecondChanged(num!)} />
+                        </MenuItem>
+
+                        <MenuItem label="Стоповые биты:">
+                            <Select value={numberOfPlotsState} onChange={onNumberOfPlotsChanged}>
+                                <Option value={1}>1</Option>
+                                <Option value={2}>2</Option>
+                                <Option value={3}>3</Option>
+                                <Option value={4}>4</Option>
+                            </Select>
+                        
+                        </MenuItem>
                     </TabPane>
                 </Tabs>
             }

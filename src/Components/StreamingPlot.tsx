@@ -20,40 +20,46 @@ import uPlot, { Axis } from "../uPlot/uplot";
 import { UplotReact } from "./uplot-react";
 import { SelectionCommitPlugin } from "../uPlot/plotPlugins/selectionCommitPlugin";
 import Collapse, { CollapseProps } from "antd/lib/collapse";
-import styles from "./Components.module.scss";
+import "./StreamingPlot.scss";
 import { Checkbox } from "antd";
+import { legendToggler } from "../uPlot/plotPlugins/legendToggler";
 
 const { Panel } = Collapse;
 
+const legendDivHeight = 50;
+const xAxisHeight = 50;
 interface Props extends HTMLAttributes<HTMLDivElement> {
     plotId: number,
     plotChannels: PlotChannel[],
     plotStyles: PlotChannelStyle[],
     onPlotCreated: (key: number, plot: MyUPlotBase) => void,
-    onPlotDestroyed: (key: number, plot: MyUPlotBase) => void
+    onPlotDestroyed: (key: number, plot: MyUPlotBase) => void,
+    
+    legend: boolean,
+    onLegengChanged: (key: number, legend: boolean) => void,
 
-    legend: boolean
-    onLegengChanged: (key: number, plot: boolean) => void
+    hidedAxies: string[],
+    onHidedAxiesChanged: (key: number, hidedAxies: string[]) => void
 }
-export const StreamingPlot = ({legend, plotId: key, plotChannels, plotStyles, onPlotCreated, onPlotDestroyed, onLegengChanged, ...rest} : Props) => {
+export const StreamingPlot = ({legend, plotId: key, plotChannels, plotStyles, hidedAxies, onPlotCreated, onPlotDestroyed, onLegengChanged, onHidedAxiesChanged, ...rest} : Props) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const [uPlot, setUplot] = useState<uPlot>();
+    const [uPlot, setUplot] = useState<CustomUPlot>();
     const [collapseOpen, setCollapseOpen] = useState<boolean>(false);
     const [myUPlotBase, setMyUPlotBase] = useState<MyUPlotBase | undefined>();
 
     const getCurrentSize = (): [number, number] => {
         const clientWidth = containerRef.current?.clientWidth ?? 0;
         const clientHeight = containerRef.current?.clientHeight ?? 0;
-        let newHeight = clientHeight ;
-        newHeight = newHeight < 0 ? 200 : newHeight - (uPlot?.legend.show ? 100 : 0);
+        let newHeight = clientHeight;
+        newHeight = newHeight < 0 ? 0 : newHeight + 20 - (uPlot?.isLegendEnabled ? legendDivHeight + xAxisHeight : xAxisHeight);
         return[clientWidth, newHeight]
     }
     const resize = (curPlot: uPlot) => {
         let timeoutId: NodeJS.Timeout | undefined; 
         const size = getCurrentSize();
-        const doneResize = () => curPlot?.setSize({width: size[0], height: size[1]});
+        const doneResize = () => { curPlot?.setSize({width: size[0], height: size[1]}) } ;
         clearTimeout(timeoutId);
-        timeoutId = setTimeout(doneResize, 20);
+        doneResize();//setTimeout(doneResize, 200);
     }
 
     useEffect(() => {
@@ -75,7 +81,7 @@ export const StreamingPlot = ({legend, plotId: key, plotChannels, plotStyles, on
         const curPlot = new MyUPlotBase(u as CustomUPlot)
         setMyUPlotBase(curPlot);
         onPlotCreated(key, curPlot);
-        setUplot(u);
+        setUplot(u as CustomUPlot);
         resize(u);
     }
     
@@ -122,8 +128,10 @@ export const StreamingPlot = ({legend, plotId: key, plotChannels, plotStyles, on
             side: style.yAxeSide === "left" ? 1 : 3,
             scale: "y" + index.toString(),
             stroke: style.axisColor,
-            show: true,
+            show: !hidedAxies.includes(style.valueType),
+            type: style.valueType,
             label: style.yTitle,
+            id: style.valueType,
             grid:{
                 show: style.grid
             },
@@ -145,7 +153,8 @@ export const StreamingPlot = ({legend, plotId: key, plotChannels, plotStyles, on
         OverZoomPlugin(0.01, 0.75),
         StreamingTogglePlugin(),
         AxisHoverAnimationPlugin(),
-        SelectionCommitPlugin()
+        SelectionCommitPlugin(),
+        legendToggler()
     ]
 
     const size = getCurrentSize();
@@ -160,6 +169,7 @@ export const StreamingPlot = ({legend, plotId: key, plotChannels, plotStyles, on
         maxScreenSize: MaxFrameSize / 5000 / 2,
         rangeSouce: [0, 5],
         pxAlign: true,
+        isLegendEnabled: true,
         rangeIncerteptor: rangeIncerteptor,
         cursor: {
             points: {
@@ -184,7 +194,7 @@ export const StreamingPlot = ({legend, plotId: key, plotChannels, plotStyles, on
         ],
 
         legend:{
-            show: legend,
+            show: true,
         },
         series: [
             {
@@ -215,23 +225,60 @@ export const StreamingPlot = ({legend, plotId: key, plotChannels, plotStyles, on
         onLegengChanged(key, !legend)
     }
 
+    const onAxiesChanged = (axiesName: string, value: boolean) =>{
+        if (value)
+        {
+            const newAxies = hidedAxies.filter(ha => ha !== axiesName);
+            onHidedAxiesChanged(key, newAxies);
+        }
+        else
+        {
+            if (!hidedAxies.includes(axiesName))
+            {
+                onHidedAxiesChanged(key, [...hidedAxies, axiesName]);
+            }
+        }
+    }
+
     if (uPlot)
     {
-        uPlot.legend.show = legend
-        uPlot.redraw(true, true);
+        uPlot.isLegendEnabled = legend
+        uPlot.axes.map(a => a as CustomAxis).forEach(ca => {
+            const isHided = hidedAxies.some(ha => ca.type == ha);
+            ca.show = !isHided;
+        })
+        resize(uPlot);
+        uPlot?.setSize({width: uPlot.width + 0.001, height: uPlot.height}) //It make uplot recalculate valid axies positions
+        uPlot.redrawRequired = true;
+        uPlot?.redraw(true, true)
     }
+
+    //const onAxisVisibiliteChanged(plotId: number, )
+    const allValueTypes = plotStyles.map(ps => ps.valueType);
+    const uniqueValueTypes = allValueTypes.filter((item, index) => allValueTypes.indexOf(item) === index);
     return (
-        <div style={{height: "100%", position: "relative"}}>
-            <div id={"streamcontainer"} ref={containerRef} {...rest} >
+        <div {...rest} style={{height: "100%", position: "relative"}}>
+            <div ref={containerRef} style={{height: "100%"}} >
                 <div className={classes.absolute}>
                 {
-                plotComponent
+                    plotComponent
                 }
                 </div>
             </div>
-            <Collapse bordered={false} className={collapseOpen ? styles.collapse_open : styles.collapse_close} ghost={true} onChange={ onCollapseChange }>
-                <Panel className={ collapseOpen ? styles.collapse_panel_open : styles.collapse_panel_close} header="" key="1">
-                    <Checkbox checked={legend} onChange={onLegendChanged}>Legend</Checkbox>
+            <Collapse bordered={false} 
+                    className={`${collapseOpen ? "streaming_plot_collapse_open" : "streaming_plot_collapse_close"}`} 
+                    ghost={true} 
+                    onChange={ onCollapseChange }>
+
+                <Panel className={`${collapseOpen ? "streaming_plot_panel_open" : "streaming_plot_panel_close"}`} header="" key="1">
+                    <>
+                        <Checkbox checked={legend} onChange={onLegendChanged}>Legend</Checkbox>
+                        {
+                            uniqueValueTypes.map(ps => 
+                                <Checkbox defaultChecked={!hidedAxies.some(ha => ha === ps)} onChange={(e) => onAxiesChanged(ps, e.target.checked)}>{ps}</Checkbox>
+                            )
+                        }
+                    </>
                 </Panel>
             </Collapse>
         </div>

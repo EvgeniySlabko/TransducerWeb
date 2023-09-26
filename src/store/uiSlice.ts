@@ -28,6 +28,7 @@ const initialState: UiState = {
     showSensorsSettings: false,
     showDownloadModal: false,
     pointsPerSecond: 50,
+    
 }
 
 const uiSlice = createSlice({
@@ -73,7 +74,7 @@ const uiSlice = createSlice({
         },
         setPointsPerSecond(state, action: PayloadAction<number>){ 
             state.pointsPerSecond = action.payload;
-        },
+        }
     }
   })
 

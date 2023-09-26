@@ -6,7 +6,7 @@ import { SensorControllerArgs } from "../Sensor/SensorsManager/SensorsManager";
 import { ApplayLocalStorageSettingsForGroups, ApplySensorParameters as ApplaySensorStorageParameters } from "../Storage/ChannelsDataStorage";
 import { useAppDispatch, useAppSelector, usePlots, useSensorContext, useSensorContexts, useSensorsService } from "../hooks/hook";
 import { reset } from "../store/uiSlice";
-import { Group, addGroup, setLegend } from "../store/groupsSlice";
+import { Group, addGroup, setLegend, setAxisHide } from "../store/groupsSlice";
 import { GetGroupedChannels, GetGroupedStyles } from "../utils/channelsUtils";
 import styles from "./Plot.module.scss";
 import { MyUPlotBase } from "../uPlot/PlotBase";
@@ -74,7 +74,8 @@ export const Plot = ({...rest}: Props) => {
     const onPlotCreated = (key: number, plot: MyUPlotBase) => plots.set(key, plot)
     const onPlotDestroyed = (key: number, plot: MyUPlotBase) => plots.delete(key)
     const onLegengChanged = (key: number, legend: boolean) => dispatch(setLegend({plotId: key, value: legend}))
-    
+    const onHidedAxiesChanged = (key: number, hidedAxies: string[]) => dispatch(setAxisHide({plotId: key, hidedAxies: hidedAxies}))
+
     const allChannelGroups = Array.from(sensorContexts.values())
                                   .flatMap(sc => sc.channelGroups);
     const allPlotStyles = groups.flatMap(g => g.plotStyles);
@@ -85,6 +86,7 @@ export const Plot = ({...rest}: Props) => {
 
         return {
             key: plotContext.id,
+            hidedAxies: plotContext.hideAxes,
             order: plotContext.order,
             legend: plotContext.legend,
             pointsPerSecond: plotContext.pointsPerSecond,
@@ -100,6 +102,7 @@ export const Plot = ({...rest}: Props) => {
                 onPlotCreated={onPlotCreated} 
                 onPlotDestroyed={onPlotDestroyed}
                 onLegengChanged={onLegengChanged}
+                onHidedAxiesChanged={onHidedAxiesChanged}
                 ></PlotsLayout>
         </div>
     )

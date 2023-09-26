@@ -1,19 +1,20 @@
-import { Collapse } from "antd";
 import React, { HTMLAttributes } from "react";
-import styles from "./Components.module.scss";
+import styles from "./MenuItem.module.scss";
 
 export interface Props extends HTMLAttributes<HTMLDivElement> {
-    children: React.ReactElement;
     label: string;
 }
 
-export const MenuItem = ({children, label}: Props) => {
+export const MenuItem = ({children, label, ...rest}: Props) => {
     return (
         <>
-            <div className={styles.flex}>
-                <label className={`${styles.padding_10} ${styles.vertical_align}`}>{label}</label>
-                <div className={`${styles.padding_10} ${styles.horizontal_flex}`} style={{ marginLeft: "auto", order: 2 }}>
-                    {children}
+            <div {...rest} className={styles.menu_item}>
+                <label className={styles.menu_item_label}>{label}</label>
+
+                <div className={styles.menu_item_children}>
+              
+                        {children}
+           
                 </div>
             </div>
         </>

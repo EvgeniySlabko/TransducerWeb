@@ -1,27 +1,23 @@
 import { SettingOutlined } from "@ant-design/icons";
-import { Button, Collapse } from "antd";
+import { Button } from "antd";
 import React, { useEffect, useState } from "react";
-import { ChannelsGroup, StylesGroup } from "../../Channel/AllChannelsFactory";
-import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from "../../Channel/Channel/CellChannel";
-import { CellValue } from "../../Components/CellValue";
-import { CellModal } from "../Modals/CellSettings";
+import { ChannelsGroup, StylesGroup } from "../Channel/AllChannelsFactory";
+import { CellChannel, ChannelCloseArgs, ChannelDataArgs } from "../Channel/Channel/CellChannel";
 import styles from "./Cell.module.scss";
-import { SensorWorker } from "../../Sensor/SensorWorker";
-import { UnpropagatableContainer } from "../../Components/UnpropagatableContainer";
+import { CellValue } from "./CellValue";
+import { UnpropagatableContainer } from "./UnpropagatableContainer";
 
 export interface Props {
-    sensorId: string,
-    channelId: string,
     stylesGroup: StylesGroup;
     channelsGroup: ChannelsGroup;
-    sensorWorker: SensorWorker
     allowSettings: boolean;
+    onModalClick: () => void;
 }
 
-export const Cell = ({sensorId, channelId, stylesGroup, channelsGroup} : Props) => {
+export const Cell = ({stylesGroup, channelsGroup, onModalClick} : Props) => {
     const [value, setValue] = useState("");
     const [overload, setOverload] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
+    
 
     useEffect(() => {
         channelsGroup.cellChannel.onClose.sub(closeHandler);
@@ -53,14 +49,6 @@ export const Cell = ({sensorId, channelId, stylesGroup, channelsGroup} : Props) 
     const limitHandler = (state: boolean) => {
         stylesGroup.plotStyle.drawLimits = state;
     };
-
-    const onModalClose = () => {
-        setModalVisible(false);
-    };
-
-    const onShow = () => {
-        setModalVisible(true);
-    };
     
     return (
         <UnpropagatableContainer>
@@ -78,22 +66,16 @@ export const Cell = ({sensorId, channelId, stylesGroup, channelsGroup} : Props) 
                 <Button
                     className={styles.horizontal_padding}
                     onClick={(event) => {
-                        onShow();
+                        onModalClick();
                     }}
                     icon={
                         <SettingOutlined
                             onClick={(event) => {
-                                onShow();
+                                onModalClick();
                             }}
                         />
                     }
                 />
-
-                <CellModal
-                    channelId={channelId}
-                    stylesGroup={stylesGroup}
-                    visible={modalVisible} 
-                    onClose={onModalClose} /> 
                 
             </div>
 
