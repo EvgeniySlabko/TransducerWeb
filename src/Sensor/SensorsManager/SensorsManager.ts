@@ -29,10 +29,6 @@ export class SensorController {
         return index;
     }
 
-    constructor (){
-        console.log(123);
-    }
-
     public async AddSensor(sensorWorker: SensorWorker) {
         console.debug("Adding new sensor to manager.");
         let index = this.GetIndex(sensorWorker);

@@ -36,13 +36,13 @@ addEventListener('message', (message: any) => {
 
 async function HandleOpen(args: OpenWorkerArgs){
     let devices =  await navigator.usb.getDevices();
-    let device = devices[args.deviceIndex];
+    let device = devices.find(d => d.vendorId == args.vendorId && d.productId == args.productId)
     if (!device) return;
     console.debug(device.deviceProtocol);
     console.debug(device.configurations);
     await device.open()
     await device.selectConfiguration(1);
-    await device.claimInterface(0);   
+    await device.claimInterface(0);
     usbReaderWriter = new UsbRowReaderWriter(device);
     usbSensorIOWorker = new UsbSensorIOWorker(device);
     usbReaderWriter.Error.sub(e => HandleError(e, WorkerCommandType.Error))

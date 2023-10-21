@@ -36,7 +36,7 @@ export const OverDragPlugin = () : Plugin =>{
                     customUPlot.redrawRequired = true;
                 };
 
-                function onup(e: any) {
+                const onup = (e: any) =>{
                     document.removeEventListener("mousemove", onmove);
                     document.removeEventListener("mouseup", onup);
                 }

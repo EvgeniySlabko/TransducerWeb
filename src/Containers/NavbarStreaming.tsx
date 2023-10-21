@@ -1,7 +1,7 @@
 import { Button, notification } from "antd";
 import React, { HTMLAttributes, useEffect, useState } from "react";
 import { keyCodes as keyCode } from "../Common/KeyCodes"; 
-import { CeateSensorWorker } from "../Sensor/SensorFactory";
+import { CeateSensorWorker } from "../Sensor/WebSensorFactory";
 import { useAppDispatch, useAppSelector, usePlots, useRecordManager, useSensorContexts, useSensorsService } from "../hooks/hook";
 import { Snapshot } from "../ReportListener/Snapshot";
 import { pause, reset, showReport, toggleSettingsScreenModal, toggleTutorialScreenModal, toogleStreaming } from "../store/uiSlice";
@@ -212,10 +212,6 @@ export const NavbarStreaming = ({...rest}: Props) => {
         await handleOpenFile();
     };
 
-
-    const addNewPlot = () =>{
-        dispatch(addPlot())
-    }
     return(
         <div {...rest}>
             <Button title="Начать измерение. (Space)"
@@ -267,11 +263,6 @@ export const NavbarStreaming = ({...rest}: Props) => {
                 title="О программе"
                 icon={<QuestionOutlined />}
                 onClick={() => dispatch(toggleTutorialScreenModal())} />
-
-            <Button size="large"
-                title="Add plot"
-                onClick={addNewPlot} >add plot</Button>
-
 
             <InvisibleContainer visible={settings}>
                 <AppSettingsTab visible={settings} />

@@ -4,17 +4,18 @@ const webpack = require("webpack");
 const path = require("path");
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+require('dotenv').config({ path: './.env' }); 
 
 module.exports = {
     entry: "./src/main.tsx",
     mode: "development",
     //mode: 'production',
-  
+
     optimization: {
         //minimize: true,
     },
     output: {
-        path: path.resolve(__dirname, "dist"),
+        path: path.resolve(__dirname, process.env.DIST),
         filename: "bundle.js",
         clean: true,
     },
@@ -39,20 +40,20 @@ module.exports = {
               use: ["style-loader", "css-loader"],
             },
             {
-                test: /\.module.css$/,
-                use: [
-                  MiniCssExtractPlugin.loader,
-                  {
-                    loader: "css-loader",
-                    options: {
-                      esModule: true,
-                      modules: {
-                        namedExport: true,
-                      },
+              test: /\.module.css$/,
+              use: [
+                MiniCssExtractPlugin.loader,
+                {
+                  loader: "css-loader",
+                  options: {
+                    esModule: true,
+                    modules: {
+                      namedExport: true,
                     },
                   },
-                ],
-              },
+                },
+              ],
+            },
         ],
     },
     plugins: [
@@ -66,6 +67,9 @@ module.exports = {
             template: "index.html", //Name of template in ./src
             hash: true,
         }),
+        new webpack.DefinePlugin({
+          "process.env": JSON.stringify(process.env),
+        }),
         new CopyWebpackPlugin({
             patterns: [
               { from: "static", to: "./" },
@@ -75,6 +79,6 @@ module.exports = {
     ],
 
     resolve: {
-        extensions: [".tsx", ".ts", ".js"],
+      extensions: [".tsx", ".ts", ".js"],
     },
 };

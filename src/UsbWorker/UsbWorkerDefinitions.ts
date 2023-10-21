@@ -14,9 +14,8 @@ export declare class WorkerMessage{
 
 //------------------------------
 export declare class OpenWorkerArgs{
-    deviceClass: number;
+    vendorId: number;
     productId: number;
-    deviceIndex: number;
 };
 
 export declare class ReadWorkerArgs{
