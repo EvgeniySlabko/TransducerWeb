@@ -63,7 +63,7 @@ export const AppSettingsTab = ({ visible }: Props) => {
                                 onChange={num => onPointsPerSecondChanged(num!)} />
                         </MenuItem>
 
-                        <MenuItem label="Стоповые биты:">
+                        <MenuItem label="Количество графиков:">
                             <Select value={numberOfPlotsState} onChange={onNumberOfPlotsChanged}>
                                 <Option value={1}>1</Option>
                                 <Option value={2}>2</Option>

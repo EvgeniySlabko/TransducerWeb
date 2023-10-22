@@ -16,7 +16,7 @@ echo "%absolutePath%"
 
 call cross-env ENV=ELECTRON SOURCE=%localPath% DIST=dist cross-env npx webpack-cli build --config webpack.prod.js
 call cross-env ENV=ELECTRON electron-forge package
-set "sourceDirectory=out"
-set "destinationDirectory=Output\desktop"
-move "%sourceDirectory%\*.*" "%destinationDirectory%"
+
+move "out\Transducer-win32-x64" "Output"
+rmdir /s /q out
 pause
