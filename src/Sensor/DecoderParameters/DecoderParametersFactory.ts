@@ -1,4 +1,4 @@
-import { DecoderType } from "../SensorFactory";
+import { DecoderType } from "../../store/uiSlice";
 
 export declare class DecoderParameters {
     minAvgRatio: number;

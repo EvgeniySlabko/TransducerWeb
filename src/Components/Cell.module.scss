@@ -1,0 +1,17 @@
+@import "../assets/common.module.scss";
+
+.measure_box {
+    text-align: center;
+    width: 100%;
+    user-select: none;
+}
+
+.cell_name {
+    font-size: 15px;
+    font-weight: bold;
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -1,5 +1,6 @@
 import { SensorData } from "../Sensor/SensorDefinitions";
 import { SeriesValue } from "../uPlot/PlotCommon";
+import { TypedArray } from "../uPlot/uplot";
 
 export declare class DataAlignParams {
     dt: number; //интервал сетки выравнивания
@@ -69,7 +70,7 @@ export function GetEmptyAlignedData(startTime: number, dt: number, segments: num
     return [timeArr, ...dataArrs];
 }
 
-export function NearestPoint(arr: SeriesValue[], index: number, maxCount: number): SeriesValue {
+export function NearestPoint(arr: TypedArray, index: number, maxCount: number): SeriesValue {
     if (arr[index] === null) return undefined;
     if (arr[index] !== undefined) return arr[index] as number;
 

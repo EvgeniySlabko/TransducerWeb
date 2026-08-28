@@ -16,7 +16,7 @@ export class UsbRowReader{
         {
             let bufferLength = this.buffer.getBufferLength();
             if (bufferLength > 0){
-                console.log(bufferLength);
+                //console.log(bufferLength);
                 let data = this.buffer.toArray();
                 this.buffer.clear();
                 return data;

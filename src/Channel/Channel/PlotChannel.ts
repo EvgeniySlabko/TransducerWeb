@@ -3,6 +3,7 @@ import { ISensorDataProvider } from "../SensorDataSource/ISensorDataProvider";
 import { EventDispatcher } from "strongly-typed-events";
 import { SensorData, SensorMessageEventArgs } from "../../Sensor/SensorDefinitions";
 import { ISingleComponentSensorBase } from "../../Sensor/SingleComponentSensor.ts/ISingleComponentSensorBase";
+import { v4 as uuid } from "uuid";
 //import { CreateDefaultStyle } from "./ChannelStyleFactory";
 
 export type PlotChannelDataArgs = {
@@ -22,14 +23,14 @@ export type PlotChannelCloseArgs = {
 
 // Содержит информацию для отображения на графике.
 export class PlotChannel {
-    private style: PlotChannelStyle;
+    public readonly id: string;
 
     private _onData = new EventDispatcher<PlotChannel, PlotChannelDataArgs>();
     private _onMessage = new EventDispatcher<PlotChannel, PlotChannelMessageArgs>();
     private _onClose = new EventDispatcher<PlotChannel, PlotChannelCloseArgs>();
 
-    public constructor(dataSource: ISensorDataProvider, style: PlotChannelStyle) {
-        this.style = style;
+    public constructor(dataSource: ISensorDataProvider, id: string) {
+        this.id = id;
         dataSource.onData?.sub((sensor, args) => {
             this._onData.dispatch(this, {
                 data: args,
@@ -50,10 +51,6 @@ export class PlotChannel {
                 sensor: sensor,
             });
         });
-    }
-
-    public get Style() {
-        return this.style;
     }
 
     public get onData() {

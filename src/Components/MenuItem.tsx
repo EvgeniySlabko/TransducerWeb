@@ -1,29 +1,23 @@
-import { Collapse } from "antd";
-import React from "react";
-const { Panel } = Collapse;
+import React, { HTMLAttributes } from "react";
+import styles from "./MenuItem.module.scss";
 
-export interface Props {
-    children: React.ReactElement;
+export interface Props extends HTMLAttributes<HTMLDivElement> {
     label: string;
-    className?: string;
 }
 
-export class MenuItem extends React.Component<Props> {
-    constructor(prop: Props) {
-        super(prop);
-    }
+export const MenuItem = ({children, label, ...rest}: Props) => {
+    return (
+        <>
+            <div {...rest} className={styles.menu_item}>
+                <label className={styles.menu_item_label}>{label}</label>
 
-    render() {
-        const children = this.props.children;
-        return (
-            <>
-                <div className={"horizontal-flex"}>
-                    <label className="margin vertical-align">{this.props.label}</label>
-                    <div className="margin horizontal-flex" style={{ marginLeft: "auto", order: 2 }}>
-                        {this.props.children}
-                    </div>
+                <div className={styles.menu_item_children}>
+              
+                        {children}
+           
                 </div>
-            </>
-        );
-    }
+            </div>
+        </>
+    );
+    
 }

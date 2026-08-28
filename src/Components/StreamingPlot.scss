@@ -1,0 +1,33 @@
+@mixin common-panel-styles {
+    margin-left: auto;
+    margin-right: auto;
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100px;
+    top: 0;
+
+    top: -2px;
+    .ant-collapse-header {
+        display: flex;
+        flex-direction: column;
+        .ant-collapse-expand-icon {
+            .ant-collapse-arrow {
+                margin-right: 0;
+            }
+        }
+    }
+}
+.streaming_plot_panel {
+    &_open {
+        @include common-panel-styles;
+        .ant-collapse-content {
+            backdrop-filter: blur(2px);
+        }
+    }
+
+    &_close {
+        @include common-panel-styles;
+        // Add specific styles for when it's closed, if needed
+    }
+}

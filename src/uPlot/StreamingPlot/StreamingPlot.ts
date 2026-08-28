@@ -1,4 +1,4 @@
-import { PlotChannelDataArgs, PlotChannelMessageArgs, PlotChannel } from "../../Channel/Channel/PlotChannel";
+/*import { PlotChannelDataArgs, PlotChannelMessageArgs, PlotChannel } from "../../Channel/Channel/PlotChannel";
 import { SensorData, SensorMessage } from "../../Sensor/SensorDefinitions";
 import { Label, MyUPlotBase, PlotParameters, SeriesInfo } from "../PlotBase";
 import { ChannelLabel } from "../PlotManager";
@@ -9,6 +9,7 @@ export type TraceInfo = {
     channel: PlotChannel;
     seriesInfo: SeriesInfo;
 };
+
 
 export class MyUPlot extends MyUPlotBase {
     private readonly screenOffset: number = 30; // отступ справа в процентах
@@ -202,3 +203,4 @@ export class MyUPlot extends MyUPlotBase {
         super.HorizontalAlign();
     }
 }
+*/

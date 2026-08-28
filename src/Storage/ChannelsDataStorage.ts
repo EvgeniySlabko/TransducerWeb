@@ -1,8 +1,9 @@
-import { AllChannelsInfo, ChannelsGroup } from "../Channel/AllChannelsFactory";
+import { AllChannelsInfo, StylesGroup, PipelineController } from "../Channel/AllChannelsFactory";
 import { CellChannelStyle } from "../Channel/ChannelStyle/CellChannelStyle";
 import { PlotChannelStyle } from "../Channel/ChannelStyle/PlotChannelStyle";
 import { ChannelDataType } from "../Channel/ChannelStyle/ChanneStyleCommon";
-import { Group } from "../Components/App";
+import { Group } from "../store/groupsSlice";
+import { SensorWorker } from "../Sensor/SensorWorker";
 
 export type FilterType = "bessel" | "butterworth";
 export declare class FilterParameters {
@@ -37,20 +38,19 @@ let defaultSensorParams: SensorStorageParameters = {
     },
 };
 
-export function SaveChannelGroupParameters(groups: ChannelsGroup[], sensorId: string) {
-    // TO DO validation
+export function SaveChannelGroupParameters(groups: StylesGroup[], sensorId: string) {
     groups.forEach((g) => {
-        let plotStyle = g.plotChannel.Style;
-        let cellStyle = g.cellChannel.Style;
-        let savingStyle = g.savingChannel.Style;
+        let plotStyle = g.plotStyle;
+        let cellStyle = g.cellStyle;
+        let savingStyle = g.savingStyle;
 
         let plotStyleJson = JSON.stringify(plotStyle);
         let cellStyleJson = JSON.stringify(cellStyle);
         let savingStyleJson = JSON.stringify(savingStyle);
 
-        let plotKey = getPlotStyleKey(sensorId, g.plotChannel.Style.valueType);
-        let cellKey = getCellStyleKey(sensorId, g.plotChannel.Style.valueType);
-        let savingKey = getSavingStyleKey(sensorId, g.plotChannel.Style.valueType);
+        let plotKey = getPlotStyleKey(sensorId, g.plotStyle.valueType);
+        let cellKey = getCellStyleKey(sensorId, g.plotStyle.valueType);
+        let savingKey = getSavingStyleKey(sensorId, g.plotStyle.valueType);
 
         localStorage.setItem(plotKey, plotStyleJson);
         localStorage.setItem(cellKey, cellStyleJson);
@@ -58,11 +58,11 @@ export function SaveChannelGroupParameters(groups: ChannelsGroup[], sensorId: st
     });
 }
 
-export function ApplayLocalStorageSettingsForGroups(groups: ChannelsGroup[], sensorId: string) {
+export function ApplayLocalStorageSettingsForGroups(groups: StylesGroup[], sensorId: string) {
     groups.forEach((g) => {
-        let plotKey = getPlotStyleKey(sensorId, g.plotChannel.Style.valueType);
-        let cellKey = getCellStyleKey(sensorId, g.plotChannel.Style.valueType);
-        let savingKey = getSavingStyleKey(sensorId, g.plotChannel.Style.valueType);
+        let plotKey = getPlotStyleKey(sensorId, g.plotStyle.valueType);
+        let cellKey = getCellStyleKey(sensorId, g.plotStyle.valueType);
+        let savingKey = getSavingStyleKey(sensorId, g.plotStyle.valueType);
 
         let plotStyleJson = localStorage.getItem(plotKey);
         let cellStyleJson = localStorage.getItem(cellKey);
@@ -73,25 +73,25 @@ export function ApplayLocalStorageSettingsForGroups(groups: ChannelsGroup[], sen
             let savingStyle = JSON.parse(savingStyleJson) as PlotChannelStyle;
             let cellStyle = JSON.parse(cellStyleJson) as CellChannelStyle;
 
-            g.cellChannel.Style.fontSize = cellStyle.fontSize;
-            g.cellChannel.Style.limits = cellStyle.limits;
-            g.cellChannel.Style.color = cellStyle.color;
-            g.cellChannel.Style.visible = cellStyle.visible;
-            g.cellChannel.Style.accuracy = cellStyle.accuracy;
+            g.cellStyle.fontSize = cellStyle.fontSize;
+            g.cellStyle.limits = cellStyle.limits;
+            g.cellStyle.color = cellStyle.color;
+            g.cellStyle.visible = cellStyle.visible;
+            g.cellStyle.accuracy = cellStyle.accuracy;
 
-            g.plotChannel.Style.color = plotStyle.color;
-            g.plotChannel.Style.drawLimits = plotStyle.drawLimits;
-            g.plotChannel.Style.grid = plotStyle.grid;
-            g.plotChannel.Style.legendValueAccuracy = plotStyle.legendValueAccuracy;
-            g.plotChannel.Style.visible = plotStyle.visible;
-            g.plotChannel.Style.width = plotStyle.width;
+            g.plotStyle.color = plotStyle.color;
+            g.plotStyle.drawLimits = plotStyle.drawLimits;
+            g.plotStyle.grid = plotStyle.grid;
+            g.plotStyle.legendValueAccuracy = plotStyle.legendValueAccuracy;
+            g.plotStyle.visible = plotStyle.visible;
+            g.plotStyle.width = plotStyle.width;
 
-            g.savingChannel.Style.color = savingStyle.color;
-            g.savingChannel.Style.drawLimits = savingStyle.drawLimits;
-            g.savingChannel.Style.grid = savingStyle.grid;
-            g.savingChannel.Style.legendValueAccuracy = savingStyle.legendValueAccuracy;
-            g.savingChannel.Style.visible = savingStyle.visible;
-            g.savingChannel.Style.width = savingStyle.width;
+            g.savingStyle.color = savingStyle.color;
+            g.savingStyle.drawLimits = savingStyle.drawLimits;
+            g.savingStyle.grid = savingStyle.grid;
+            g.savingStyle.legendValueAccuracy = savingStyle.legendValueAccuracy;
+            g.savingStyle.visible = savingStyle.visible;
+            g.savingStyle.width = savingStyle.width;
         } catch {
             return;
         }
@@ -114,19 +114,19 @@ export async function SetOffset(offset: number, sensorId: string) {
     SaveSensorParameters(params, sensorId);
 }
 
-export async function ApplySensorParameters(group: Group, sensorId: string) {
+export async function ApplySensorParameters(worker: SensorWorker, pipeline: PipelineController, sensorId: string) {
     let parameters = await GetSensorParameters(sensorId);
 
-    await group.node.worker.SetExternalSpeedSensorState(parameters.externalSpeedSensor);
+    await worker.SetExternalSpeedSensorState(parameters.externalSpeedSensor);
 
-    let minAvgRatio = group.node.worker.DecoderParams.minAvgRatio;
-    await group.node.worker.SetAverageRatio(parameters.avgRatio < minAvgRatio ? minAvgRatio : parameters.avgRatio);
+    let minAvgRatio = worker.DecoderParams.minAvgRatio;
+    await worker.SetAverageRatio(parameters.avgRatio < minAvgRatio ? minAvgRatio : parameters.avgRatio);
 
-    await group.node.worker.SetSpeedPeriod(parameters.speedPeriod);
-    group.channelsInfo.setInvertiorSourceState(parameters.invertion);
-    group.channelsInfo.setAbsoluteSourceState(parameters.absolute);
-    group.channelsInfo.setFilterParameters(parameters.filterParameters);
-    group.channelsInfo.setOffset(parameters.offset);
+    await worker.SetSpeedPeriod(parameters.speedPeriod);
+    pipeline.setInvertiorSourceState(parameters.invertion);
+    pipeline.setAbsoluteSourceState(parameters.absolute);
+    pipeline.setFilterParameters(parameters.filterParameters);
+    pipeline.setOffset(parameters.offset);
 }
 
 export async function GetSensorParameters(sensorId: string): Promise<SensorStorageParameters> {

@@ -1,6 +1,6 @@
-import { AlignedData } from "uplot";
 import { SensorData as DataEventArgs } from "../../Sensor/SensorDefinitions";
 import { SeriesValue } from "../PlotCommon";
+import { AlignedData } from "../uplot";
 
 export declare class PlotBufferManagerConfig {
     dt: number;
@@ -19,13 +19,12 @@ export class PlotBufferManager {
     private readonly maxFrameTimeRange: number; // максимальная величина Range при которой не будет видно переключения перекресных буфферов (в секундах)
     private readonly frameSize: number;
     private readonly dt: number;
+    private readonly frameTime: number;
 
     private frames: AlignedData[] = [];
     private frames2: AlignedData[] = []; //перекресный буффер по времени
 
     private maxTime: number;
-    private frameTime: number;
-    private getRange: () => [number, number];
 
     private segmentInfo: ISegmentInfo[] = [];
 
@@ -39,8 +38,7 @@ export class PlotBufferManager {
         return this.maxFrameTimeRange;
     }
 
-    constructor(rangeGetter: () => [number, number], config: PlotBufferManagerConfig) {
-        this.getRange = rangeGetter;
+    constructor(config: PlotBufferManagerConfig) {
 
         this.dt = config.dt;
         this.maxFrameTimeRange = MaxFrameSize / (1 / config.dt) / 2;
@@ -59,10 +57,10 @@ export class PlotBufferManager {
         this.maxTime = 0;
     }
 
-    public get Source() {
-        let range = this.getRange();
-        let time = range[1];
-        if (range[1] > this.GetLastTime()) {
+    public getSource(min : number, max: number) : AlignedData
+    {
+        let time = max;
+        if (min > this.GetLastTime()) {
             time = this.GetLastTime();
         }
 
@@ -128,7 +126,9 @@ export class PlotBufferManager {
     }
 
     public CleanSegments() {
-        for (let i = 0; i < this.segmentInfo.length; i++) this.CleanSegment(i);
+        this.frames = [];
+        this.frames2 = [];
+        this.HandleFramesBufferExpand(1);
         this.maxTime = 0;
     }
 

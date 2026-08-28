@@ -36,3 +36,5 @@ export function AsShortArray(data: Uint8Array, littleEndian = true): number[] {
 
     return registers;
 }
+
+export const nameof = <T>(name: Extract<keyof T, string>): string => name;

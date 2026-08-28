@@ -4,10 +4,11 @@ import { PlotChannelStyle } from "./PlotChannelStyle";
 import { powerBaseColor, speedBaseColor, tmpBaseColor, torqueBaseColor } from "./ChanneStyleCommon";
 
 const rescaleRatio: number = 0.2;
-export function CreateTorqueStyle(sensorInfo: FullSensorInfo): PlotChannelStyle {
+export function CreateTorqueStyle(sensorInfo: FullSensorInfo, id: string): PlotChannelStyle {
     let maxValScaled = sensorInfo.MaxValue * sensorInfo.valueRatio;
     let minValScaled = sensorInfo.MinValue * sensorInfo.valueRatio;
     return {
+        id: id,
         sensorId: sensorInfo.id,
         grid: true,
         color: torqueBaseColor,
@@ -32,8 +33,9 @@ export function CreateTorqueStyle(sensorInfo: FullSensorInfo): PlotChannelStyle 
     };
 }
 
-export function CreateSpeedStyle(sensorInfo: FullSensorInfo): PlotChannelStyle {
+export function CreateSpeedStyle(sensorInfo: FullSensorInfo, id: string): PlotChannelStyle {
     return {
+        id: id,
         sensorId: sensorInfo.id,
         grid: false,
         color: speedBaseColor,
@@ -56,8 +58,9 @@ export function CreateSpeedStyle(sensorInfo: FullSensorInfo): PlotChannelStyle {
     };
 }
 
-export function CreatetemperatureStyle(sensorInfo: FullSensorInfo): PlotChannelStyle {
+export function CreateTemperatureStyle(sensorInfo: FullSensorInfo, id: string): PlotChannelStyle {
     return {
+        id: id,
         sensorId: sensorInfo.id,
         grid: false,
         color: tmpBaseColor,
@@ -79,10 +82,11 @@ export function CreatetemperatureStyle(sensorInfo: FullSensorInfo): PlotChannelS
     };
 }
 
-export function CreatePowerStyle(sensorInfo: FullSensorInfo): PlotChannelStyle {
+export function CreatePowerStyle(sensorInfo: FullSensorInfo, id: string): PlotChannelStyle {
     let minPower = CalculatePower(sensorInfo.MaxSpeed + 0.1 * sensorInfo.MaxSpeed, sensorInfo.MinValue + 0.1 * sensorInfo.MinValue);
     let maxPower = -minPower;
     return {
+        id: id,
         sensorId: sensorInfo.id,
         grid: false,
         color: powerBaseColor,

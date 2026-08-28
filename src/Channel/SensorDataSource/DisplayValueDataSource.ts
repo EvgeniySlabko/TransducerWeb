@@ -9,7 +9,7 @@ export class DisplayValueDataSource implements ISensorDataProvider {
     private _onMessage = new EventDispatcher<ISingleComponentSensorBase, SensorMessageEventArgs>();
     private _onClose = new EventDispatcher<ISingleComponentSensorBase, string>();
 
-    private interval: NodeJS.Timer;
+    private interval: NodeJS.Timeout;
 
     private lastValue: number | undefined;
     private lastTime: number | undefined;

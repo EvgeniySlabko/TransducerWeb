@@ -1,0 +1,16 @@
+.ant-collapse-content-box {
+    padding: 0px !important;
+}
+
+.ant-collapse-header {
+    padding: 0px !important;
+    justify-content: space-around !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+}
+.ant-collapse-header-text{
+    padding-top: 4px;
+    padding-bottom: 2px;
+    display: flex;
+    gap: 2px;
+}

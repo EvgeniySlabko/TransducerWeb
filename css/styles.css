@@ -62,17 +62,6 @@ table {
     user-select: none;
 }
 
-.left-container {
-    flex-basis: 220px;
-    flex-grow: 0;
-    flex-shrink: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    height: 92%;
-    display: flex;
-    flex-direction: column;
-}
-
 /* MAIN styles */
 html,
 body {
@@ -89,39 +78,14 @@ body {
     height: 100%;
 }
 
-.middle-container {
-    display: flex;
-    flex-direction: row;
-    height: 100%;
-    width: 100%;
-}
-
 .plot {
     border-radius: 20px;
     border: 3px solid var(--scroll-bar-bg-color);
 }
 
-.control-buttons {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    margin-right: 100px;
-}
-
 legend {
     padding: 10px;
     font-size: 5px;
-}
-
-.ant-collapse-content-box {
-    padding: 0px !important;
-}
-
-.ant-collapse-header {
-    padding: 0px !important;
-    justify-content: space-around !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
 }
 
 .navbar {
@@ -132,13 +96,6 @@ legend {
     white-space: nowrap;
 }
 
-.nav-tab-container {
-    width: 100%;
-    align-items: flex-start;
-    display: flex;
-    flex-flow: row;
-}
-
 .column-gap {
     column-gap: 10px;
 }
@@ -147,46 +104,10 @@ legend {
     pointer-events: auto !important;
 }
 
-.tooltip {
-    width: 50;
-    height: 50;
-    background-color: black;
-}
 
-.horizontal-padding {
-    padding-left: 2px !important;
-    padding-right: 2px !important;
-}
 
-.vertical-flex {
-    display: flex;
-    flex-direction: column;
-}
 
-.horizontal-flex {
-    display: flex;
-    flex-direction: "row";
-}
 
-.tutorial-button-container{
-    width: 100%;
-}
-
-.tutorial-button{
-    margin-left: auto;
-    padding-right: 10px;
-}
-
-.cell-group-title {
-    font-size: 12px !important;
-    display: table-cell !important;
-    vertical-align: middle !important;
-    margin: 0px;
-    margin-top: 3px;
-    width: 77px;
-    height: 100%;
-    text-align: center;
-}
 
 .margin {
     padding: 10px !important;
@@ -198,31 +119,6 @@ legend {
 
 li {
     list-style-type: circle;
-}
-
-
-.vertical-align {
-    display: inline-block !important;
-    vertical-align: middle !important;
-    height: auto;
-}
-
-.cell-control-panel-row {
-
-    height: 0px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    top: 30px;
-    z-index: 10;
-}
-
-.center-parent {
-    z-index: 40;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 #controls-button-container button.disabled {
@@ -243,26 +139,6 @@ pre {
     font-size: var(--code-font-size);
     line-height: var(--code-line-height);
     background-color: var(--code-bg-color);
-}
-
-.control-panel-button {
-    height: "20px";
-    width: "20px";
-}
-
-.save-sensor-params-button {
-    position: absolute;
-
-    right: 480px;
-    top: 360px;
-}
-
-.code-block {
-    max-height: 100px;
-    overflow: auto;
-    padding: 8px 7px 5px 15px;
-    margin: 0px 0px 0px 0px;
-    border-radius: 7px;
 }
 
 /* Scrole */

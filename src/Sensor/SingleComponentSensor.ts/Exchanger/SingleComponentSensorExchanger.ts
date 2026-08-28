@@ -17,9 +17,12 @@ export class SingleComponentSensorExchanger extends SingleComponentSensorBase {
     private lastSpeedMeasuringTime = -1;
     private lastTemperatureMeasuringTime = -1;
     private timeAwaitig = 100;
-    private interval?: NodeJS.Timer;
+    private interval?: NodeJS.Timeout;
 
-    constructor(sensorIOWorker: ISensorConnector, commandFactory: ISensorCommandFacory, sensorDataCommandReceiver: ISensorDataCommandEncoder, sensorCommandWriter: ISensorCommandWriter, id: string) {
+    constructor(sensorIOWorker: ISensorConnector,
+                commandFactory: ISensorCommandFacory,
+                sensorDataCommandReceiver: ISensorDataCommandEncoder,
+                sensorCommandWriter: ISensorCommandWriter, id: string) {
         super(sensorIOWorker, commandFactory, sensorDataCommandReceiver, sensorCommandWriter, id + " base");
     }
 

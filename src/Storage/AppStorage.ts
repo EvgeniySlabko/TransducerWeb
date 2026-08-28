@@ -1,4 +1,4 @@
-import { DecoderType } from "../Sensor/SensorFactory";
+import { DecoderType } from "../store/uiSlice";
 import { GetParameterOrDefault, SetParameter } from "./StorageCommon";
 
 const PointsPerSecondKey = "PointsPerSecondKey";
